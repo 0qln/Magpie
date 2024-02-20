@@ -12,7 +12,7 @@ public class Interface
             Optional<ICommandBuilder> commandBuilder = parser.parse(input);
             commandBuilder.ifPresent(
                 // UCI:: The engine must always be able to process input from stdin, even while thinking.
-                builder -> builder.BuildForBoard(board).run()
+                builder -> builder.buildForBoard(board).run()
             );
         }
     }
