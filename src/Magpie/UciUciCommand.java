@@ -1,7 +1,9 @@
 public class UciUciCommand extends UciCommand
 {
-    public UciUciCommand()
+    public UciUciCommand(IBoard board)
     {
-
+        super(board);
     }
+    
+    
 }
