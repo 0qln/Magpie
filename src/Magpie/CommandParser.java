@@ -1,12 +1,22 @@
+import java.util.*;
+
 public class CommandParser
 {
-    public CommandParser()
+    private IBoard board;
+    
+    public CommandParser(IBoard board)
     {
-
+        this.board = board;
     }
     
-    public ICommand Parse(String input) {
+    public Optional<ICommand> Parse(String input) {
         String[] args = input.split(" ");
-        ICommand command = 
+        switch (args[0]) {
+            case "uci":
+                return Optional.of(new UciUciCommand());
+            default: 
+                // Ignore invalid input commands
+                return Optional.empty();
+        }
     }
 }

@@ -8,9 +8,6 @@ public class Interface
         while (true) {
             String input = sc.next();
             
-            switch (input) {
-                case "uci": 
-            }
         }
     }
 }
