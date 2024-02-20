@@ -2,7 +2,7 @@ import java.util.*;
 
 public class Interface
 {
-    public Interface()
+    Interface()
     {
         IBoard board = new Board();
         CommandParser parser = new CommandParser();
