@@ -4,7 +4,7 @@ public class UciSetOptionCommand<TOptionValue> extends UciCommand
     private String _optionName;
     private TOptionValue _newValue;
 
-    public UciSetOptionCommand(Board board, String optionName, TOptionValue value)
+    public UciSetOptionCommand(IBoard board, String optionName, TOptionValue value)
     {
         super(board);
         _optionName = optionName;

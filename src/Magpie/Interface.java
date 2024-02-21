@@ -4,7 +4,7 @@ public class Interface
 {
     Interface()
     {
-        IBoard board = new Board();
+        IBoard board = new OOBoard();
         CommandParser parser = new CommandParser();
         Scanner sc = new Scanner(System.in);
         while (true) {
