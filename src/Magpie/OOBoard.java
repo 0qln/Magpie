@@ -1,4 +1,4 @@
-public class OOBoard implements IBoard<Move>
+public class OOBoard implements IBoard<OOMove>
 {
     public OOBoard()
     {
@@ -6,7 +6,7 @@ public class OOBoard implements IBoard<Move>
     }
 
     @Override
-    public void makeMove(Move move) {
+    public void makeMove(OOMove move) {
         // TODO Auto-generated method stub
         throw new UnsupportedOperationException("Unimplemented method 'makeMove'");
     }

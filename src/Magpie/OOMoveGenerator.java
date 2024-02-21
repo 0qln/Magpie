@@ -1,10 +1,10 @@
 import java.util.ArrayList;
 
-public class MoveGenerator implements IMoveGenerator<Move>
+public class OOMoveGenerator implements IMoveGenerator<OOMove>
 {
 
     @Override
-    public ArrayList<Move> getPseudoLegalMoves(IBoard<Move> board) {
+    public ArrayList<OOMove> getPseudoLegalMoves(IBoard<OOMove> board) {
         // TODO Auto-generated method stub
         throw new UnsupportedOperationException("Unimplemented method 'getPseudoLegalMoves'");
     }
