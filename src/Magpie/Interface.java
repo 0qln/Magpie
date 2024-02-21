@@ -2,7 +2,7 @@ import java.util.*;
 
 public class Interface
 {
-    public Interface()
+    Interface()
     {
         IBoard board = new Board();
         CommandParser parser = new CommandParser();
@@ -12,7 +12,7 @@ public class Interface
             Optional<ICommandBuilder> commandBuilder = parser.parse(input);
             commandBuilder.ifPresent(
                 // UCI:: The engine must always be able to process input from stdin, even while thinking.
-                builder -> builder.BuildForBoard(board).run()
+                builder -> builder.buildForBoard(board).run()
             );
         }
     }
