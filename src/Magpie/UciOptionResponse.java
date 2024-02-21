@@ -6,7 +6,7 @@ public class UciOptionResponse extends UciResponse
 
     @Override
     protected void executeSend() {
-        for (IUciOption option : Config.Options) {
+        for (UciOption<?> option : Config.Options) {
             String varStr = "";
             for (int i = 0; i <= option.getVars().length; i++) {
                 varStr += " var " + option.getVars()[i];
@@ -17,7 +17,7 @@ public class UciOptionResponse extends UciResponse
                 " default " + option.getDefault() + 
                 " min " + option.getMin() + 
                 " max " + option.getMax() +
-                " var" + varStr);
+                varStr);
         }
     }
 }
