@@ -1,6 +1,6 @@
 import java.util.*;
 
-public interface IMoveGenerator
+public interface IMoveGenerator<TMove>
 {
-    // ArrayList<Move> getPseudoLegalMoves();
+    ArrayList<TMove> getPseudoLegalMoves(IBoard<TMove> board);
 }
