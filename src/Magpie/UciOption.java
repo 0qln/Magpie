@@ -38,8 +38,8 @@ public class UciOption<T> {
         return _max;
     }
 
-    public T[] getVars() {
-        return _vars.orElse(null);
+    public Optional<T[]> getVars() {
+        return _vars;
     }
 
     public void setValue(T value) {

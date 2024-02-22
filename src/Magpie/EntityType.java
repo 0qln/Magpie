@@ -1,4 +1,4 @@
 public enum EntityType
 {
-    Computer, Human
+    Computer, Human, Unknown
 }
