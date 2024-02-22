@@ -18,7 +18,7 @@ public class CommandParser
                             
         switch (getCommand(processedInput).orElse(EmptyCommand)) {
             case "uci":
-                return Optional.of((board) -> new UciUciCommand(board));
+                return Optional.of(board -> new UciUciCommand(board));
                 
             case "debug": 
                 if (args.length <= 0) {
@@ -28,22 +28,25 @@ public class CommandParser
                 if (!value.isPresent()) {
                     return UnexpectedToken;
                 }                    
-                return Optional.of((board) -> new UciDebugCommand(board, value.get()));
+                return Optional.of(board -> new UciDebugCommand(board, value.get()));
             
             case "quit": 
-                return Optional.of((board) -> new UciQuitCommand(board));
+                return Optional.of(board -> new UciQuitCommand(board));
                 
             case "position": 
                 if (args.length <= 0) {
                     return TokenUnderflow;
                 }
+                int movesidx = Utils.indexOf(args, e -> e.equals("moves"));
+                String[] moves = movesidx == -1 ? new String[0] : Arrays.copyOfRange(args, movesidx + 1, args.length);
                 if (args[0] == "startpos") {
-                    return Optional.of((board) ->  UciStartposCommand(board, ));
+                    return Optional.of(board ->  new UciStartposCommand(board, moves));
                 }
                 else if (args[0] == "fen") {
-                    return Optional.of(board -> UciFenCommand(board, ))
+                    String[] fen = Arrays.copyOfRange(args, 1, movesidx == -1 ? args.length : movesidx);
+                    return Optional.of(board -> new UciFenCommand(board, moves, fen));
                 }
-                return Optional.of((board) -> new UciPositionCommand(board));
+                else return TokenUnderflow;
                 
             default: 
             case EmptyCommand:    
