@@ -29,6 +29,21 @@ public class CommandParser
                     return UnexpectedToken;
                 }                    
                 return Optional.of((board) -> new UciDebugCommand(board, value.get()));
+            
+            case "quit": 
+                return Optional.of((board) -> new UciQuitCommand(board));
+                
+            case "position": 
+                if (args.length <= 0) {
+                    return TokenUnderflow;
+                }
+                if (args[0] == "startpos") {
+                    return Optional.of((board) ->  UciStartposCommand(board, ));
+                }
+                else if (args[0] == "fen") {
+                    return Optional.of(board -> UciFenCommand(board, ))
+                }
+                return Optional.of((board) -> new UciPositionCommand(board));
                 
             default: 
             case EmptyCommand:    
