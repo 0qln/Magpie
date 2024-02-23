@@ -2,6 +2,9 @@ package Interface;
 
 import java.util.*;
 
+import Misc.Utils;
+import Engine.Piece;
+
 public class CommandParser
 {
     public static final String EmptyCommand = "EmptyCommand";
@@ -55,7 +58,21 @@ public class CommandParser
                 
             case "print":
                 return Optional.of(board -> new Interface.Custom.PrintCommand(board));
-                
+
+            case "piece":
+                if (args.length <= 1) {
+                    return TokenUnderflow;
+                }
+                int square = Utils.toSquareIndex(args[1]);
+                switch (args[0]) {
+                    case "remove": return Optional.of(board -> new Interface.Custom.PieceRemoveCommand(board, square));
+                    case "get": return Optional.of(board -> new Interface.Custom.PieceGetCommand(board, square));
+                    case "add": 
+                        if (args.length <= 2) return TokenUnderflow;
+                        return Optional.of(board -> new Interface.Custom.PieceAddCommand(board, square, Piece.fromChar(args[2].charAt(0))));
+                    default: return UnexpectedToken;
+                }
+
             default: 
             case EmptyCommand:    
                 return Optional.empty();
