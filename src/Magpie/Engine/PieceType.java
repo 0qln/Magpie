@@ -14,8 +14,7 @@ public class PieceType
     public static final int Queen = 4;
     public static final int King = 5;
 
-    public static final Map<Character, Integer> Map = 
-        new HashMap<>(7)
+    public static final Map<Character, Integer> CMap = new HashMap<>(7)
     {{
         put('.', None);
         put('p', Pawn);
@@ -24,5 +23,16 @@ public class PieceType
         put('r', Rook);
         put('q', Queen);
         put('k', King);
+    }};
+
+    public static final Map<Integer, Character> PMap = new HashMap<>(7)
+    {{
+        put(None, '.');
+        put(Pawn, 'p');
+        put(Knight, 'n');
+        put(Bishop, 'b');
+        put(Rook, 'r');
+        put(Queen, 'q');
+        put(King, 'k');
     }};
 }
