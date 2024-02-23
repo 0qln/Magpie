@@ -19,6 +19,9 @@ public class CommandParser
         switch (getCommand(processedInput).orElse(EmptyCommand)) {
             case "uci":
                 return Optional.of(board -> new UciUciCommand(board));
+
+            case "isready":
+                return Optional.of(board -> new UciIsreadyCommand(board));
                 
             case "debug": 
                 if (args.length <= 0) {
