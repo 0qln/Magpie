@@ -1,5 +1,7 @@
 package Interface.UCI;
 
+import Interface.Custom.PrintCommand;
+
 public class StartposCommand extends PositionCommand
 {
     public StartposCommand(Engine.IBoard board, String[] moves) {
