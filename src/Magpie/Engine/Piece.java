@@ -20,7 +20,25 @@ public final class Piece
 
     public static int parse(char charNotation) {
         int color = Character.isUpperCase(charNotation) ? Color.Black : Color.White;
-        int type = PieceType.Map.get(Character.toLowerCase(charNotation));
+        int type = PieceType.CMap.get(Character.toLowerCase(charNotation));
         return type << 1 | color;
+    }
+
+    public static int getType(int piece) {
+        return piece >> 1;
+    }
+
+    public static int getColor(int piece) {
+        return piece & 0x1;
+    }
+
+    public static char toChar(int piece) {
+        if (piece == None) 
+            return '.';
+        char c = PieceType.PMap.get(getType(piece));
+        if (getColor(piece) == Color.Black) {
+            c = Character.toUpperCase(c);
+        }
+        return c;
     }
 }
