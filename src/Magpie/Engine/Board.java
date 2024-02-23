@@ -24,6 +24,7 @@ public class Board implements IBoard<Short>
     
     public Board()
     {
+        Arrays.fill(_pieces, Piece.None);
     }
     
 

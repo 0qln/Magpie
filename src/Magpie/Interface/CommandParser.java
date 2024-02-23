@@ -53,6 +53,9 @@ public class CommandParser
                 }
                 else return TokenUnderflow;
                 
+            case "print":
+                return Optional.of(board -> new Interface.Custom.PrintCommand(board));
+                
             default: 
             case EmptyCommand:    
                 return Optional.empty();
