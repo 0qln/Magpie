@@ -4,7 +4,7 @@ import java.util.*;
 
 public class Main
 {
-    Main()
+    public static void main(String[] args)
     {
         Engine.IBoard board = new Engine.Board();
         CommandParser parser = new CommandParser();
