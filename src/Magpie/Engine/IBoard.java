@@ -7,7 +7,8 @@ public interface IBoard<TMove>
     public void makeMove(TMove move);
     public void undoMove(TMove move);
 
-    public void setPiece(int square, int piece);
+    public void addPiece(int square, int piece);
+    public int getPiece(int square);
     public void setTurn(int color);
     public void setCastlingRights(int pieceType, int color, boolean active);
     public void setEnpassant(int square);
