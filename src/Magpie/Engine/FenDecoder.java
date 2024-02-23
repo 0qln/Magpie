@@ -24,7 +24,7 @@ public class FenDecoder
 
                 // evaluate
                 int idx = squareIdx ^ 7;
-                board.setPiece(idx, piece);
+                board.addPiece(idx, piece);
 
                 squareIdx--;
             }
