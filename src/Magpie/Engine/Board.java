@@ -84,7 +84,28 @@ public class Board implements IBoard<Short>
     }
 
     public void removePiece(int square) {
-        
+        int Piece = getPiece(square);
+        removePiece(square, Piece);
+    }
+
+    public void removePiece(int square, int piece) {
+        if (piece == Piece.None) {
+            return;
+        }
+
+        int type = Piece.getType(piece), color = Piece.getColor(piece);
+
+        // tBitboards
+        Utils.deactivateBit(_tBitboards, type, square);
+
+        // cBitboards
+        Utils.deactivateBit(_cBitboards, color, square);
+
+        // pieces
+        _pieces[square] = Piece.None;
+
+        // piece count
+        _pieceCount[piece]--;
     }
 
 
