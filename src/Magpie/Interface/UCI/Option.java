@@ -1,8 +1,9 @@
-package UCI;
+package Interface.UCI;
 
 import java.util.Optional;
+import Interface.*;
 
-public class UciOption<T> {
+public class Option<T> {
     private final String _name;
     private final OptionType _type;
     private final Optional<T> _min, _max;
@@ -10,7 +11,7 @@ public class UciOption<T> {
     private final T _default;
     private T _value;
 
-    public UciOption(String name, OptionType type, T defaultVal, Optional<T> min, Optional<T> max, Optional<T[]> vars) {
+    public Option(String name, OptionType type, T defaultVal, Optional<T> min, Optional<T> max, Optional<T[]> vars) {
         _name = name;
         _type = type;
         _min = min;

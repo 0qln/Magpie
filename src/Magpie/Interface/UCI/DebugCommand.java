@@ -1,6 +1,7 @@
-package UCI;
+package Interface.UCI;
 
 import java.util.*;
+import Interface.Config;
 
 /* UCI::
 debug [ on | off ]
@@ -9,12 +10,12 @@ debug [ on | off ]
     to help debugging, e.g. the commands that the engine has received etc.
     This mode should be switched off by default and this command can be sent
     any time, also when the engine is thinking.
- */
-public class UciDebugCommand extends UciCommand
+*/
+public class DebugCommand extends Command
 {
     private boolean _on;
     
-    public UciDebugCommand(Engine.IBoard board, boolean on)
+    public DebugCommand(Engine.IBoard board, boolean on)
     {
         super(board);
         _on = on;

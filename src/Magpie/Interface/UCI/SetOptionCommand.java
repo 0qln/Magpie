@@ -1,11 +1,13 @@
-package UCI;
+package Interface.UCI;
 
-public class UciSetOptionCommand<TOptionValue> extends UciCommand
+import Interface.*;
+
+public class SetOptionCommand<TOptionValue> extends Command
 {
     private String _optionName;
     private TOptionValue _newValue;
 
-    public UciSetOptionCommand(Engine.IBoard board, String optionName, TOptionValue value)
+    public SetOptionCommand(Engine.IBoard board, String optionName, TOptionValue value)
     {
         super(board);
         _optionName = optionName;

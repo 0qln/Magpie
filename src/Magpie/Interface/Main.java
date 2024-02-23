@@ -1,10 +1,10 @@
-package UCI;
+package Interface;
 
 import java.util.*;
 
-public class Interface
+public class Main
 {
-    Interface()
+    Main()
     {
         Engine.IBoard board = new Engine.Board();
         CommandParser parser = new CommandParser();

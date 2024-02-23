@@ -1,4 +1,4 @@
-package UCI;
+package Interface;
 
 import java.util.*;
 
@@ -20,23 +20,23 @@ public class CommandParser
                             
         switch (getCommand(processedInput).orElse(EmptyCommand)) {
             case "uci":
-                return Optional.of(board -> new UciUciCommand(board));
+                return Optional.of(board -> new Interface.UCI.UciCommand(board));
 
             case "isready":
-                return Optional.of(board -> new UciIsreadyCommand(board));
+                return Optional.of(board -> new Interface.UCI.IsreadyCommand(board));
                 
             case "debug": 
                 if (args.length <= 0) {
                     return TokenUnderflow;
                 }                    
-                Optional<Boolean> value = UciDebugCommand.parseValue(args[0]);
+                Optional<Boolean> value = Interface.UCI.DebugCommand.parseValue(args[0]);
                 if (!value.isPresent()) {
                     return UnexpectedToken;
                 }                    
-                return Optional.of(board -> new UciDebugCommand(board, value.get()));
+                return Optional.of(board -> new Interface.UCI.DebugCommand(board, value.get()));
             
             case "quit": 
-                return Optional.of(board -> new UciQuitCommand(board));
+                return Optional.of(board -> new Interface.UCI.QuitCommand(board));
                 
             case "position": 
                 if (args.length <= 0) {
@@ -45,11 +45,11 @@ public class CommandParser
                 int movesidx = Misc.Utils.indexOf(args, e -> e.equals("moves"));
                 String[] moves = movesidx == -1 ? new String[0] : Arrays.copyOfRange(args, movesidx + 1, args.length);
                 if (args[0] == "startpos") {
-                    return Optional.of(board ->  new UciStartposCommand(board, moves));
+                    return Optional.of(board ->  new Interface.UCI.StartposCommand(board, moves));
                 }
                 else if (args[0] == "fen") {
                     String[] fen = Arrays.copyOfRange(args, 1, movesidx == -1 ? args.length : movesidx);
-                    return Optional.of(board -> new UciFenCommand(board, moves, fen));
+                    return Optional.of(board -> new Interface.UCI.FenCommand(board, moves, fen));
                 }
                 else return TokenUnderflow;
                 

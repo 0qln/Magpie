@@ -1,4 +1,4 @@
-package UCI;
+package Interface;
 
 public interface ICommandBuilder<TCommand>
 {

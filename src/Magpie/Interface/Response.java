@@ -1,8 +1,8 @@
-package UCI;
+package Interface;
 
 import java.util.concurrent.locks.*;
 
-public abstract class UciResponse implements IResponse
+public abstract class Response implements IResponse
 {
     private static Lock _lock = new ReentrantLock();
     

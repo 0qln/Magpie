@@ -1,8 +1,8 @@
-package UCI;
+package Interface.UCI;
 
-public class UciStartposCommand extends UciPositionCommand
+public class StartposCommand extends PositionCommand
 {
-    public UciStartposCommand(Engine.IBoard board, String[] moves) {
+    public StartposCommand(Engine.IBoard board, String[] moves) {
         super(board, moves);
     }
 

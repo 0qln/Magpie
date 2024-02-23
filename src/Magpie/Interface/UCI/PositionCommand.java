@@ -1,10 +1,10 @@
-package UCI;
+package Interface.UCI;
 
-public abstract class UciPositionCommand extends UciCommand
+public abstract class PositionCommand extends Command
 {
     private String[] _moves;
     
-    public UciPositionCommand(Engine.IBoard board, String[] moves) {
+    public PositionCommand(Engine.IBoard board, String[] moves) {
         super(board);
         _moves = moves;
     }

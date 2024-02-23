@@ -1,11 +1,13 @@
-package UCI;
+package Interface.UCI;
 
-public class UciIdResponse extends UciResponse
+import Interface.Response;
+
+public class IdResponse extends Response
 {
     private String _name;
     private String _author;
     
-    public UciIdResponse(String name, String author)
+    public IdResponse(String name, String author)
     {
         _name = name;
         _author = author;

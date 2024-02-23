@@ -1,6 +1,8 @@
-package UCI;
+package Interface.UCI;
 
-public class UciReadyokResponse extends UciResponse
+import Interface.Response;
+
+public class ReadyokResponse extends Response
 {
     @Override
     protected void executeSend() {

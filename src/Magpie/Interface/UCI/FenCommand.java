@@ -1,10 +1,10 @@
-package UCI;
+package Interface.UCI;
 
-public class UciFenCommand extends UciPositionCommand
+public class FenCommand extends PositionCommand
 {
     private String[] _fen;
 
-    public UciFenCommand(Engine.IBoard board, String[] moves, String[] fen) {
+    public FenCommand(Engine.IBoard board, String[] moves, String[] fen) {
         super(board, moves);
         _fen = fen;
     }

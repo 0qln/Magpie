@@ -1,16 +1,17 @@
-package UCI;
+package Interface.UCI;
 
-import java.util.*;
+import Interface.Response;
+import Interface.Config;
 
-public class UciOptionResponse extends UciResponse
+public class OptionResponse extends Response
 {
-    public UciOptionResponse()
+    public OptionResponse()
     {
     }
 
     @Override
     protected void executeSend() {
-        for (UciOption<?> option : Config.Options) {
+        for (Option<?> option : Config.UCI_Options) {
             String varStr = "";
             if (option.getVars().isPresent()) { 
                 for (int i = 0; i <= option.getVars().get().length; i++) {

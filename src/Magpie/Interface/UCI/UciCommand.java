@@ -1,4 +1,4 @@
-package UCI;
+package Interface.UCI;
 
 /*
 uci
@@ -10,16 +10,16 @@ uci
     After that the engine should send "uciok" to acknowledge the uci mode.
     If no uciok is sent within a certain time period, the engine task will be killed by the GUI.
 */
-public class UciUciCommand extends UciCommand
+public class UciCommand extends Command
 {
-    public UciUciCommand(Engine.IBoard board)
+    public UciCommand(Engine.IBoard board)
     {
         super(board);
     }
     
     public void run() {
-        new UciIdResponse("Magpie", "Lucia Ocean Bartschick, Linus Nagel").send();
-        new UciOptionResponse().send();
-        new UciUciokResponse().send();
+        new IdResponse("Magpie", "Lucia Ocean Bartschick, Linus Nagel").send();
+        new OptionResponse().send();
+        new UciokResponse().send();
     }    
 }
