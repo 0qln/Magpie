@@ -41,4 +41,10 @@ public final class Piece
         }
         return c;
     }
+
+    public static int fromChar(char piece) {
+        int color = Character.isUpperCase(piece) ? Color.Black : Color.White;
+        int type = PieceType.CMap.get(Character.toLowerCase(piece));
+        return (type << 1) | color;
+    }
 }

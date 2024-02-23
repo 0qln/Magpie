@@ -134,7 +134,7 @@ public class Board implements IBoard<Short>
         for (int rank = 7; rank >= 0; rank--) {
             result += (rank + 1) + "  ";
             for (int file = 0; file <= 7; file++) {
-                int square = Utils.sqaureIndex0(rank, file);
+                int square = Misc.Utils.sqaureIndex0(rank, file);
                 int piece = getPiece(square);
                 char c = Piece.toChar(piece);
                 result += c + " ";

@@ -45,7 +45,7 @@ public class FenDecoder
 
             // en passant
             if (!tokens[3].contains("-")) {
-                board.setEnpassant(Utils.toSquareIndex(tokens[3]));
+                board.setEnpassant(Misc.Utils.toSquareIndex(tokens[3]));
             }
 
             // plys for 50 move rule
