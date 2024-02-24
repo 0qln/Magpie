@@ -1,8 +1,10 @@
+
 package Interface;
 
 import java.util.*;
-
+import java.util.logging.*;
 import Misc.Utils;
+import Misc.LoggerConfigurator;
 import Engine.Piece;
 
 public class CommandParser
@@ -10,9 +12,12 @@ public class CommandParser
     public static final String EmptyCommand = "EmptyCommand";
     public static final Optional<ICommandBuilder> UnexpectedToken = Optional.empty();
     public static final Optional<ICommandBuilder> TokenUnderflow = Optional.empty();
+    private Logger logger = LoggerConfigurator.configureLogger(CommandParser.class, "log.txt");
     
-    
+
     public Optional<ICommandBuilder> parse(String input) {
+        logger.info("Parsing input: " + input);
+        
         String[] processedInput = getTokens(input);
         String[] args = getArguments(processedInput);
         
@@ -23,12 +28,15 @@ public class CommandParser
                             
         switch (getCommand(processedInput).orElse(EmptyCommand)) {
             case "uci":
+                logger.info("Parsing UCI command.");
                 return Optional.of(board -> new Interface.UCI.UciCommand(board));
 
             case "isready":
+                logger.info("Parsing Isready command.");
                 return Optional.of(board -> new Interface.UCI.IsreadyCommand(board));
                 
             case "debug": 
+                logger.info("Parsing Debug command.");
                 if (args.length <= 0) {
                     return TokenUnderflow;
                 }                    
@@ -39,9 +47,11 @@ public class CommandParser
                 return Optional.of(board -> new Interface.UCI.DebugCommand(board, value.get()));
             
             case "quit": 
+                logger.info("Parsing Quit command.");
                 return Optional.of(board -> new Interface.UCI.QuitCommand(board));
                 
             case "position": 
+                logger.info("Parsing Position command.");
                 if (args.length <= 0) {
                     return TokenUnderflow;
                 }
@@ -57,9 +67,11 @@ public class CommandParser
                 else return TokenUnderflow;
                 
             case "print":
+                logger.info("Parsing Print command.");
                 return Optional.of(board -> new Interface.Custom.PrintCommand(board));
 
             case "piece":
+                logger.info("Parsing Piece command.");
                 if (args.length <= 1) {
                     return TokenUnderflow;
                 }
@@ -75,11 +87,13 @@ public class CommandParser
 
             default: 
             case EmptyCommand:    
+                logger.warning("Empty or unknown command.");
                 return Optional.empty();
         }
     }
     
     private String[] getTokens(String input) {
+        logger.info("Getting tokens from input: " + input);
         // UCI:: arbitrary white space between tokens is allowed
         //       Example: "debug on\n" and  "   debug     on  \n" and "\t  debug \t  \t\ton\t  \n"
         //       all set the debug mode of the engine on.
@@ -99,10 +113,13 @@ public class CommandParser
     }
     
     private Optional<String> getCommand(String[] processedInput) {
+        logger.info("Getting command from processed input.");
         return (processedInput.length > 0) ? Optional.of(processedInput[0]) : Optional.empty();
     }
     
     private String[] getArguments(String[] processedInput) {
+        logger.info("Getting arguments from processed input.");
         return Arrays.copyOfRange(processedInput, 1, processedInput.length);
     }
 }
+
