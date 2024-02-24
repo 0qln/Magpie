@@ -10,8 +10,9 @@ public class Option<T> {
     private final Optional<T[]> _vars;
     private final T _default;
     private T _value;
+    private IOptionValueParser<T> _valueParser;
 
-    public Option(String name, OptionType type, T defaultVal, Optional<T> min, Optional<T> max, Optional<T[]> vars) {
+    public Option(String name, OptionType type, T defaultVal, Optional<T> min, Optional<T> max, Optional<T[]> vars, IOptionValueParser<T> valueParser) {
         _name = name;
         _type = type;
         _min = min;
@@ -19,6 +20,7 @@ public class Option<T> {
         _default = defaultVal;
         _value = defaultVal;
         _vars = vars;
+        _valueParser = valueParser;
     }
 
     public String getName() {
@@ -51,5 +53,9 @@ public class Option<T> {
     
     public T getValue() {
         return _value;
+    }
+
+    public IOptionValueParser<T> getValueParser() {
+        return _valueParser;
     }
 }
