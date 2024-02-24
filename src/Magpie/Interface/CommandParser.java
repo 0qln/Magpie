@@ -12,9 +12,10 @@ public class CommandParser
     public static final String EmptyCommand = "EmptyCommand";
     public static final Optional<ICommandBuilder> UnexpectedToken = Optional.empty();
     public static final Optional<ICommandBuilder> TokenUnderflow = Optional.empty();
-    private Logger logger = LoggerConfigurator.configureLogger(CommandParser.class, "log.txt");
+    private Logger logger = LoggerConfigurator.configureLogger(CommandParser.class);
     
 
+    @SuppressWarnings("unchecked")
     public Optional<ICommandBuilder> parse(String input) {
         logger.info("Parsing input: " + input);
         
@@ -30,6 +31,19 @@ public class CommandParser
             case "uci":
                 logger.info("Parsing UCI command.");
                 return Optional.of(board -> new Interface.UCI.UciCommand(board));
+
+            case "setoption":
+                logger.info("Parsing Setoption command.");
+                if (args.length <= 3) {
+                    return TokenUnderflow;
+                }
+                String name = args[1];
+                Interface.UCI.Option option = Config.getOption(name).get();               
+                Optional valueOpt = option.getValueParser().parse(Arrays.copyOfRange(args, 3, args.length));
+                if (valueOpt.isPresent()) {
+                    return Optional.of(board -> new Interface.UCI.SetOptionCommand(board, name, valueOpt.get()));
+                }
+                return Optional.empty(); 
 
             case "isready":
                 logger.info("Parsing Isready command.");
