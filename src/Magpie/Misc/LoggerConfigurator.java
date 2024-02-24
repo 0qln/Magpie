@@ -4,7 +4,8 @@ import java.io.IOException;
 import java.util.logging.*;
 
 public class LoggerConfigurator {
-    public static Logger configureLogger(Class<?> clazz, String logFileName) {
+    public static Logger configureLogger(Class<?> clazz) {
+        String logFileName = clazz + "_log.txt";
         Logger logger = Logger.getLogger(clazz.getName());
         try {
             Logger rootLogger = Logger.getLogger("");
