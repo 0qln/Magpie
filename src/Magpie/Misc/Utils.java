@@ -15,7 +15,7 @@ public final class Utils
 
     public static String fromSquareIndex(int square) {
         char file = (char)((square % 8) + 'a');
-        char rank = (char)((square / 8) + '0');
+        char rank = (char)((square / 8) + '1');
         return String.valueOf(new char[] { file, rank } );
     }
 

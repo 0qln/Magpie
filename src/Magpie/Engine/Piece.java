@@ -2,7 +2,8 @@ package Engine;
 
 public final class Piece
 {
-    public static final int None = -1;
+    public static final int WNone = 0;
+    public static final int BNone = 1;
 
     public static final int BlackPawn   = PieceType.Pawn   << 1 | Color.Black;
     public static final int BlackKnight = PieceType.Knight << 1 | Color.Black;
@@ -33,8 +34,6 @@ public final class Piece
     }
 
     public static char toChar(int piece) {
-        if (piece == None) 
-            return '.';
         char c = PieceType.PMap.get(getType(piece));
         if (getColor(piece) == Color.Black) {
             c = Character.toUpperCase(c);

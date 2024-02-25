@@ -83,12 +83,17 @@ public class CommandParser
                     return Optional.empty();
                 }
                 int square = Utils.toSquareIndex(args[1]);
+                logger.info("Square: " + square);
                 switch (args[0]) {
                     case "remove": return Optional.of(board -> new Interface.Custom.PieceRemoveCommand(board, square));
                     case "get": return Optional.of(board -> new Interface.Custom.PieceGetCommand(board, square));
                     case "add": 
-                        if (args.length <= 2) return Optional.empty();
-                        return Optional.of(board -> new Interface.Custom.PieceAddCommand(board, square, Piece.fromChar(args[2].charAt(0))));
+                        if (args.length <= 2) {
+                            return Optional.empty();
+                        }
+                        int piece = Piece.fromChar(args[2].charAt(0));
+                        logger.info("Piece: " + piece);
+                        return Optional.of(board -> new Interface.Custom.PieceAddCommand(board, square, piece));
                     default: return Optional.empty();
                 }
 

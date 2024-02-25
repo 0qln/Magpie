@@ -5,14 +5,13 @@ import java.util.Map;
 
 public class PieceType
 {
-    public static final int None = -1;    
-
-    public static final int Pawn = 0;
-    public static final int Knight = 1;
-    public static final int Bishop = 2;
-    public static final int Rook = 3;
-    public static final int Queen = 4;
-    public static final int King = 5;
+    public static final int None = 0;    
+    public static final int Pawn = 1;
+    public static final int Knight = 2;
+    public static final int Bishop = 3;
+    public static final int Rook = 4;
+    public static final int Queen = 5;
+    public static final int King = 6;
 
     public static final Map<Character, Integer> CMap = new HashMap<>(7)
     {{

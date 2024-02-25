@@ -1,6 +1,7 @@
 package Interface.Custom;
 
 import Engine.IBoard;
+import Engine.Piece;
 
 public class PieceGetCommand extends PieceCommand {
 
@@ -9,6 +10,6 @@ public class PieceGetCommand extends PieceCommand {
     }
     
     public void run() {
-        
+        new SquareInfoResponse(_square, Character.toString(Piece.toChar(_board.getPiece(_square)))).send();
     }
 }

@@ -24,7 +24,6 @@ public class Board implements IBoard
     
     public Board()
     {
-        Arrays.fill(_pieces, Piece.None);
     }
     
 
@@ -63,7 +62,7 @@ public class Board implements IBoard
 
     @Override
     public void addPiece(int square, int piece) {
-        assert(piece != Piece.None);
+        assert(piece != Piece.WNone && piece != Piece.BNone);
 
         int type = Piece.getType(piece), color = Piece.getColor(piece);
         int prevPiece = getPiece(square);
@@ -89,10 +88,6 @@ public class Board implements IBoard
     }
 
     public void removePiece(int square, int piece) {
-        if (piece == Piece.None) {
-            return;
-        }
-
         int type = Piece.getType(piece), color = Piece.getColor(piece);
 
         // tBitboards
@@ -102,7 +97,7 @@ public class Board implements IBoard
         Utils.deactivateBit(_cBitboards, color, square);
 
         // pieces
-        _pieces[square] = Piece.None;
+        _pieces[square] = Piece.WNone;
 
         // piece count
         _pieceCount[piece]--;
