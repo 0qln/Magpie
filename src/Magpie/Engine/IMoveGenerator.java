@@ -1,8 +1,6 @@
 package Engine;
 
-import java.util.*;
-
-public interface IMoveGenerator<TMove>
+public interface IMoveGenerator
 {
-    ArrayList<TMove> getPseudoLegalMoves(IBoard<TMove> board, int square);
+    short[] getPseudoLegalMoves(IBoard board, int square);
 }

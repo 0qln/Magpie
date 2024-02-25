@@ -1,6 +1,7 @@
 package Interface;
 
-public interface ICommandBuilder<TCommand>
+@FunctionalInterface
+public interface ICommandBuilder
 {
     ICommand buildForBoard(Engine.IBoard board);
 }

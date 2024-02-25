@@ -9,7 +9,6 @@ public abstract class PositionCommand extends Command
         _moves = moves;
     }
     
-    @SuppressWarnings("unchecked")
     public void run() {
         runExtended();
         for (String move : _moves) {

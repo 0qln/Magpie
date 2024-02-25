@@ -2,7 +2,7 @@ package Engine;
 
 import java.util.*;
 
-public class Board implements IBoard<Short>
+public class Board implements IBoard
 {
     // Bitboard array to store the color of the pieces
     private long[] _cBitboards = new long[2];
@@ -29,19 +29,19 @@ public class Board implements IBoard<Short>
     
 
     @Override
-    public void makeMove(Short move) {
+    public void makeMove(short move) {
         BoardState bs = new BoardState();
         _stateStack.push(bs);
     }
     
     @Override
-    public void undoMove(Short move) {
+    public void undoMove(short move) {
         _stateStack.pop();
     }
 
 
     @Override
-    public IMoveDecoder<Short> getMoveDecoder() {
+    public IMoveDecoder getMoveDecoder() {
         // TODO Auto-generated method stub
         return null;
     }

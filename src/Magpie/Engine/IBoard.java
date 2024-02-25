@@ -1,11 +1,11 @@
 package Engine;
 
-public interface IBoard<TMove>
+public interface IBoard
 {
-    public IMoveDecoder<TMove> getMoveDecoder();
+    public IMoveDecoder getMoveDecoder();
 
-    public void makeMove(TMove move);
-    public void undoMove(TMove move);
+    public void makeMove(short move);
+    public void undoMove(short move);
 
     public void addPiece(int square, int piece);
     public int getPiece(int square);

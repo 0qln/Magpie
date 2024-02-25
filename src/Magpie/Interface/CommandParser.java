@@ -15,7 +15,6 @@ public class CommandParser
     private Logger logger = LoggerConfigurator.configureLogger(CommandParser.class);
     
 
-    @SuppressWarnings("unchecked")
     public Optional<ICommandBuilder> parse(String input) {
         logger.info("Parsing input: " + input);
         
