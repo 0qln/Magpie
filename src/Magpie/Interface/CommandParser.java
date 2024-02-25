@@ -37,10 +37,10 @@ public class CommandParser
                     return TokenUnderflow;
                 }
                 String name = args[1];
-                Interface.UCI.Option option = Config.getOption(name).get();               
-                Optional valueOpt = option.getValueParser().parse(Arrays.copyOfRange(args, 3, args.length));
+                Interface.UCI.Option<?> option = Config.getOption(name).get();               
+                Optional<?> valueOpt = option.getValueParser().parse(Arrays.copyOfRange(args, 3, args.length));
                 if (valueOpt.isPresent()) {
-                    return Optional.of(board -> new Interface.UCI.SetOptionCommand(board, name, valueOpt.get()));
+                    return Optional.of(board -> new Interface.UCI.SetOptionCommand<Object>(board, name, valueOpt.get()));
                 }
                 return Optional.empty(); 
 

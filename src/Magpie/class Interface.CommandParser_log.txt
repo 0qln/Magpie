@@ -1,0 +1,380 @@
+Feb 24, 2024 8:51:50 PM Interface.CommandParser parse
+INFO: Parsing input: uci
+Feb 24, 2024 8:51:50 PM Interface.CommandParser getTokens
+INFO: Getting tokens from input: uci
+Feb 24, 2024 8:51:50 PM Interface.CommandParser getArguments
+INFO: Getting arguments from processed input.
+Feb 24, 2024 8:51:50 PM Interface.CommandParser getCommand
+INFO: Getting command from processed input.
+Feb 24, 2024 8:51:50 PM Interface.CommandParser parse
+INFO: Parsing UCI command.
+Feb 24, 2024 8:53:53 PM Interface.CommandParser parse
+INFO: Parsing input: setoption
+Feb 24, 2024 8:53:53 PM Interface.CommandParser getTokens
+INFO: Getting tokens from input: setoption
+Feb 24, 2024 8:53:53 PM Interface.CommandParser getArguments
+INFO: Getting arguments from processed input.
+Feb 24, 2024 8:53:53 PM Interface.CommandParser getCommand
+INFO: Getting command from processed input.
+Feb 24, 2024 8:53:53 PM Interface.CommandParser parse
+WARNING: Empty or unknown command.
+Feb 24, 2024 8:53:53 PM Interface.CommandParser parse
+INFO: Parsing input: name
+Feb 24, 2024 8:53:53 PM Interface.CommandParser getTokens
+INFO: Getting tokens from input: name
+Feb 24, 2024 8:53:53 PM Interface.CommandParser getArguments
+INFO: Getting arguments from processed input.
+Feb 24, 2024 8:53:53 PM Interface.CommandParser getCommand
+INFO: Getting command from processed input.
+Feb 24, 2024 8:53:53 PM Interface.CommandParser parse
+WARNING: Empty or unknown command.
+Feb 24, 2024 8:53:53 PM Interface.CommandParser parse
+INFO: Parsing input: UCI_Opponent
+Feb 24, 2024 8:53:53 PM Interface.CommandParser getTokens
+INFO: Getting tokens from input: UCI_Opponent
+Feb 24, 2024 8:53:53 PM Interface.CommandParser getArguments
+INFO: Getting arguments from processed input.
+Feb 24, 2024 8:53:53 PM Interface.CommandParser getCommand
+INFO: Getting command from processed input.
+Feb 24, 2024 8:53:53 PM Interface.CommandParser parse
+WARNING: Empty or unknown command.
+Feb 24, 2024 8:53:53 PM Interface.CommandParser parse
+INFO: Parsing input: value
+Feb 24, 2024 8:53:53 PM Interface.CommandParser getTokens
+INFO: Getting tokens from input: value
+Feb 24, 2024 8:53:53 PM Interface.CommandParser getArguments
+INFO: Getting arguments from processed input.
+Feb 24, 2024 8:53:53 PM Interface.CommandParser getCommand
+INFO: Getting command from processed input.
+Feb 24, 2024 8:53:53 PM Interface.CommandParser parse
+WARNING: Empty or unknown command.
+Feb 24, 2024 8:53:53 PM Interface.CommandParser parse
+INFO: Parsing input: GM
+Feb 24, 2024 8:53:53 PM Interface.CommandParser getTokens
+INFO: Getting tokens from input: GM
+Feb 24, 2024 8:53:53 PM Interface.CommandParser getArguments
+INFO: Getting arguments from processed input.
+Feb 24, 2024 8:53:53 PM Interface.CommandParser getCommand
+INFO: Getting command from processed input.
+Feb 24, 2024 8:53:53 PM Interface.CommandParser parse
+WARNING: Empty or unknown command.
+Feb 24, 2024 8:53:53 PM Interface.CommandParser parse
+INFO: Parsing input: 2800
+Feb 24, 2024 8:53:53 PM Interface.CommandParser getTokens
+INFO: Getting tokens from input: 2800
+Feb 24, 2024 8:53:53 PM Interface.CommandParser getArguments
+INFO: Getting arguments from processed input.
+Feb 24, 2024 8:53:53 PM Interface.CommandParser getCommand
+INFO: Getting command from processed input.
+Feb 24, 2024 8:53:53 PM Interface.CommandParser parse
+WARNING: Empty or unknown command.
+Feb 24, 2024 8:53:53 PM Interface.CommandParser parse
+INFO: Parsing input: human
+Feb 24, 2024 8:53:53 PM Interface.CommandParser getTokens
+INFO: Getting tokens from input: human
+Feb 24, 2024 8:53:53 PM Interface.CommandParser getArguments
+INFO: Getting arguments from processed input.
+Feb 24, 2024 8:53:53 PM Interface.CommandParser getCommand
+INFO: Getting command from processed input.
+Feb 24, 2024 8:53:53 PM Interface.CommandParser parse
+WARNING: Empty or unknown command.
+Feb 24, 2024 8:53:53 PM Interface.CommandParser parse
+INFO: Parsing input: Gary
+Feb 24, 2024 8:53:53 PM Interface.CommandParser getTokens
+INFO: Getting tokens from input: Gary
+Feb 24, 2024 8:53:53 PM Interface.CommandParser getArguments
+INFO: Getting arguments from processed input.
+Feb 24, 2024 8:53:53 PM Interface.CommandParser getCommand
+INFO: Getting command from processed input.
+Feb 24, 2024 8:53:53 PM Interface.CommandParser parse
+WARNING: Empty or unknown command.
+Feb 24, 2024 8:53:53 PM Interface.CommandParser parse
+INFO: Parsing input: Kasparov
+Feb 24, 2024 8:53:53 PM Interface.CommandParser getTokens
+INFO: Getting tokens from input: Kasparov
+Feb 24, 2024 8:53:53 PM Interface.CommandParser getArguments
+INFO: Getting arguments from processed input.
+Feb 24, 2024 8:53:53 PM Interface.CommandParser getCommand
+INFO: Getting command from processed input.
+Feb 24, 2024 8:53:53 PM Interface.CommandParser parse
+WARNING: Empty or unknown command.
+Feb 24, 2024 9:25:07 PM Interface.CommandParser parse
+INFO: Parsing input: quit
+Feb 24, 2024 9:25:07 PM Interface.CommandParser getTokens
+INFO: Getting tokens from input: quit
+Feb 24, 2024 9:25:07 PM Interface.CommandParser getArguments
+INFO: Getting arguments from processed input.
+Feb 24, 2024 9:25:07 PM Interface.CommandParser getCommand
+INFO: Getting command from processed input.
+Feb 24, 2024 9:25:07 PM Interface.CommandParser parse
+INFO: Parsing Quit command.
+Feb 24, 2024 9:25:49 PM Interface.CommandParser parse
+INFO: Parsing input: quit
+Feb 24, 2024 9:25:49 PM Interface.CommandParser getTokens
+INFO: Getting tokens from input: quit
+Feb 24, 2024 9:25:49 PM Interface.CommandParser getArguments
+INFO: Getting arguments from processed input.
+Feb 24, 2024 9:25:49 PM Interface.CommandParser getCommand
+INFO: Getting command from processed input.
+Feb 24, 2024 9:25:49 PM Interface.CommandParser parse
+INFO: Parsing Quit command.
+Feb 24, 2024 9:45:02 PM Interface.CommandParser parse
+INFO: Parsing input: setoption
+Feb 24, 2024 9:45:02 PM Interface.CommandParser getTokens
+INFO: Getting tokens from input: setoption
+Feb 24, 2024 9:45:02 PM Interface.CommandParser getArguments
+INFO: Getting arguments from processed input.
+Feb 24, 2024 9:45:02 PM Interface.CommandParser getCommand
+INFO: Getting command from processed input.
+Feb 24, 2024 9:45:02 PM Interface.CommandParser parse
+WARNING: Empty or unknown command.
+Feb 24, 2024 9:45:02 PM Interface.CommandParser parse
+INFO: Parsing input: name
+Feb 24, 2024 9:45:02 PM Interface.CommandParser getTokens
+INFO: Getting tokens from input: name
+Feb 24, 2024 9:45:02 PM Interface.CommandParser getArguments
+INFO: Getting arguments from processed input.
+Feb 24, 2024 9:45:02 PM Interface.CommandParser getCommand
+INFO: Getting command from processed input.
+Feb 24, 2024 9:45:02 PM Interface.CommandParser parse
+WARNING: Empty or unknown command.
+Feb 24, 2024 9:45:02 PM Interface.CommandParser parse
+INFO: Parsing input: UCI_Opponent
+Feb 24, 2024 9:45:02 PM Interface.CommandParser getTokens
+INFO: Getting tokens from input: UCI_Opponent
+Feb 24, 2024 9:45:02 PM Interface.CommandParser getArguments
+INFO: Getting arguments from processed input.
+Feb 24, 2024 9:45:02 PM Interface.CommandParser getCommand
+INFO: Getting command from processed input.
+Feb 24, 2024 9:45:02 PM Interface.CommandParser parse
+WARNING: Empty or unknown command.
+Feb 24, 2024 9:45:02 PM Interface.CommandParser parse
+INFO: Parsing input: value
+Feb 24, 2024 9:45:02 PM Interface.CommandParser getTokens
+INFO: Getting tokens from input: value
+Feb 24, 2024 9:45:02 PM Interface.CommandParser getArguments
+INFO: Getting arguments from processed input.
+Feb 24, 2024 9:45:02 PM Interface.CommandParser getCommand
+INFO: Getting command from processed input.
+Feb 24, 2024 9:45:02 PM Interface.CommandParser parse
+WARNING: Empty or unknown command.
+Feb 24, 2024 9:45:02 PM Interface.CommandParser parse
+INFO: Parsing input: GM
+Feb 24, 2024 9:45:02 PM Interface.CommandParser getTokens
+INFO: Getting tokens from input: GM
+Feb 24, 2024 9:45:02 PM Interface.CommandParser getArguments
+INFO: Getting arguments from processed input.
+Feb 24, 2024 9:45:02 PM Interface.CommandParser getCommand
+INFO: Getting command from processed input.
+Feb 24, 2024 9:45:02 PM Interface.CommandParser parse
+WARNING: Empty or unknown command.
+Feb 24, 2024 9:45:02 PM Interface.CommandParser parse
+INFO: Parsing input: 2800
+Feb 24, 2024 9:45:02 PM Interface.CommandParser getTokens
+INFO: Getting tokens from input: 2800
+Feb 24, 2024 9:45:02 PM Interface.CommandParser getArguments
+INFO: Getting arguments from processed input.
+Feb 24, 2024 9:45:02 PM Interface.CommandParser getCommand
+INFO: Getting command from processed input.
+Feb 24, 2024 9:45:02 PM Interface.CommandParser parse
+WARNING: Empty or unknown command.
+Feb 24, 2024 9:45:02 PM Interface.CommandParser parse
+INFO: Parsing input: human
+Feb 24, 2024 9:45:02 PM Interface.CommandParser getTokens
+INFO: Getting tokens from input: human
+Feb 24, 2024 9:45:02 PM Interface.CommandParser getArguments
+INFO: Getting arguments from processed input.
+Feb 24, 2024 9:45:02 PM Interface.CommandParser getCommand
+INFO: Getting command from processed input.
+Feb 24, 2024 9:45:02 PM Interface.CommandParser parse
+WARNING: Empty or unknown command.
+Feb 24, 2024 9:45:02 PM Interface.CommandParser parse
+INFO: Parsing input: Gary
+Feb 24, 2024 9:45:02 PM Interface.CommandParser getTokens
+INFO: Getting tokens from input: Gary
+Feb 24, 2024 9:45:02 PM Interface.CommandParser getArguments
+INFO: Getting arguments from processed input.
+Feb 24, 2024 9:45:02 PM Interface.CommandParser getCommand
+INFO: Getting command from processed input.
+Feb 24, 2024 9:45:02 PM Interface.CommandParser parse
+WARNING: Empty or unknown command.
+Feb 24, 2024 9:45:02 PM Interface.CommandParser parse
+INFO: Parsing input: Kasparov
+Feb 24, 2024 9:45:02 PM Interface.CommandParser getTokens
+INFO: Getting tokens from input: Kasparov
+Feb 24, 2024 9:45:02 PM Interface.CommandParser getArguments
+INFO: Getting arguments from processed input.
+Feb 24, 2024 9:45:02 PM Interface.CommandParser getCommand
+INFO: Getting command from processed input.
+Feb 24, 2024 9:45:02 PM Interface.CommandParser parse
+WARNING: Empty or unknown command.
+Feb 24, 2024 9:45:04 PM Interface.CommandParser parse
+INFO: Parsing input: quit
+Feb 24, 2024 9:45:04 PM Interface.CommandParser getTokens
+INFO: Getting tokens from input: quit
+Feb 24, 2024 9:45:04 PM Interface.CommandParser getArguments
+INFO: Getting arguments from processed input.
+Feb 24, 2024 9:45:04 PM Interface.CommandParser getCommand
+INFO: Getting command from processed input.
+Feb 24, 2024 9:45:04 PM Interface.CommandParser parse
+INFO: Parsing Quit command.
+Feb 24, 2024 9:45:28 PM Interface.CommandParser parse
+INFO: Parsing input: quit
+Feb 24, 2024 9:45:28 PM Interface.CommandParser getTokens
+INFO: Getting tokens from input: quit
+Feb 24, 2024 9:45:28 PM Interface.CommandParser getArguments
+INFO: Getting arguments from processed input.
+Feb 24, 2024 9:45:28 PM Interface.CommandParser getCommand
+INFO: Getting command from processed input.
+Feb 24, 2024 9:45:28 PM Interface.CommandParser parse
+INFO: Parsing Quit command.
+Feb 24, 2024 9:45:59 PM Interface.CommandParser parse
+INFO: Parsing input: uci
+Feb 24, 2024 9:45:59 PM Interface.CommandParser getTokens
+INFO: Getting tokens from input: uci
+Feb 24, 2024 9:45:59 PM Interface.CommandParser getArguments
+INFO: Getting arguments from processed input.
+Feb 24, 2024 9:45:59 PM Interface.CommandParser getCommand
+INFO: Getting command from processed input.
+Feb 24, 2024 9:45:59 PM Interface.CommandParser parse
+INFO: Parsing UCI command.
+Feb 24, 2024 9:46:05 PM Interface.CommandParser parse
+INFO: Parsing input: setoption
+Feb 24, 2024 9:46:05 PM Interface.CommandParser getTokens
+INFO: Getting tokens from input: setoption
+Feb 24, 2024 9:46:05 PM Interface.CommandParser getArguments
+INFO: Getting arguments from processed input.
+Feb 24, 2024 9:46:05 PM Interface.CommandParser getCommand
+INFO: Getting command from processed input.
+Feb 24, 2024 9:46:05 PM Interface.CommandParser parse
+INFO: Parsing Setoption command.
+Feb 24, 2024 9:46:05 PM Interface.CommandParser parse
+INFO: Parsing input: name
+Feb 24, 2024 9:46:05 PM Interface.CommandParser getTokens
+INFO: Getting tokens from input: name
+Feb 24, 2024 9:46:05 PM Interface.CommandParser getArguments
+INFO: Getting arguments from processed input.
+Feb 24, 2024 9:46:05 PM Interface.CommandParser getCommand
+INFO: Getting command from processed input.
+Feb 24, 2024 9:46:05 PM Interface.CommandParser parse
+WARNING: Empty or unknown command.
+Feb 24, 2024 9:46:05 PM Interface.CommandParser parse
+INFO: Parsing input: UCI_Opponent
+Feb 24, 2024 9:46:05 PM Interface.CommandParser getTokens
+INFO: Getting tokens from input: UCI_Opponent
+Feb 24, 2024 9:46:05 PM Interface.CommandParser getArguments
+INFO: Getting arguments from processed input.
+Feb 24, 2024 9:46:05 PM Interface.CommandParser getCommand
+INFO: Getting command from processed input.
+Feb 24, 2024 9:46:05 PM Interface.CommandParser parse
+WARNING: Empty or unknown command.
+Feb 24, 2024 9:46:05 PM Interface.CommandParser parse
+INFO: Parsing input: value
+Feb 24, 2024 9:46:05 PM Interface.CommandParser getTokens
+INFO: Getting tokens from input: value
+Feb 24, 2024 9:46:05 PM Interface.CommandParser getArguments
+INFO: Getting arguments from processed input.
+Feb 24, 2024 9:46:05 PM Interface.CommandParser getCommand
+INFO: Getting command from processed input.
+Feb 24, 2024 9:46:05 PM Interface.CommandParser parse
+WARNING: Empty or unknown command.
+Feb 24, 2024 9:46:05 PM Interface.CommandParser parse
+INFO: Parsing input: GM
+Feb 24, 2024 9:46:05 PM Interface.CommandParser getTokens
+INFO: Getting tokens from input: GM
+Feb 24, 2024 9:46:05 PM Interface.CommandParser getArguments
+INFO: Getting arguments from processed input.
+Feb 24, 2024 9:46:05 PM Interface.CommandParser getCommand
+INFO: Getting command from processed input.
+Feb 24, 2024 9:46:05 PM Interface.CommandParser parse
+WARNING: Empty or unknown command.
+Feb 24, 2024 9:46:05 PM Interface.CommandParser parse
+INFO: Parsing input: 2800
+Feb 24, 2024 9:46:05 PM Interface.CommandParser getTokens
+INFO: Getting tokens from input: 2800
+Feb 24, 2024 9:46:05 PM Interface.CommandParser getArguments
+INFO: Getting arguments from processed input.
+Feb 24, 2024 9:46:05 PM Interface.CommandParser getCommand
+INFO: Getting command from processed input.
+Feb 24, 2024 9:46:05 PM Interface.CommandParser parse
+WARNING: Empty or unknown command.
+Feb 24, 2024 9:46:05 PM Interface.CommandParser parse
+INFO: Parsing input: human
+Feb 24, 2024 9:46:05 PM Interface.CommandParser getTokens
+INFO: Getting tokens from input: human
+Feb 24, 2024 9:46:05 PM Interface.CommandParser getArguments
+INFO: Getting arguments from processed input.
+Feb 24, 2024 9:46:05 PM Interface.CommandParser getCommand
+INFO: Getting command from processed input.
+Feb 24, 2024 9:46:05 PM Interface.CommandParser parse
+WARNING: Empty or unknown command.
+Feb 24, 2024 9:46:05 PM Interface.CommandParser parse
+INFO: Parsing input: Gary
+Feb 24, 2024 9:46:05 PM Interface.CommandParser getTokens
+INFO: Getting tokens from input: Gary
+Feb 24, 2024 9:46:05 PM Interface.CommandParser getArguments
+INFO: Getting arguments from processed input.
+Feb 24, 2024 9:46:05 PM Interface.CommandParser getCommand
+INFO: Getting command from processed input.
+Feb 24, 2024 9:46:05 PM Interface.CommandParser parse
+WARNING: Empty or unknown command.
+Feb 24, 2024 9:46:05 PM Interface.CommandParser parse
+INFO: Parsing input: Kasparov
+Feb 24, 2024 9:46:05 PM Interface.CommandParser getTokens
+INFO: Getting tokens from input: Kasparov
+Feb 24, 2024 9:46:05 PM Interface.CommandParser getArguments
+INFO: Getting arguments from processed input.
+Feb 24, 2024 9:46:05 PM Interface.CommandParser getCommand
+INFO: Getting command from processed input.
+Feb 24, 2024 9:46:05 PM Interface.CommandParser parse
+WARNING: Empty or unknown command.
+Feb 24, 2024 9:47:01 PM Interface.CommandParser parse
+INFO: Parsing input: :q
+Feb 24, 2024 9:47:01 PM Interface.CommandParser getTokens
+INFO: Getting tokens from input: :q
+Feb 24, 2024 9:47:01 PM Interface.CommandParser getArguments
+INFO: Getting arguments from processed input.
+Feb 24, 2024 9:47:01 PM Interface.CommandParser getCommand
+INFO: Getting command from processed input.
+Feb 24, 2024 9:47:01 PM Interface.CommandParser parse
+WARNING: Empty or unknown command.
+Feb 24, 2024 9:47:03 PM Interface.CommandParser parse
+INFO: Parsing input: quit
+Feb 24, 2024 9:47:03 PM Interface.CommandParser getTokens
+INFO: Getting tokens from input: quit
+Feb 24, 2024 9:47:03 PM Interface.CommandParser getArguments
+INFO: Getting arguments from processed input.
+Feb 24, 2024 9:47:03 PM Interface.CommandParser getCommand
+INFO: Getting command from processed input.
+Feb 24, 2024 9:47:03 PM Interface.CommandParser parse
+INFO: Parsing Quit command.
+Feb 25, 2024 1:37:31 PM Interface.CommandParser parse
+INFO: Parsing input: quit
+Feb 25, 2024 1:37:31 PM Interface.CommandParser getTokens
+INFO: Getting tokens from input: quit
+Feb 25, 2024 1:37:31 PM Interface.CommandParser getArguments
+INFO: Getting arguments from processed input.
+Feb 25, 2024 1:37:31 PM Interface.CommandParser getCommand
+INFO: Getting command from processed input.
+Feb 25, 2024 1:37:31 PM Interface.CommandParser parse
+INFO: Parsing Quit command.
+Feb 25, 2024 1:43:00 PM Interface.CommandParser parse
+INFO: Parsing input: qui
+Feb 25, 2024 1:43:00 PM Interface.CommandParser getTokens
+INFO: Getting tokens from input: qui
+Feb 25, 2024 1:43:00 PM Interface.CommandParser getArguments
+INFO: Getting arguments from processed input.
+Feb 25, 2024 1:43:00 PM Interface.CommandParser getCommand
+INFO: Getting command from processed input.
+Feb 25, 2024 1:43:00 PM Interface.CommandParser parse
+WARNING: Empty or unknown command.
+Feb 25, 2024 1:43:00 PM Interface.CommandParser parse
+INFO: Parsing input: quit
+Feb 25, 2024 1:43:00 PM Interface.CommandParser getTokens
+INFO: Getting tokens from input: quit
+Feb 25, 2024 1:43:00 PM Interface.CommandParser getArguments
+INFO: Getting arguments from processed input.
+Feb 25, 2024 1:43:00 PM Interface.CommandParser getCommand
+INFO: Getting command from processed input.
+Feb 25, 2024 1:43:00 PM Interface.CommandParser parse
+INFO: Parsing Quit command.
