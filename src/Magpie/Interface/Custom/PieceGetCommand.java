@@ -9,6 +9,6 @@ public class PieceGetCommand extends PieceCommand {
     }
     
     public void run() {
-
+        
     }
 }
