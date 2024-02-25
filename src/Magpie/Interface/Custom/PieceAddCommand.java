@@ -7,6 +7,7 @@ public class PieceAddCommand extends PieceCommand {
 
     public PieceAddCommand(IBoard board, int square, int piece) {
         super(board, square);
+        _piece = piece;
     }
     
     public void run() {
