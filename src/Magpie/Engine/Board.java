@@ -4,6 +4,8 @@ import java.util.*;
 
 public class Board implements IBoard
 {
+    // Which side can castle where?
+    private boolean[] _castling = new boolean[4];
     // Bitboard array to store the color of the pieces
     private long[] _cBitboards = new long[2];
     // Bitboard array to store the types of the pieces
@@ -14,8 +16,8 @@ public class Board implements IBoard
     private int[] _pieceCount = new int[14];
     // The square where an en passant capture is possible, if non are possible -1
     private int _epSquare = -1;
-    // The game ply
-    private int _ply = 0;
+    // Plys until 50 move rule
+    private int _plys50 = 0;
     // The side the move
     private int _turn = Color.White;
     // A linked list to store the previous states of the game
@@ -54,15 +56,13 @@ public class Board implements IBoard
 
     @Override
     public void setCastlingRights(int pieceType, int color, boolean active) {
-        // TODO Auto-generated method stub
-        
+        _castling[(color << 1) | pieceType] = active;        
     }
 
 
     @Override
     public void setEnpassant(int square) {
-        // TODO Auto-generated method stub
-        
+        _epSquare = square;
     }
 
 
@@ -88,6 +88,7 @@ public class Board implements IBoard
         _pieceCount[piece]++;
     }
 
+    @Override
     public void removePiece(int square) {
         int Piece = getPiece(square);
         removePiece(square, Piece);
@@ -118,15 +119,13 @@ public class Board implements IBoard
 
     @Override
     public void setPlys50(int plys) {
-        // TODO Auto-generated method stub
-        
+        _plys50 = plys;
     }
 
 
     @Override
     public void setTurn(int color) {
-        // TODO Auto-generated method stub
-        
+        _turn = color;
     }
 
 
