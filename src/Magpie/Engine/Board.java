@@ -41,8 +41,14 @@ public class Board implements IBoard
 
     @Override
     public IMoveDecoder getMoveDecoder() {
-        // TODO Auto-generated method stub
-        return null;
+        return str -> {
+            int from = Misc.Utils.toSquareIndex(str.substring(0, 2));
+            int to = Misc.Utils.toSquareIndex(str.substring(2, 4));
+            // TODO: 
+            // Use board context to determine the flag [e.g. castling, capturing, promotion]
+            int flag = -1;
+            return Move.create(from, to, flag);
+        };
     }
 
 
