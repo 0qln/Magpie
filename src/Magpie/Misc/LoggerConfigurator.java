@@ -17,7 +17,7 @@ public class LoggerConfigurator {
                 }
             }
             // Add handler to the log file
-            FileHandler fileHandler = new FileHandler(logFileName, true);
+            FileHandler fileHandler = new FileHandler(logFileName, false);
             fileHandler.setFormatter(new SimpleFormatter());
             logger.addHandler(fileHandler);
         } catch (IOException e) {

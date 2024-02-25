@@ -64,10 +64,10 @@ public class CommandParser
                 }
                 int movesidx = Misc.Utils.indexOf(args, e -> e.equals("moves"));
                 String[] moves = movesidx == -1 ? new String[0] : Arrays.copyOfRange(args, movesidx + 1, args.length);
-                if (args[0] == "startpos") {
+                if (args[0].equals("startpos")) {
                     return Optional.of(board ->  new Interface.UCI.StartposCommand(board, moves));
                 }
-                else if (args[0] == "fen") {
+                else if (args[0].equals("fen")) {
                     String[] fen = Arrays.copyOfRange(args, 1, movesidx == -1 ? args.length : movesidx);
                     return Optional.of(board -> new Interface.UCI.FenCommand(board, moves, fen));
                 }

@@ -4,7 +4,6 @@ public class FenDecoder
 {
     public static IFenExecuter decode(String[] tokens) {
         return board -> {
-
             // Set up pieces
             int squareIdx = 63;
             for (int i = 0; i < tokens[0].length(); i++) {
@@ -23,8 +22,7 @@ public class FenDecoder
                 int piece = Piece.parse(tokens[0].charAt(i));
 
                 // evaluate
-                int idx = squareIdx ^ 7;
-                board.addPiece(idx, piece);
+                board.addPiece(squareIdx ^ 56, piece);
 
                 squareIdx--;
             }
