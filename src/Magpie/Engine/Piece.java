@@ -33,6 +33,10 @@ public final class Piece
         return piece & 0x1;
     }
 
+    public static int create(int color, int type) {
+        return type << 1 | color;
+    }
+
     public static char toChar(int piece) {
         char c = PieceType.PMap.get(getType(piece));
         if (getColor(piece) == Color.Black) {
