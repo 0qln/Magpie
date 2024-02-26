@@ -6,6 +6,10 @@ public final class Move {
     public static final int TO_SHIFT = 6;
     public static final int FLAG_SHIFT = 12;
 
+    public static final int FROM_MASK   = 0b111111  << FROM_SHIFT;
+    public static final int TO_MASK     = 0b111111  << TO_SHIFT;
+    public static final int FLAG_MASK   = 0b1111    << FLAG_SHIFT;
+
     public static final int QUIET_MOVE_FLAG = 0;
     public static final int DOUBLE_PAWN_PUSH_FLAG = 1;
     public static final int PROMOTION_KNIGHT_FLAG = 2;
@@ -43,4 +47,15 @@ public final class Move {
                        (flag << FLAG_SHIFT)); 
     }
     
+    public static int getFrom(short move) {
+        return (move & FROM_MASK) >> FROM_SHIFT;
+    }
+
+    public static int getTo(short move) {
+        return (move & TO_MASK) >> TO_SHIFT;
+    }
+
+    public static int getFlag(short move) {
+        return (move & FLAG_MASK) >> FLAG_SHIFT;
+    }
 }
