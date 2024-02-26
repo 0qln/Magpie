@@ -11,7 +11,9 @@ public interface IBoard
     public int getPiece(int square);
     public void removePiece(int square);
     public void setTurn(int color);
+    public int getTurn();
     public void setCastlingRights(int pieceType, int color, boolean active);
     public void setEnpassant(int square);
+    public int getEnPassantSquare();
     public void setPlys50(int plys);
 }
