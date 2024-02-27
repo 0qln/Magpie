@@ -19,12 +19,6 @@ public final class Piece
     public static final int WhiteQueen  = PieceType.Queen  << 1 | Color.White;
     public static final int WhiteKing   = PieceType.King   << 1 | Color.White;
 
-    public static int parse(char charNotation) {
-        int color = Character.isUpperCase(charNotation) ? Color.Black : Color.White;
-        int type = PieceType.CMap.get(Character.toLowerCase(charNotation));
-        return type << 1 | color;
-    }
-
     public static int getType(int piece) {
         return piece >> 1;
     }
@@ -39,14 +33,14 @@ public final class Piece
 
     public static char toChar(int piece) {
         char c = PieceType.PMap.get(getType(piece));
-        if (getColor(piece) == Color.Black) {
+        if (getColor(piece) == Color.White) {
             c = Character.toUpperCase(c);
         }
         return c;
     }
 
     public static int fromChar(char piece) {
-        int color = Character.isUpperCase(piece) ? Color.Black : Color.White;
+        int color = Character.isUpperCase(piece) ? Color.White : Color.Black;
         int type = PieceType.CMap.get(Character.toLowerCase(piece));
         return (type << 1) | color;
     }

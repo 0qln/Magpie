@@ -19,10 +19,10 @@ public class FenDecoder
                 }
 
                 // get piece char as Piece Type
-                int piece = Piece.parse(tokens[0].charAt(i));
+                int piece = Piece.fromChar(tokens[0].charAt(i));
 
                 // evaluate
-                board.addPiece(squareIdx ^ 56, piece);
+                board.addPiece(squareIdx ^ 7, piece);
 
                 squareIdx--;
             }
