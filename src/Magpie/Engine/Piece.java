@@ -2,7 +2,7 @@ package Engine;
 
 public final class Piece
 {
-    public static final int WNone = 0;
+    public static final int None = 0;
     public static final int BNone = 1;
 
     public static final int BlackPawn   = PieceType.Pawn   << 1 | Color.Black;

@@ -3,6 +3,7 @@ package Interface;
 import java.util.*;
 import java.util.logging.Logger;
 
+import Engine.BoardState;
 import Misc.LoggerConfigurator;
 
 public final class Main
@@ -10,10 +11,16 @@ public final class Main
     public static Scanner scanner = new Scanner(System.in);
     private static Logger logger = LoggerConfigurator.configureLogger(Main.class);
 
-    public static void main(String[] args)
+    public static void main(String[] args) throws Exception
     {
         scanner.useDelimiter("\n");
-        Engine.IBoard board = new Engine.Board();
+        Engine.IBoard board;
+        try {
+            board = new Engine.Board();
+        } catch (IllegalArgumentException | IllegalAccessException e) {
+            e.printStackTrace();
+            throw e;
+        }
         CommandParser parser = new CommandParser();
         while (true) {
             String input = scanner.next();

@@ -1,5 +1,6 @@
 package Engine;
 
+import java.lang.reflect.Field;
 import java.util.Arrays;
 import java.util.BitSet;
 import java.util.function.Consumer;
@@ -29,7 +30,7 @@ public class BoardState
     private long[] _pinners = new long[2];
 
     // captured piece, the piece that was captured when this state was reached
-    private int _captured = Piece.WNone;
+    private int _captured = Piece.None;
 
     // check squares, indexed by piece type
     private long[] _checks = new long[7];
@@ -41,7 +42,9 @@ public class BoardState
     public int getPlys50() {
         return _plys50;
     }
-
+    public void setPlys50(int value) {
+        _plys50 = value;
+    }
 
     public int getPly() {
         return _ply;
@@ -51,12 +54,23 @@ public class BoardState
     public int getEpSquare() {
         return _epSquare;
     }
+    public void setEpSquare(int value) {
+        _epSquare = value;
+    }
 
 
     public BitSet getCastling() {
         return _castling;
     }
 
+    /**
+     * @param kingside [ 1 | 0 ] 
+     * @param color 
+     * @param value
+     */
+    public void setCastlingRights(int kingside, int color, boolean value) {
+        _castling.set((color << 1) | kingside, value);
+    }
 
     public long getCheckers() {
         return _checkers;
@@ -86,18 +100,19 @@ public class BoardState
     public static class Builder {
        
         // Cache the target values
-        private int _plys50 = 0;
-        private int _ply = 0;
-        private int _epSquare = -1;
-        private BitSet _castling;
-        private int _captured = Piece.WNone;
-        // Used for computation on build
-        private boolean _givesCheck = false;
-        private Board _origin;
+        @BuilderRequired private Integer _plys50;
+        @BuilderRequired private Integer _ply;
+        @BuilderNotRequired private int _epSquare = -1;
+        @BuilderRequired private BitSet _castling;
+        @BuilderNotRequired private int _captured = Piece.None;
+        // Dynamically used for computation on build
+        // TODO: make required, when it is used in later deployment
+        @BuilderNotRequired private boolean _givesCheck = false;
+        @BuilderRequired private Board _origin;
+
 
         public Builder(Board origin) {
             this._origin = origin;
-            _castling = origin.getCastling();
         }
 
         public Builder givesCheck(boolean does) {
@@ -120,9 +135,13 @@ public class BoardState
             return this;
         }
 
-        public Builder castling(Consumer<BitSet> castlingChanger) {
-            castlingChanger.accept(this._castling);
+        public Builder castling(byte[] set) {
+            _castling = BitSet.valueOf(set);
             return this;
+        }
+
+        public BitSet getCastling() {
+            return _castling;
         }
 
         public Builder captured(int captured) {
@@ -130,11 +149,11 @@ public class BoardState
             return this;
         }
 
-        public BoardState build() {
+        public BoardState buildUnchecked() {
             BoardState boardState = new BoardState();
 
             // User defined
-            boardState._plys50  = this._plys50;
+            boardState._plys50 = this._plys50;
             boardState._ply = (this._ply);
             boardState._epSquare = (this._epSquare);
             boardState._castling = (this._castling);
@@ -142,7 +161,35 @@ public class BoardState
 
             // Auto Generated
             // TODO: generate these
-            // PSEUDO:
+            // boardState._checkers = _givesCheck ? (this._checkers) : 0;
+            // boardState._blockers = (this._blockers);
+            // boardState._pinners = (this._pinners);
+            // boardState._checks = (this._checks);
+
+            return boardState;
+
+        }
+
+        public BoardState build() throws IllegalArgumentException, IllegalAccessException {
+            BoardState boardState = new BoardState();
+
+            // Check if required fields are set
+            // TODO: reflection is slow, so maybe remove this to speed up in the release build
+            for (Field field : this.getClass().getDeclaredFields()) {
+                if (field.isAnnotationPresent(BuilderRequired.class) && field.get(this) == null) {
+                    throw new IllegalStateException("Required field not set: " + field.getName());
+                }
+            }
+
+            // User defined
+            boardState._plys50 = this._plys50;
+            boardState._ply = (this._ply);
+            boardState._epSquare = (this._epSquare);
+            boardState._castling = (this._castling);
+            boardState._captured = (this._captured);
+
+            // Auto Generated
+            // TODO: generate these
             // boardState._checkers = _givesCheck ? (this._checkers) : 0;
             // boardState._blockers = (this._blockers);
             // boardState._pinners = (this._pinners);
@@ -151,4 +198,7 @@ public class BoardState
             return boardState;
         }
     }
+
+
+    
 }
