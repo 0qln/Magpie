@@ -1,14 +1,14 @@
 package Interface.Custom;
 
-import Engine.IBoard;
+import Misc.Ptr;
 
 public class PrintCommand extends Command
 {
-    public PrintCommand(IBoard board) {
+    public PrintCommand(Ptr<Engine.IBoard> board) {
         super(board);
     }
 
     public void run() {
-        System.out.println(_board.toString());
+        System.out.println(_board.get().toString());
     }
 }

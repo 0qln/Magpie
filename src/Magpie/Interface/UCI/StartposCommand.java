@@ -1,15 +1,24 @@
 package Interface.UCI;
 
+import Misc.Ptr;
+
 public class StartposCommand extends PositionCommand
 {
-    public StartposCommand(Engine.IBoard board, String[] moves) {
+    private static final String[] FEN = 
+        new String[] { "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR", "w", "KQkq", "-", "0", "1" };
+
+    public StartposCommand(Ptr<Engine.IBoard> board, String[] moves) {
         super(board, moves);
     }
 
     @Override
-    protected void runExtended() {
+    protected void setPosition() {
+        Engine.IBoard newPosition = _board.get().getBuilder().build();
+
         Engine.FenDecoder
-            .decode(new String[] { "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR", "w", "KQkq", "-", "0", "1" })
-            .setUpFen(_board);
+            .decode(FEN)
+            .setUpFen(newPosition);
+
+        _board.set(newPosition);
     }
 }

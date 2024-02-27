@@ -16,4 +16,6 @@ public interface IBoard
     public void setEnpassant(int squareIndex);
     public void setPlys50(int int1);
     public void setTurn(int black);
+
+    public IBoardBuilder getBuilder();
 }

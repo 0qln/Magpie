@@ -1,16 +1,16 @@
 package Interface.Custom;
 
-import Engine.IBoard;
+import Misc.Ptr;
 
 public class PieceAddCommand extends PieceCommand {
     private int _piece;
 
-    public PieceAddCommand(IBoard board, int square, int piece) {
+    public PieceAddCommand(Ptr<Engine.IBoard> board, int square, int piece) {
         super(board, square);
         _piece = piece;
     }
     
     public void run() {
-        _board.addPiece(_square, _piece);
+        _board.get().addPiece(_square, _piece);
     }
 }

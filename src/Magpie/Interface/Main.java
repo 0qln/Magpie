@@ -5,6 +5,7 @@ import java.util.logging.Logger;
 
 import Engine.BoardState;
 import Misc.LoggerConfigurator;
+import Misc.Ptr;
 
 public final class Main
 {
@@ -14,13 +15,7 @@ public final class Main
     public static void main(String[] args) throws Exception
     {
         scanner.useDelimiter("\n");
-        Engine.IBoard board;
-        try {
-            board = new Engine.Board();
-        } catch (IllegalArgumentException | IllegalAccessException e) {
-            e.printStackTrace();
-            throw e;
-        }
+        Ptr<Engine.IBoard> board = Ptr.to(new Engine.Board());
         CommandParser parser = new CommandParser();
         while (true) {
             String input = scanner.next();

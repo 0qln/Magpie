@@ -1,5 +1,7 @@
 package Interface.UCI;
 
+import Misc.Ptr;
+
 /*
 uci
     tell engine to use the uci (universal chess interface),
@@ -12,7 +14,7 @@ uci
 */
 public class UciCommand extends Command
 {
-    public UciCommand(Engine.IBoard board)
+    public UciCommand(Ptr<Engine.IBoard> board)
     {
         super(board);
     }

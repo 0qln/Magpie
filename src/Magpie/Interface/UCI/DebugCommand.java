@@ -2,6 +2,7 @@ package Interface.UCI;
 
 import java.util.*;
 import Interface.Config;
+import Misc.Ptr;
 
 /* UCI::
 debug [ on | off ]
@@ -15,7 +16,7 @@ public class DebugCommand extends Command
 {
     private boolean _on;
     
-    public DebugCommand(Engine.IBoard board, boolean on)
+    public DebugCommand(Ptr<Engine.IBoard> board, boolean on)
     {
         super(board);
         _on = on;

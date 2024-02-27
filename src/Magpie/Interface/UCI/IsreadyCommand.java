@@ -1,9 +1,10 @@
 package Interface.UCI;
 
+import Misc.Ptr;
 
 public class IsreadyCommand extends Command
 {
-    public IsreadyCommand(Engine.IBoard board) {
+    public IsreadyCommand(Ptr<Engine.IBoard> board) {
         super(board);
     }
 

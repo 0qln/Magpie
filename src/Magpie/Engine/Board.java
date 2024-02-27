@@ -195,9 +195,45 @@ public class Board implements IBoard
         return str -> {
             int from = Misc.Utils.toSquareIndex(str.substring(0, 2));
             int to = Misc.Utils.toSquareIndex(str.substring(2, 4));
-            // TODO: 
+            
             // Use board context to determine the flag [e.g. castling, capturing, promotion]
-            int flag = -1;
+            int movingPieceType = Piece.getType(getPiece(from));
+            int destPieceType = Piece.getType(getPiece(to));
+            int absDistance = Math.abs(from - to);
+            boolean captures = destPieceType == PieceType.None;
+            int flag = captures ? Move.QUIET_MOVE_FLAG : Move.CAPTURE_FLAG;
+
+            // Pawn extras
+            if (movingPieceType == PieceType.Pawn) {
+                // Double pawn push
+                if (absDistance == 16) {
+                    flag = Move.DOUBLE_PAWN_PUSH_FLAG;
+                }
+                // En passant capture
+                else if ((absDistance == 7 || absDistance == 9) && destPieceType == PieceType.None) {
+                    flag = Move.EN_PASSANT_FLAG;
+                }
+                // Promotions
+                else if (str.length() == 5) { // Is a promotion piece type specified?
+                    int promotionType = PieceType.CMap.get(str.charAt(4));
+                    flag = promotionType;
+
+                    // Promotion captures
+                    if (captures) {
+                        flag += 4;
+                    }
+                }
+            }
+            // Castling
+            else if (movingPieceType == PieceType.King) {
+                if (absDistance == 2) {
+                    flag = Move.KING_CASTLE_FLAG;
+                }
+                else if (absDistance == 3) {
+                    flag = Move.QUEEN_CASTLE_FLAG;
+                }
+            }
+
             return Move.create(from, to, flag);
         };
     }
@@ -324,5 +360,24 @@ public class Board implements IBoard
     @Override
     public void setTurn(int color) {
         _turn = color;
+    }
+
+
+    @Override
+    public IBoardBuilder getBuilder() {
+        return new Builder();
+    }
+
+
+    public static class Builder implements IBoardBuilder {
+        @Override
+        public IBoard build() {
+            try {
+                return new Board();
+            } catch (IllegalArgumentException | IllegalAccessException e) {
+                e.printStackTrace();
+                return null;
+            }
+        }
     }
 }
