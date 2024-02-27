@@ -43,7 +43,7 @@ public class Board implements IBoard
         final int from = Move.getFrom(move); 
         final int to = Move.getTo(move);
         final int flag = Move.getFlag(move);
-        final int fromRank = from / 8;
+        final int rNormF = from / 8 * 8;
         final int movingPiece = getPiece(from);
         int capturedPiece = flag == Move.EN_PASSANT_FLAG ? Piece.create(PieceType.Pawn, nus) : getPiece(to);
         
@@ -61,14 +61,14 @@ public class Board implements IBoard
        
         // Handle castling
         if (flag == Move.KING_CASTLE_FLAG) {
-            movePiece(fromRank * 8 + Files.E, fromRank * 8 + Files.G);
-            movePiece(fromRank * 8 + Files.H, fromRank * 8 + Files.F);
+            movePiece(rNormF + Files.E, rNormF + Files.G);
+            movePiece(rNormF + Files.H, rNormF + Files.F);
             newState.getCastling().set((us << 1) | 1, false);
             capturedPiece = Piece.None[0];
         }
         else if (flag == Move.QUEEN_CASTLE_FLAG) {
-            movePiece(fromRank * 8 + Files.E, fromRank * 8 + Files.C);
-            movePiece(fromRank * 8 + Files.A, fromRank * 8 + Files.D);
+            movePiece(rNormF + Files.E, rNormF + Files.C);
+            movePiece(rNormF + Files.A, rNormF + Files.D);
             newState.getCastling().set((us << 1) | 0, false);
             capturedPiece = Piece.None[0];
         }
