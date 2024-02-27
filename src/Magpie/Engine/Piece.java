@@ -2,8 +2,7 @@ package Engine;
 
 public final class Piece
 {
-    public static final int None = 0;
-    public static final int BNone = 1;
+    public static final int[] None = new int[] { 0, 1 };
 
     public static final int BlackPawn   = PieceType.Pawn   << 1 | Color.Black;
     public static final int BlackKnight = PieceType.Knight << 1 | Color.Black;
@@ -27,7 +26,7 @@ public final class Piece
         return piece & 0x1;
     }
 
-    public static int create(int color, int type) {
+    public static int create(int type, int color) {
         return type << 1 | color;
     }
 

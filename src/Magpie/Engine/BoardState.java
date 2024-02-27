@@ -30,7 +30,7 @@ public class BoardState
     private long[] _pinners = new long[2];
 
     // captured piece, the piece that was captured when this state was reached
-    private int _captured = Piece.None;
+    private int _captured = Piece.None[0];
 
     // check squares, indexed by piece type
     private long[] _checks = new long[7];
@@ -104,7 +104,7 @@ public class BoardState
         @BuilderRequired private Integer _ply;
         @BuilderNotRequired private int _epSquare = -1;
         @BuilderRequired private BitSet _castling;
-        @BuilderNotRequired private int _captured = Piece.None;
+        @BuilderNotRequired private int _captured = Piece.None[0];
         // Dynamically used for computation on build
         // TODO: make required, when it is used in later deployment
         @BuilderNotRequired private boolean _givesCheck = false;

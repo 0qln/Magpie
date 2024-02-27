@@ -38,6 +38,15 @@ public class Board implements IBoard
     
 
     public void makeMove(short move) {
+        // Get context
+        final int us = _turn, nus = Color.NOT(us);
+        final int from = Move.getFrom(move); 
+        final int to = Move.getTo(move);
+        final int flag = Move.getFlag(move);
+        final int fromRank = from / 8;
+        final int movingPiece = getPiece(from);
+        int capturedPiece = flag == Move.EN_PASSANT_FLAG ? Piece.create(PieceType.Pawn, nus) : getPiece(to);
+        
         // Increment game counters
         _turn = Color.NOT(_turn);
         _ply++;
@@ -50,31 +59,18 @@ public class Board implements IBoard
             .ply(_ply)
             .plys50(_ply);
        
-        // Get context
-        final int us = _turn, nus = Color.NOT(us);
-        final int from = Move.getFrom(move); 
-        final int to = Move.getTo(move);
-        final int flag = Move.getFlag(move);
-        final int fromRank = from / 8;
-        int capturedPiece = flag == Move.EN_PASSANT_FLAG ? Piece.create(nus, PieceType.Pawn) : getPiece(to);
-        final int movingPiece = getPiece(from);
-        
         // Handle castling
         if (flag == Move.KING_CASTLE_FLAG) {
-            removePiece (fromRank * 8 + Files.E);
-            addPiece    (fromRank * 8 + Files.G, Piece.create(PieceType.King, us));
-            removePiece (fromRank * 8 + Files.H);
-            addPiece    (fromRank * 8 + Files.F, Piece.create(PieceType.Rook, us));
+            movePiece(fromRank * 8 + Files.E, fromRank * 8 + Files.G);
+            movePiece(fromRank * 8 + Files.H, fromRank * 8 + Files.F);
             newState.getCastling().set((us << 1) | 1, false);
-            capturedPiece = Piece.None;
+            capturedPiece = Piece.None[0];
         }
         else if (flag == Move.QUEEN_CASTLE_FLAG) {
-            removePiece (fromRank * 8 + Files.E);
-            addPiece    (fromRank * 8 + Files.C, Piece.create(PieceType.King, us));
-            removePiece (fromRank * 8 + Files.A);
-            addPiece    (fromRank * 8 + Files.D, Piece.create(PieceType.Rook, us));
+            movePiece(fromRank * 8 + Files.E, fromRank * 8 + Files.C);
+            movePiece(fromRank * 8 + Files.A, fromRank * 8 + Files.D);
             newState.getCastling().set((us << 1) | 0, false);
-            capturedPiece = Piece.None;
+            capturedPiece = Piece.None[0];
         }
 
         // Handle captures
@@ -88,7 +84,7 @@ public class Board implements IBoard
             }
             
             // Remove destination piece for captures
-            removePiece(captureSquare, capturedPiece);
+            removePiece(captureSquare);
 
             // Move the piece
             movePiece(from, to);
@@ -114,7 +110,7 @@ public class Board implements IBoard
             // Handle promotions
             if (flag >= Move.PROMOTION_KNIGHT_FLAG && flag <= Move.CAPTURE_PROMOTION_QUEEN_FLAG) {
                 int flagHack = flag <= Move.PROMOTION_QUEEN_FLAG ? flag : flag - 4;
-                int newPiece = Piece.create(us, flagHack);
+                int newPiece = Piece.create(flagHack, us);
                 removePiece(to);
                 addPiece(to, newPiece);
             }
@@ -145,7 +141,7 @@ public class Board implements IBoard
         if (flag >= Move.PROMOTION_KNIGHT_FLAG && flag <= Move.CAPTURE_PROMOTION_QUEEN_FLAG) {
             // Replace the promotion with a pawn, the pawn will be moved later.
             removePiece(to);
-            addPiece(to, Piece.create(us, PieceType.Pawn));
+            addPiece(to, Piece.create(PieceType.Pawn, us));
         }
 
         // Handle castling
@@ -167,7 +163,7 @@ public class Board implements IBoard
             movePiece(to, from);
 
             // Handle captures
-            if (_stateStack.getLast().getCaptured() != Piece.None) {
+            if (Piece.getType(_stateStack.getLast().getCaptured()) != PieceType.None) {
                 int captureSquare = to;
 
                 // Handle en passant captures
@@ -257,48 +253,38 @@ public class Board implements IBoard
 
     @Override
     public void addPiece(int square, int piece) {
-        assert(piece != Piece.None && piece != Piece.BNone);
+        long bb = 1L << square;
 
-        int type = Piece.getType(piece), color = Piece.getColor(piece);
-        int prevPiece = getPiece(square);
+        // add piece on type bitboard
+        _tBitboards[Piece.getType(piece)] |= bb;
 
-        // tBitboards
-        Utils.deactivateBit(_tBitboards, Piece.getType(prevPiece), square);
-        Utils.activateBit(_tBitboards, type, square);
-
-        // cBitboards
-        Utils.deactivateBit(_cBitboards, Piece.getColor(prevPiece), square);
-        Utils.activateBit(_cBitboards, color, square);
+        // add piece on color bitboard
+        _cBitboards[Piece.getColor(piece)] |= bb;
 
         // pieces
         _pieces[square] = piece;
 
-        // piece count
+        // increment piece count
         _pieceCount[piece]++;
     }
 
     @Override
     public void removePiece(int square) {
-        int Piece = getPiece(square);
-        removePiece(square, Piece);
-    }
+        int piece = getPiece(square);
+        long bb = 1L << piece;
 
-    public void removePiece(int square, int piece) {
-        int type = Piece.getType(piece), color = Piece.getColor(piece);
+        // toggle piece on type bitboard
+        _tBitboards[Piece.getType(piece)] ^= bb;
 
-        // tBitboards
-        Utils.deactivateBit(_tBitboards, type, square);
-
-        // cBitboards
-        Utils.deactivateBit(_cBitboards, color, square);
+        // toggle piece on color bitboard
+        _cBitboards[Piece.getColor(piece)] ^= bb;
 
         // pieces
-        _pieces[square] = Piece.None;
+        _pieces[square] = Piece.None[0];
 
-        // piece count
+        // decrement piece count
         _pieceCount[piece]--;
     }
-
 
     @Override
     public int getPiece(int square) {
@@ -308,10 +294,10 @@ public class Board implements IBoard
 
     private void movePiece(int from, int to) {
         int piece = _pieces[from];
-        long fromTo = ((long)1 << from) | ((long)1 << to);
+        long fromTo = (1L << from) | (1L << to);
         _tBitboards[Piece.getType(piece)] ^= fromTo;
         _cBitboards[Piece.getColor(piece)] ^= fromTo; 
-        _pieces[from] = Piece.None;
+        _pieces[from] = Piece.None[0];
         _pieces[to] = piece;
     }
     
