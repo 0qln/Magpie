@@ -195,18 +195,18 @@ public class Board implements IBoard
             // Use board context to determine the flag [e.g. castling, capturing, promotion]
             int movingPieceType = Piece.getType(getPiece(from));
             int destPieceType = Piece.getType(getPiece(to));
-            int absDistance = Math.abs(from - to);
+            int absDist = Math.abs(from - to);
             boolean captures = destPieceType == PieceType.None;
             int flag = captures ? Move.QUIET_MOVE_FLAG : Move.CAPTURE_FLAG;
 
             // Pawn extras
             if (movingPieceType == PieceType.Pawn) {
                 // Double pawn push
-                if (absDistance == 16) {
+                if (absDist == 16) {
                     flag = Move.DOUBLE_PAWN_PUSH_FLAG;
                 }
                 // En passant capture
-                else if ((absDistance == 7 || absDistance == 9) && destPieceType == PieceType.None) {
+                else if ((absDist == 7 || absDist == 9) && destPieceType == PieceType.None) {
                     flag = Move.EN_PASSANT_FLAG;
                 }
                 // Promotions
@@ -221,11 +221,11 @@ public class Board implements IBoard
                 }
             }
             // Castling
-            else if (movingPieceType == PieceType.King) {
-                if (absDistance == 2) {
+            else if (movingPieceType == PieceType.King && absDist == 2) {
+                if (to % 8 == Files.G) {
                     flag = Move.KING_CASTLE_FLAG;
                 }
-                else if (absDistance == 3) {
+                else if (to % 8 == Files.C) {
                     flag = Move.QUEEN_CASTLE_FLAG;
                 }
             }
