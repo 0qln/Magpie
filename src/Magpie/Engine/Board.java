@@ -389,6 +389,13 @@ public class Board implements IBoard
         return _tBitboards[pieceType] & _cBitboards[color];
     }
 
+    public long getCBitboard(int color) {
+        return _cBitboards[color];
+    }
+
+    public long getTBitboard(int type) {
+        return _tBitboards[type];
+    } 
 
     @Override
     public IBoardBuilder getBuilder() {
