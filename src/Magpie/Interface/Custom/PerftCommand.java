@@ -22,7 +22,8 @@ public class PerftCommand extends Command {
         else {
             return;
         }
-        board.perft(_depth, (move, count) -> System.out.println(Engine.Move.toString(move) + ": " + count));
+        long c = board.perft(_depth, (move, count) -> System.out.println(Engine.Move.toString(move) + ": " + count));
+        System.out.println("Node count: " + c);
     }
     
 }
