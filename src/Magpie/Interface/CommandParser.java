@@ -97,6 +97,14 @@ public class CommandParser
                     default: return Optional.empty();
                 }
 
+            case "perft": 
+                logger.info("Parsing Perft command.");
+                return Optional.of(board -> new Interface.Custom.PerftCommand(board, 
+                    args.length == 1 
+                        ? Optional.of(Integer.parseInt(args[0])) 
+                        : Optional.empty())
+                );
+
             default: 
             case EmptyCommand:    
                 logger.warning("Empty or unknown command.");
