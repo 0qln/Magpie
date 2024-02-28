@@ -4,6 +4,8 @@ import java.util.*;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
+import Misc.Ptr;
+
 public class Board implements IBoard
 {
     // Bitboard array to store the color of the pieces
@@ -46,10 +48,14 @@ public class Board implements IBoard
 
         long moveC = 0, c;
         for (short move : MoveList.generate(this).getMoves()) {
+            System.out.println("NEW");
+            new Interface.Custom.PrintCommand(Ptr.to(this)).run();
             makeMove(move);
+            new Interface.Custom.PrintCommand(Ptr.to(this)).run();
             moveC += (c = perft(depth-1));
             callback.accept(move, c);
             undoMove(move);
+            new Interface.Custom.PrintCommand(Ptr.to(this)).run();
         }
 
         return moveC;
@@ -90,7 +96,7 @@ public class Board implements IBoard
         BoardState.Builder newState = new BoardState.Builder(this);
         newState
             .givesCheck(false) // TODO
-            .castling(_stateStack.getLast().getCastling().toByteArray())
+            .castling(_stateStack.getFirst().getCastling().toByteArray())
             .ply(_ply)
             .plys50(_ply);
        
@@ -198,7 +204,8 @@ public class Board implements IBoard
             movePiece(to, from);
 
             // Handle captures
-            if (Piece.getType(_stateStack.getLast().getCaptured()) != PieceType.None) {
+            final int captured = _stateStack.getFirst().getCaptured();
+            if (Piece.getType(captured) != PieceType.None) {
                 int captureSquare = to;
 
                 // Handle en passant captures
@@ -206,7 +213,7 @@ public class Board implements IBoard
                     captureSquare += (us * 2 - 1) * 8;
                 }
 
-                addPiece(captureSquare, _stateStack.getLast().getCaptured());
+                addPiece(captureSquare, captured);
             }
         }
 
@@ -271,18 +278,18 @@ public class Board implements IBoard
 
 
     public int getCastlingCardinality() {
-        return _stateStack.getLast().getCastling().cardinality();
+        return _stateStack.getFirst().getCastling().cardinality();
     }
 
 
     public BitSet getCastling() {
-        return (BitSet)_stateStack.getLast().getCastling().clone();
+        return (BitSet)_stateStack.getFirst().getCastling().clone();
     }
 
 
     @Override
     public int getEnPassantSquare() {
-        return _stateStack.getLast().getEpSquare();
+        return _stateStack.getFirst().getEpSquare();
     }
 
 
@@ -363,19 +370,19 @@ public class Board implements IBoard
 
     @Override
     public void setCastlingRights(int king, int white, boolean b) {
-        _stateStack.getLast().setCastlingRights(king, white, b);
+        _stateStack.getFirst().setCastlingRights(king, white, b);
     }
 
 
     @Override
     public void setEnpassant(int squareIndex) {
-        _stateStack.getLast().setEpSquare(squareIndex);
+        _stateStack.getFirst().setEpSquare(squareIndex);
     }
 
 
     @Override
     public void setPlys50(int value) {
-        _stateStack.getLast().setPlys50(value);
+        _stateStack.getFirst().setPlys50(value);
     }
 
 
