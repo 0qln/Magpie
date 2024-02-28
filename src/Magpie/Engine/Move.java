@@ -1,5 +1,7 @@
 package Engine;
 
+import Misc.Utils;
+
 public final class Move {
 
     public static final int FROM_SHIFT = 0;
@@ -57,5 +59,19 @@ public final class Move {
 
     public static int getFlag(short move) {
         return (move & FLAG_MASK) >> FLAG_SHIFT;
+    }
+
+    public static int getPromotion(short move) {
+        return (getFlag(move) - 2) % 4 + 2;
+    }
+
+    public static boolean isPromotion(short move) {
+        return getFlag(move) >= PROMOTION_KNIGHT_FLAG && getFlag(move) <= CAPTURE_PROMOTION_QUEEN_FLAG;
+    }
+
+    public static String toString(short move) {
+        return Utils.fromSquareIndex(getFrom(move)) 
+             + Utils.fromSquareIndex(getTo(move))
+             + (isPromotion(move) ? PieceType.PMap.get(getPromotion(move)) : "");
     }
 }
