@@ -51,4 +51,10 @@ public final class Utils
     public static void setBit(long[] boards, int index, int squareIdx, boolean value) {
         boards[index] = (boards[index] & ~(1L << squareIdx)) | ((value ? 1L : 0L) << squareIdx);
     }
+
+    public static int popLsb(long[] board) {
+        int lsb = Long.numberOfTrailingZeros(board[0]);
+        board[0] &= board[0] - 1;
+        return lsb;
+    }
 }
