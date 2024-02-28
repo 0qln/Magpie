@@ -32,14 +32,16 @@ public class KnightMoveGenerator extends MoveGenerator {
     }
 
     private int addMoves(short[] list, int index, Board board, int color, long knights, int loff) {
-        long allies = board.getCBitboard(color);
         // Remove all knights whose dest square is occupied by an ally.
-        long allyOverlap = Utils.lshift(allies, -loff);
-        long[] fromBB = { knights & ~allyOverlap };
+        long sao = Utils.lshift(board.getCBitboard(color), -loff);
+        long[] fromBB = { knights & ~sao };
        
         while (fromBB[0] != 0) {
             final int from = Utils.popLsb(fromBB);
-            list[index++] = Move.create(from, from + loff, Move.QUIET_MOVE_FLAG);
+            final int to = from + loff;
+            list[index++] = Move.create(from, to, board.getPiece(to) == Piece.None[0] 
+                ? Move.QUIET_MOVE_FLAG 
+                : Move.CAPTURE_FLAG);
         }
 
         return index;
