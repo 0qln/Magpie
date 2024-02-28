@@ -52,6 +52,10 @@ public final class Utils
         boards[index] = (boards[index] & ~(1L << squareIdx)) | ((value ? 1L : 0L) << squareIdx);
     }
 
+    public static int lsb(long board) {
+        return Long.numberOfTrailingZeros(board);
+    }
+
     public static int popLsb(long[] board) {
         int lsb = Long.numberOfTrailingZeros(board[0]);
         board[0] &= board[0] - 1;
