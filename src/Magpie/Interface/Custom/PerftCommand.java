@@ -2,14 +2,13 @@ package Interface.Custom;
 
 import java.util.Optional;
 
-import Engine.IBoard;
 import Misc.Ptr;
 
 public class PerftCommand extends Command {
 
     private int _depth;
 
-    public PerftCommand(Ptr<IBoard> board, Optional<Integer> depth) {
+    public PerftCommand(Ptr<Engine.IBoard> board, Optional<Integer> depth) {
         super(board);
         _depth = depth.orElse(1);
     }
@@ -23,7 +22,7 @@ public class PerftCommand extends Command {
         else {
             return;
         }
-        board.perft(_depth, true);
+        board.perft(_depth, (move, count) -> System.out.println(Engine.Move.toString(move) + ": " + count));
     }
     
 }

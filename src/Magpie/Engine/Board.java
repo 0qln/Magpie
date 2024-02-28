@@ -1,6 +1,8 @@
 package Engine;
 
 import java.util.*;
+import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 
 public class Board implements IBoard
 {
@@ -37,7 +39,7 @@ public class Board implements IBoard
     }
     
 
-    public long perft(int depth, boolean pv) {
+    public long perft(int depth, BiConsumer<Short, Long> callback) {
         if (depth == 0) {
             return 0;
         } 
@@ -45,8 +47,24 @@ public class Board implements IBoard
         long moveC = 0, c;
         for (short move : MoveList.generate(this).getMoves()) {
             makeMove(move);
-            moveC += (c = perft(depth-1, false));
-            if (pv) System.out.println(Move.toString(move) + ": " + c);
+            moveC += (c = perft(depth-1));
+            callback.accept(move, c);
+            undoMove(move);
+        }
+
+        return moveC;
+    }
+
+
+    private long perft(int depth) {
+        if (depth == 0) {
+            return 0;
+        } 
+
+        long moveC = 0;
+        for (short move : MoveList.generate(this).getMoves()) {
+            makeMove(move);
+            moveC += perft(depth-1);
             undoMove(move);
         }
 
