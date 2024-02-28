@@ -1,6 +1,6 @@
 package Engine;
 
-public interface IMoveGenerator
+public interface IMoveGenerator<TBoard>
 {
-    short[] getPseudoLegalMoves(IBoard board, int square);
+    void generate(TBoard board, int square);
 }
