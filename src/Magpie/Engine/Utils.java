@@ -57,4 +57,19 @@ public final class Utils
         board[0] &= board[0] - 1;
         return lsb;
     }
+
+    public static void printBB(long bb) {
+        String result = "";
+        for (int rank = 7; rank >= 0; rank--) {
+            result += (rank + 1) + "  ";
+            for (int file = 0; file <= 7; file++) {
+                int square = Misc.Utils.sqaureIndex0(rank, file);
+                char c = getBit(bb, square) ? 'x' : '.';
+                result += c + " ";
+            }
+            result += "\n";
+        }
+        result += "   a b c d e f g h\n";
+        System.out.println(result);
+    }
 }
