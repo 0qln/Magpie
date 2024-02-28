@@ -21,7 +21,7 @@ public final class Utils
     }
 
     public static boolean getBit(long board, int squareIdx) {
-        return ((board >> squareIdx) & 1) == 1;
+        return ((board >>> squareIdx) & 1) == 1;
     }
 
     public static long setBit(long board, int squareIdx, boolean value) {
@@ -45,7 +45,7 @@ public final class Utils
     }
 
     public static boolean getBit(long[] boards, int index, int squareIdx) {
-        return ((boards[index] >> squareIdx) & 1) == 1;
+        return ((boards[index] >>> squareIdx) & 1) == 1;
     }
 
     public static void setBit(long[] boards, int index, int squareIdx, boolean value) {

@@ -19,7 +19,7 @@ public final class Piece
     public static final int WhiteKing   = PieceType.King   << 1 | Color.White;
 
     public static int getType(int piece) {
-        return piece >> 1;
+        return piece >>> 1;
     }
 
     public static int getColor(int piece) {

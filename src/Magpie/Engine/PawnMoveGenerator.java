@@ -25,7 +25,7 @@ public class PawnMoveGenerator extends MoveGenerator
         // Single step
         toBB[0] = (pawns << 8);
         toBB[0] ^= toBB[0] & pieces; // Exclude occupied squares 
-        fromBB[0] = toBB[0] >> 8;
+        fromBB[0] = toBB[0] >>> 8;
         while (toBB[0] != 0) {
             final int from = Utils.popLsb(fromBB);
             final int to = Utils.popLsb(toBB);
@@ -35,8 +35,8 @@ public class PawnMoveGenerator extends MoveGenerator
         // Double step
         toBB[0] = ((pawns & STEP2[Color.White]) << 16);
         toBB[0] ^= toBB[0] & pieces; 
-        toBB[0] ^= ((toBB[0] >> 8) & pieces) << 8;
-        fromBB[0] = toBB[0] >> 16;
+        toBB[0] ^= ((toBB[0] >>> 8) & pieces) << 8;
+        fromBB[0] = toBB[0] >>> 16;
         while (toBB[0] != 0) {
             final int from = Utils.popLsb(fromBB);
             final int to = Utils.popLsb(toBB);
@@ -45,7 +45,7 @@ public class PawnMoveGenerator extends MoveGenerator
 
         // Capture right
         toBB[0] = ((pawns & RIGHT) << 7) & enemies;
-        fromBB[0] = toBB[0] >> 7;
+        fromBB[0] = toBB[0] >>> 7;
         while (toBB[0] != 0) {
             final int from = Utils.popLsb(fromBB);
             final int to = Utils.popLsb(toBB);
@@ -54,7 +54,7 @@ public class PawnMoveGenerator extends MoveGenerator
  
         // Capture left
         toBB[0] = ((pawns & LEFT) << 9) & enemies;
-        fromBB[0] = toBB[0] >> 9;
+        fromBB[0] = toBB[0] >>> 9;
         while (toBB[0] != 0) {
             final int from = Utils.popLsb(fromBB);
             final int to = Utils.popLsb(toBB);
@@ -73,7 +73,7 @@ public class PawnMoveGenerator extends MoveGenerator
         
 
         // Single step
-        toBB[0] = (pawns >> 8);
+        toBB[0] = (pawns >>> 8);
         toBB[0] ^= toBB[0] & pieces; // Exclude occupied squares 
         fromBB[0] = toBB[0] << 8;
         while (toBB[0] != 0) {
@@ -83,9 +83,9 @@ public class PawnMoveGenerator extends MoveGenerator
         }
         
         // Double step
-        toBB[0] = ((pawns & STEP2[Color.Black]) >> 16);
+        toBB[0] = ((pawns & STEP2[Color.Black]) >>> 16);
         toBB[0] ^= toBB[0] & pieces; 
-        toBB[0] ^= ((toBB[0] << 8) & pieces) >> 8;
+        toBB[0] ^= ((toBB[0] << 8) & pieces) >>> 8;
         fromBB[0] = toBB[0] << 16;
         while (toBB[0] != 0) {
             final int from = Utils.popLsb(fromBB);
@@ -94,7 +94,7 @@ public class PawnMoveGenerator extends MoveGenerator
         }
 
         // Capture right
-        toBB[0] = ((pawns & RIGHT) >> 9) & enemies;
+        toBB[0] = ((pawns & RIGHT) >>> 9) & enemies;
         fromBB[0] = toBB[0] << 9;
         while (toBB[0] != 0) {
             final int from = Utils.popLsb(fromBB);
@@ -103,7 +103,7 @@ public class PawnMoveGenerator extends MoveGenerator
         }
  
         // Capture left
-        toBB[0] = ((pawns & LEFT) >> 7) & enemies;
+        toBB[0] = ((pawns & LEFT) >>> 7) & enemies;
         fromBB[0] = toBB[0] << 7;
         while (toBB[0] != 0) {
             final int from = Utils.popLsb(fromBB);

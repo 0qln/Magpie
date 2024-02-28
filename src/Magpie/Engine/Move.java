@@ -50,15 +50,15 @@ public final class Move {
     }
     
     public static int getFrom(short move) {
-        return (move & FROM_MASK) >> FROM_SHIFT;
+        return (move & FROM_MASK) >>> FROM_SHIFT;
     }
 
     public static int getTo(short move) {
-        return (move & TO_MASK) >> TO_SHIFT;
+        return (move & TO_MASK) >>> TO_SHIFT;
     }
 
     public static int getFlag(short move) {
-        return (move & FLAG_MASK) >> FLAG_SHIFT;
+        return (move & FLAG_MASK) >>> FLAG_SHIFT;
     }
 
     public static int getPromotion(short move) {
