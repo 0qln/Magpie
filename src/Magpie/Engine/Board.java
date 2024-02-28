@@ -43,19 +43,15 @@ public class Board implements IBoard
 
     public long perft(int depth, BiConsumer<Short, Long> callback) {
         if (depth == 0) {
-            return 0;
+            return 1;
         } 
 
         long moveC = 0, c;
         for (short move : MoveList.generate(this).getMoves()) {
-            System.out.println("NEW");
-            new Interface.Custom.PrintCommand(Ptr.to(this)).run();
             makeMove(move);
-            new Interface.Custom.PrintCommand(Ptr.to(this)).run();
             moveC += (c = perft(depth-1));
             callback.accept(move, c);
             undoMove(move);
-            new Interface.Custom.PrintCommand(Ptr.to(this)).run();
         }
 
         return moveC;
@@ -64,7 +60,7 @@ public class Board implements IBoard
 
     private long perft(int depth) {
         if (depth == 0) {
-            return 0;
+            return 1;
         } 
 
         long moveC = 0;
