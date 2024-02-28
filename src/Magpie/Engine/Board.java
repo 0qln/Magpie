@@ -37,6 +37,23 @@ public class Board implements IBoard
     }
     
 
+    public long perft(int depth, boolean pv) {
+        if (depth == 0) {
+            return 0;
+        } 
+
+        long moveC = 0, c;
+        for (short move : MoveList.generate(this).getMoves()) {
+            makeMove(move);
+            moveC += (c = perft(depth-1, false));
+            if (pv) System.out.println(Move.toString(move) + ": " + c);
+            undoMove(move);
+        }
+
+        return moveC;
+    }
+
+
     public void makeMove(short move) {
         // Get context
         final int us = _turn, nus = Color.NOT(us);
@@ -286,6 +303,7 @@ public class Board implements IBoard
         _pieceCount[piece]--;
     }
 
+
     @Override
     public int getPiece(int square) {
         return _pieces[square];
@@ -346,6 +364,11 @@ public class Board implements IBoard
     @Override
     public void setTurn(int color) {
         _turn = color;
+    }
+
+
+    public long getBitboard(int pieceType, int color) {
+        return _tBitboards[pieceType] & _cBitboards[color];
     }
 
 
