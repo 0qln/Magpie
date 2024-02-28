@@ -72,4 +72,8 @@ public final class Utils
         result += "   a b c d e f g h\n";
         System.out.println(result);
     }
+
+    public static void printBB(long[] bb) {
+        printBB(bb[0]);
+    }
 }
