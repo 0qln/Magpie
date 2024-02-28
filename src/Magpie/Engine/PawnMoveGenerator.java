@@ -44,7 +44,7 @@ public class PawnMoveGenerator extends MoveGenerator
         }
 
         // Capture right
-        toBB[0] = (pawns & RIGHT << 7) & enemies;
+        toBB[0] = ((pawns & RIGHT) << 7) & enemies;
         fromBB[0] = toBB[0] >> 7;
         while (toBB[0] != 0) {
             final int from = Utils.popLsb(fromBB);
@@ -65,6 +65,52 @@ public class PawnMoveGenerator extends MoveGenerator
     }
 
     private int black(short[] list, int index, Board board) {
+        final long pawns = board.getBitboard(PieceType.Pawn, Color.Black);
+        final long enemies = board.getCBitboard(Color.White);
+        final long pieces = enemies | board.getCBitboard(Color.Black);
+        long[] toBB = new long[1];
+        long[] fromBB = new long[1];
+        
+
+        // Single step
+        toBB[0] = (pawns >> 8);
+        toBB[0] ^= toBB[0] & pieces; // Exclude occupied squares 
+        fromBB[0] = toBB[0] << 8;
+        while (toBB[0] != 0) {
+            final int from = Utils.popLsb(fromBB);
+            final int to = Utils.popLsb(toBB);
+            list[index++] = Move.create(from, to, Move.QUIET_MOVE_FLAG);
+        }
+        
+        // Double step
+        toBB[0] = ((pawns & STEP2[Color.Black]) >> 16);
+        toBB[0] ^= toBB[0] & pieces; 
+        toBB[0] ^= ((toBB[0] << 8) & pieces) >> 8;
+        fromBB[0] = toBB[0] << 16;
+        while (toBB[0] != 0) {
+            final int from = Utils.popLsb(fromBB);
+            final int to = Utils.popLsb(toBB);
+            list[index++] = Move.create(from, to, Move.DOUBLE_PAWN_PUSH_FLAG);
+        }
+
+        // Capture right
+        toBB[0] = ((pawns & RIGHT) >> 9) & enemies;
+        fromBB[0] = toBB[0] << 9;
+        while (toBB[0] != 0) {
+            final int from = Utils.popLsb(fromBB);
+            final int to = Utils.popLsb(toBB);
+            list[index++] = Move.create(from, to, Move.CAPTURE_FLAG);
+        }
+ 
+        // Capture left
+        toBB[0] = ((pawns & LEFT) >> 7) & enemies;
+        fromBB[0] = toBB[0] << 7;
+        while (toBB[0] != 0) {
+            final int from = Utils.popLsb(fromBB);
+            final int to = Utils.popLsb(toBB);
+            list[index++] = Move.create(from, to, Move.CAPTURE_FLAG);
+        }
+        
         return index;
     }
 }
