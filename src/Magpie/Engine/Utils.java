@@ -62,16 +62,6 @@ public final class Utils
         return lsb;
     }
 
-    /**
-     * https://docs.oracle.com/javase/specs/jls/se7/html/jls-15.html#jls-15.19
-     * @param bb
-     * @param amount
-     * @return
-     */
-    public static long lshift(long bb, int amount) {
-        return bb << ((32 - amount) % 32);
-    }
-
     public static void printBB(long bb) {
         String result = "";
         for (int rank = 7; rank >= 0; rank--) {
