@@ -20,9 +20,9 @@ public class KnightMoveGenerator extends MoveGenerator {
         long k = knights[0];
 
         index = addMoves(list, index, board, color, k & MASK_WEST_WEST & MASK_NORT, +10);
-        index = addMoves(list, index, board, color, k & MASK_WEST_WEST & MASK_SOUT, -6);
+        index = addMoves(list, index, board, color, k & MASK_WEST_WEST & MASK_SOUT, - 6);
         index = addMoves(list, index, board, color, k & MASK_EAST_EAST & MASK_SOUT, -10);
-        index = addMoves(list, index, board, color, k & MASK_EAST_EAST & MASK_NORT, +6);
+        index = addMoves(list, index, board, color, k & MASK_EAST_EAST & MASK_NORT, + 6);
         index = addMoves(list, index, board, color, k & MASK_WEST & MASK_NORT_NORT, +17);
         index = addMoves(list, index, board, color, k & MASK_WEST & MASK_SOUT_SOUT, -15);
         index = addMoves(list, index, board, color, k & MASK_EAST & MASK_SOUT_SOUT, -17);
