@@ -4,69 +4,89 @@ public final class Utils
 {
     
 
-    public static long deactivateBit(long board, int squareIdx) {
+    public static final long deactivateBit(long board, int squareIdx) {
         return board & ~(1L << squareIdx);
     }
 
-    public static long activateBit(long board, int squareIdx) {
+    public static final long activateBit(long board, int squareIdx) {
         return board | (1L << squareIdx);
     }
 
-    public static long flipBit(long board, int squareIdx) {
+    public static final long flipBit(long board, int squareIdx) {
         return board ^ (1L << squareIdx);
     }
 
-    public static long flipBits(long board, int squareIdx1, int squareIdx2) {
+    public static final long flipBits(long board, int squareIdx1, int squareIdx2) {
         return board ^ (1L << squareIdx1 | 1L << squareIdx2);
     }
 
-    public static boolean getBit(long board, int squareIdx) {
+    public static final boolean getBit(long board, int squareIdx) {
         return ((board >>> squareIdx) & 1) == 1;
     }
 
-    public static long setBit(long board, int squareIdx, boolean value) {
+    public static final long setBit(long board, int squareIdx, boolean value) {
         return (board & ~(1L << squareIdx)) | ((value ? 1L : 0L) << squareIdx);
     }
 
-    public static void deactivateBit(long[] boards, int index, int squareIdx) {
+    public static final void deactivateBit(long[] boards, int index, int squareIdx) {
         boards[index] &= ~(1L << squareIdx);
     }
 
-    public static void activateBit(long[] boards, int index, int squareIdx) {
+    public static final void activateBit(long[] boards, int index, int squareIdx) {
         boards[index] |= (1L << squareIdx);
     }
 
-    public static void flipBit(long[] boards, int index, int squareIdx) {
+    public static final void flipBit(long[] boards, int index, int squareIdx) {
         boards[index] ^= (1L << squareIdx);
     }
 
-    public static void flipBits(long[] boards, int index, int squareIdx1, int squareIdx2) {
+    public static final void flipBits(long[] boards, int index, int squareIdx1, int squareIdx2) {
         boards[index] ^= (1L << squareIdx1 | 1L << squareIdx2);
     }
 
-    public static boolean getBit(long[] boards, int index, int squareIdx) {
+    public static final boolean getBit(long[] boards, int index, int squareIdx) {
         return ((boards[index] >>> squareIdx) & 1) == 1;
     }
 
-    public static void setBit(long[] boards, int index, int squareIdx, boolean value) {
+    public static final void setBit(long[] boards, int index, int squareIdx, boolean value) {
         boards[index] = (boards[index] & ~(1L << squareIdx)) | ((value ? 1L : 0L) << squareIdx);
     }
 
-    public static int lsb(long board) {
-        return Long.numberOfTrailingZeros(board);
+    // excluding the square itself
+    public static final long splitBBNorth(int square) {
+        return ~0L << square + 1;
+    }
+    public static final long splitBBSouth(int square) {
+        return ~0L >>> (64 - square);
     }
 
-    public static int popLsb(long[] board) {
-        int lsb = Long.numberOfTrailingZeros(board[0]);
+    public static final int lsb(long board) {
+        return board == 0 ? 0 : Long.numberOfTrailingZeros(board);
+    }
+
+    public static final int msb(long board) {
+        return board == 0 ? 64 : 63 -  Long.numberOfLeadingZeros(board);
+    }
+
+    public static final int popLsb(long[] board) {
+        int lsb = lsb(board[0]);
         board[0] &= board[0] - 1;
         return lsb;
-    }
-    
-    public static long rshift(long value, int amount) {
-        return amount > 0 ? value >>> amount : value << -amount; 
+    } 
+
+    public static final long shift(long bb, int direction) {
+        return direction > 0 ? bb << direction : bb >>> -direction; 
     }
 
-    public static void printBB(long bb) {
+    public static final long shift(long[] bb, int direction) {
+        return shift(bb[0], direction);
+    }
+
+    public static final long target(int square) {
+        return 1L << square;
+    }
+
+    public static final void printBB(long bb) {
         String result = "";
         for (int rank = 7; rank >= 0; rank--) {
             result += (rank + 1) + "  ";
@@ -81,7 +101,7 @@ public final class Utils
         System.out.println(result);
     }
 
-    public static void printBB(long[] bb) {
+    public static final void printBB(long[] bb) {
         printBB(bb[0]);
     }
 }
