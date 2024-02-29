@@ -6,8 +6,7 @@ import java.util.function.Consumer;
 
 import Misc.Ptr;
 
-public class Board implements IBoard
-{
+public class Board implements IBoard {
     // Bitboard array to store the color of the pieces
     private long[] _cBitboards = new long[2];
 
@@ -29,27 +28,23 @@ public class Board implements IBoard
     // Game ply
     private int _ply;
 
-    
-    public Board() throws IllegalArgumentException, IllegalAccessException
-    {
+    public Board() throws IllegalArgumentException, IllegalAccessException {
         _stateStack.push(new BoardState.Builder(this)
-            .castling(new byte[] {1,1,1,1})
-            .ply(0)
-            .plys50(0)
-            .build()
-        );
+                .castling(new byte[] { 0, 0, 0, 0 })
+                .ply(0)
+                .plys50(0)
+                .build());
     }
-    
 
     public long perft(int depth, BiConsumer<Short, Long> callback) {
         if (depth == 0) {
             return 1;
-        } 
+        }
 
         long moveC = 0, c;
         for (short move : MoveList.generate(this).getMoves()) {
             makeMove(move);
-            moveC += (c = perft(depth-1));
+            moveC += (c = perft(depth - 1));
             callback.accept(move, c);
             undoMove(move);
         }
@@ -57,33 +52,31 @@ public class Board implements IBoard
         return moveC;
     }
 
-
     private long perft(int depth) {
         if (depth == 0) {
             return 1;
-        } 
+        }
 
         long moveC = 0;
         for (short move : MoveList.generate(this).getMoves()) {
             makeMove(move);
-            moveC += perft(depth-1);
+            moveC += perft(depth - 1);
             undoMove(move);
         }
 
         return moveC;
     }
 
-
     public void makeMove(short move) {
         // Get context
         final int us = _turn, nus = Color.NOT(us);
-        final int from = Move.getFrom(move); 
+        final int from = Move.getFrom(move);
         final int to = Move.getTo(move);
         final int flag = Move.getFlag(move);
         final int rNormF = from / 8 * 8;
         final int movingPiece = getPiece(from);
         int capturedPiece = flag == Move.EN_PASSANT_FLAG ? Piece.create(PieceType.Pawn, nus) : getPiece(to);
-        
+
         // Increment game counters
         _turn = Color.NOT(_turn);
         _ply++;
@@ -91,19 +84,18 @@ public class Board implements IBoard
         // Create new board state
         BoardState.Builder newState = new BoardState.Builder(this);
         newState
-            .givesCheck(false) // TODO
-            .castling(_stateStack.getFirst().getCastling().toByteArray())
-            .ply(_ply)
-            .plys50(_ply);
-       
+                .givesCheck(false) // TODO
+                .castling(_stateStack.getFirst().getCastling().toByteArray())
+                .ply(_ply)
+                .plys50(_ply);
+
         // Handle castling
         if (flag == Move.KING_CASTLE_FLAG) {
             movePiece(rNormF + Files.E, rNormF + Files.G);
             movePiece(rNormF + Files.H, rNormF + Files.F);
             newState.getCastling().set((us << 1) | 1, false);
             capturedPiece = Piece.None[0];
-        }
-        else if (flag == Move.QUEEN_CASTLE_FLAG) {
+        } else if (flag == Move.QUEEN_CASTLE_FLAG) {
             movePiece(rNormF + Files.E, rNormF + Files.C);
             movePiece(rNormF + Files.A, rNormF + Files.D);
             newState.getCastling().set((us << 1) | 0, false);
@@ -114,18 +106,18 @@ public class Board implements IBoard
         // Also get's activated on a promotion with capture, which is right.
         else if (Piece.getType(capturedPiece) != PieceType.None) {
             int captureSquare = to;
-            
+
             // Handle en passant captures
             if (flag == Move.EN_PASSANT_FLAG) {
                 captureSquare += (us * 2 - 1) * 8;
             }
-            
+
             // Remove destination piece for captures
             removePiece(captureSquare);
 
             // Move the piece
             movePiece(from, to);
-            
+
             // If a piece get's captured, the 50 move rule counter needs to be reset
             newState.plys50(0);
         }
@@ -155,12 +147,11 @@ public class Board implements IBoard
             // If a pawn get's moved, the 50 move rule counter needs to be reset
             newState.plys50(0);
         }
-        
+
         // Update board state
         _stateStack.push(newState.buildUnchecked());
     }
 
-    
     @Override
     public void undoMove(short move) {
         // Increment game counters
@@ -169,7 +160,7 @@ public class Board implements IBoard
 
         // Get context
         int us = _turn;
-        final int from = Move.getFrom(move); 
+        final int from = Move.getFrom(move);
         final int fromRank = from / 8;
         final int to = Move.getTo(move);
         final int flag = Move.getFlag(move);
@@ -217,19 +208,17 @@ public class Board implements IBoard
         _stateStack.pop();
     }
 
-
     // TODO
     public boolean hasThreeFoldRepitition() {
         return false;
     }
-
 
     @Override
     public IMoveDecoder getMoveDecoder() {
         return str -> {
             int from = Misc.Utils.toSquareIndex(str.substring(0, 2));
             int to = Misc.Utils.toSquareIndex(str.substring(2, 4));
-            
+
             // Use board context to determine the flag [e.g. castling, capturing, promotion]
             int movingPieceType = Piece.getType(getPiece(from));
             int destPieceType = Piece.getType(getPiece(to));
@@ -262,8 +251,7 @@ public class Board implements IBoard
             else if (movingPieceType == PieceType.King && absDist == 2) {
                 if (to % 8 == Files.G) {
                     flag = Move.KING_CASTLE_FLAG;
-                }
-                else if (to % 8 == Files.C) {
+                } else if (to % 8 == Files.C) {
                     flag = Move.QUEEN_CASTLE_FLAG;
                 }
             }
@@ -272,22 +260,18 @@ public class Board implements IBoard
         };
     }
 
-
     public int getCastlingCardinality() {
         return _stateStack.getFirst().getCastling().cardinality();
     }
 
-
     public BitSet getCastling() {
-        return (BitSet)_stateStack.getFirst().getCastling().clone();
+        return (BitSet) _stateStack.getFirst().getCastling().clone();
     }
-
 
     @Override
     public int getEnPassantSquare() {
         return _stateStack.getFirst().getEpSquare();
     }
-
 
     @Override
     public void addPiece(int square, int piece) {
@@ -324,28 +308,24 @@ public class Board implements IBoard
         _pieceCount[piece]--;
     }
 
-
     @Override
     public int getPiece(int square) {
         return _pieces[square];
     }
 
-
     private void movePiece(int from, int to) {
         int piece = _pieces[from];
         long fromTo = (1L << from) | (1L << to);
         _tBitboards[Piece.getType(piece)] ^= fromTo;
-        _cBitboards[Piece.getColor(piece)] ^= fromTo; 
+        _cBitboards[Piece.getColor(piece)] ^= fromTo;
         _pieces[from] = Piece.None[0];
         _pieces[to] = piece;
     }
-    
 
     @Override
     public int getTurn() {
         return _turn;
     }
-
 
     public String toString() {
         String result = "";
@@ -363,34 +343,30 @@ public class Board implements IBoard
         return result;
     }
 
-
     @Override
     public void setCastlingRights(int king, int white, boolean b) {
         _stateStack.getFirst().setCastlingRights(king, white, b);
     }
 
     public boolean canCastle(int king, int color) {
-        return _stateStack.getFirst().getCastling().get(color << 1 | king);
+        return _stateStack.getFirst().getCastling().get(color << 1 | king)
+                && (getOccupancy() & Masks.Castling[king]) == 0;
     }
-
 
     @Override
     public void setEnpassant(int squareIndex) {
         _stateStack.getFirst().setEpSquare(squareIndex);
     }
 
-
     @Override
     public void setPlys50(int value) {
         _stateStack.getFirst().setPlys50(value);
     }
 
-
     @Override
     public void setTurn(int color) {
         _turn = color;
     }
-
 
     public long getBitboard(int pieceType, int color) {
         return _tBitboards[pieceType] & _cBitboards[color];
@@ -402,13 +378,16 @@ public class Board implements IBoard
 
     public long getTBitboard(int type) {
         return _tBitboards[type];
-    } 
+    }
+
+    public long getOccupancy() {
+        return getCBitboard(Color.White) | getCBitboard(Color.Black);
+    }
 
     @Override
     public IBoardBuilder getBuilder() {
         return new Builder();
     }
-
 
     public static class Builder implements IBoardBuilder {
         @Override
