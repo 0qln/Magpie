@@ -369,6 +369,10 @@ public class Board implements IBoard
         _stateStack.getFirst().setCastlingRights(king, white, b);
     }
 
+    public boolean canCastle(int king, int color) {
+        return _stateStack.getFirst().getCastling().get(color << 1 | king);
+    }
+
 
     @Override
     public void setEnpassant(int squareIndex) {
