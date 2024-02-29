@@ -69,7 +69,7 @@ public class BoardState
      * @param value
      */
     public void setCastlingRights(int kingside, int color, boolean value) {
-        _castling.set((color << 1) | kingside, value);
+        _castling.set(color << 1 | kingside, value);
     }
 
     public long getCheckers() {
