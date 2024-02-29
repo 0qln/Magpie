@@ -3,7 +3,6 @@ package Interface;
 import java.util.*;
 import java.util.logging.Logger;
 
-import Engine.BoardState;
 import Misc.LoggerConfigurator;
 import Misc.Ptr;
 
