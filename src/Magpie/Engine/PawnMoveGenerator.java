@@ -1,13 +1,11 @@
 package Engine;
 
+import static Engine.Utils.*;
+
 public class PawnMoveGenerator extends MoveGenerator
 {
-    private static final long LEFT = 0x7F7F7F7F7F7F7F7FL;
-    private static final long RIGHT = 0xFEFEFEFEFEFEFEFEL;
     // Indexed by color
-    private static final long[] STEP2 = new long[] { 0xFF00L, 0xFF000000000000L };
-    // Indexed by color
-    private static final long[] EP = new long[] { 0xFF0000L, 0xFF0000000000L };
+    private static final long[] STEP2 = new long[] { Masks.Ranks[1], Masks.Ranks[6] };
 
     @Override
     int generate(short[] list, int index, Board board, int color) {
@@ -26,52 +24,52 @@ public class PawnMoveGenerator extends MoveGenerator
         
 
         // Single step
-        toBB[0] = (pawns << 8);
+        toBB[0] = shift(pawns, CompassRose.Nort);
         toBB[0] ^= toBB[0] & pieces; // Exclude occupied squares 
-        fromBB[0] = toBB[0] >>> 8;
+        fromBB[0] = shift(toBB, CompassRose.Sout);
         while (toBB[0] != 0) {
-            from = Utils.popLsb(fromBB);
-            to = Utils.popLsb(toBB);
+            from = popLsb(fromBB);
+            to = popLsb(toBB);
             list[index++] = Move.create(from, to, Move.QUIET_MOVE_FLAG);
         }
         
         // Double step
-        toBB[0] = ((pawns & STEP2[Color.White]) << 16);
+        toBB[0] = shift(pawns & STEP2[Color.White], 2 * CompassRose.Nort);
         toBB[0] ^= toBB[0] & pieces; 
-        toBB[0] ^= ((toBB[0] >>> 8) & pieces) << 8;
-        fromBB[0] = toBB[0] >>> 16;
+        toBB[0] ^= shift(shift(toBB, CompassRose.Sout) & pieces, CompassRose.Nort);
+        fromBB[0] = shift(toBB, 2 * CompassRose.Sout);
         while (toBB[0] != 0) {
-            from = Utils.popLsb(fromBB);
-            to = Utils.popLsb(toBB);
+            from = popLsb(fromBB);
+            to = popLsb(toBB);
             list[index++] = Move.create(from, to, Move.DOUBLE_PAWN_PUSH_FLAG);
         }
 
         // Capture right
-        toBB[0] = ((pawns & RIGHT) << 7) & enemies;
-        fromBB[0] = toBB[0] >>> 7;
+        toBB[0] = shift(pawns & Masks.West, CompassRose.NoWe) & enemies;
+        fromBB[0] = shift(toBB, CompassRose.NoWe);
         while (toBB[0] != 0) {
-            from = Utils.popLsb(fromBB);
-            to = Utils.popLsb(toBB);
+            from = popLsb(fromBB);
+            to = popLsb(toBB);
             list[index++] = Move.create(from, to, Move.CAPTURE_FLAG);
         }
  
         // Capture left
-        toBB[0] = ((pawns & LEFT) << 9) & enemies;
-        fromBB[0] = toBB[0] >>> 9;
+        toBB[0] = shift(pawns & Masks.East, CompassRose.NoEa) & enemies;
+        fromBB[0] = shift(toBB, CompassRose.SoWe);
         while (toBB[0] != 0) {
-            from = Utils.popLsb(fromBB);
-            to = Utils.popLsb(toBB);
+            from = popLsb(fromBB);
+            to = popLsb(toBB);
             list[index++] = Move.create(from, to, Move.CAPTURE_FLAG);
         }
         
         // En passant 
         // Check left and right of the en passant square for an ally pawn
-        toBB[0] = 1L << board.getEnPassantSquare();
-        to = Utils.lsb(toBB[0]);
-        fromBB[0] = (((pawns & LEFT) << 9) & toBB[0]) >>> 9; 
-        fromBB[0] |= (((pawns & RIGHT) << 7) & toBB[0]) >>> 7;
+        toBB[0] = target(board.getEnPassantSquare());
+        to = lsb(toBB[0]);
+        fromBB[0] = shift(shift(pawns & Masks.East, CompassRose.NoEa) & toBB[0], CompassRose.SoWe); 
+        fromBB[0] |= shift(shift(pawns & Masks.West, CompassRose.NoWe) & toBB[0], CompassRose.NoWe);
         while (fromBB[0] != 0) {
-            from = Utils.popLsb(fromBB);
+            from = popLsb(fromBB);
             list[index++] = Move.create(from, to, Move.EN_PASSANT_FLAG);
         }
 
@@ -88,52 +86,52 @@ public class PawnMoveGenerator extends MoveGenerator
         
 
         // Single step
-        toBB[0] = (pawns >>> 8);
+        toBB[0] = shift(pawns, CompassRose.Sout);
         toBB[0] ^= toBB[0] & pieces; // Exclude occupied squares 
-        fromBB[0] = toBB[0] << 8;
+        fromBB[0] = shift(toBB, CompassRose.Nort);
         while (toBB[0] != 0) {
-            from = Utils.popLsb(fromBB);
-            to = Utils.popLsb(toBB);
+            from = popLsb(fromBB);
+            to = popLsb(toBB);
             list[index++] = Move.create(from, to, Move.QUIET_MOVE_FLAG);
         }
         
         // Double step
-        toBB[0] = ((pawns & STEP2[Color.Black]) >>> 16);
+        toBB[0] = shift(pawns & STEP2[Color.Black], CompassRose.Sout * 2);
         toBB[0] ^= toBB[0] & pieces; 
-        toBB[0] ^= ((toBB[0] << 8) & pieces) >>> 8;
-        fromBB[0] = toBB[0] << 16;
+        toBB[0] ^= shift(shift(toBB, CompassRose.Nort) & pieces, CompassRose.Sout);
+        fromBB[0] = shift(toBB, CompassRose.Nort * 2);
         while (toBB[0] != 0) {
-            from = Utils.popLsb(fromBB);
-            to = Utils.popLsb(toBB);
+            from = popLsb(fromBB);
+            to = popLsb(toBB);
             list[index++] = Move.create(from, to, Move.DOUBLE_PAWN_PUSH_FLAG);
         }
 
         // Capture right
-        toBB[0] = ((pawns & RIGHT) >>> 9) & enemies;
-        fromBB[0] = toBB[0] << 9;
+        toBB[0] = shift(pawns & Masks.West, CompassRose.SoWe) & enemies;
+        fromBB[0] = shift(toBB, CompassRose.NoEa);
         while (toBB[0] != 0) {
-            from = Utils.popLsb(fromBB);
-            to = Utils.popLsb(toBB);
+            from = popLsb(fromBB);
+            to = popLsb(toBB);
             list[index++] = Move.create(from, to, Move.CAPTURE_FLAG);
         }
  
         // Capture left
-        toBB[0] = ((pawns & LEFT) >>> 7) & enemies;
-        fromBB[0] = toBB[0] << 7;
+        toBB[0] = shift(pawns & Masks.East, CompassRose.SoEa) & enemies;
+        fromBB[0] = shift(toBB, CompassRose.NoWe);
         while (toBB[0] != 0) {
-            from = Utils.popLsb(fromBB);
-            to = Utils.popLsb(toBB);
+            from = popLsb(fromBB);
+            to = popLsb(toBB);
             list[index++] = Move.create(from, to, Move.CAPTURE_FLAG);
         }
 
         // En passant 
         // Check left and right of the en passant square for an ally pawn
-        toBB[0] = 1L << board.getEnPassantSquare();
-        to = Utils.lsb(toBB[0]);
-        fromBB[0] = (((pawns & LEFT) >>> 7) & toBB[0]) << 7; 
-        fromBB[0] |= (((pawns & RIGHT) >>> 9) & toBB[0]) << 9;
+        toBB[0] = target(board.getEnPassantSquare());
+        to = lsb(toBB[0]);
+        fromBB[0] = shift(shift(pawns & Masks.East, CompassRose.SoEa) & toBB[0], CompassRose.NoWe); 
+        fromBB[0] |= shift(shift(pawns & Masks.West, CompassRose.SoWe) & toBB[0], CompassRose.NoEa);
         while (fromBB[0] != 0) {
-            from = Utils.popLsb(fromBB);
+            from = popLsb(fromBB);
             list[index++] = Move.create(from, to, Move.EN_PASSANT_FLAG);
         }
        
