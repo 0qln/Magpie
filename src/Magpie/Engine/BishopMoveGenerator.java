@@ -33,7 +33,6 @@ public class BishopMoveGenerator extends MoveGenerator {
         while (b[0] != 0) {
             final int from = popLsb(b);
             toBB[0] = attacks(from, pieces) & mask;
-            printBB(toBB);
             while (toBB[0] != 0)
                 list[index++] = Move.create(from, popLsb(toBB), flag);
         }
