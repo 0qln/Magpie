@@ -13,7 +13,8 @@ public class MoveList {
         // Generate using generator classes
         // list._moveCount = new PawnMoveGenerator().generate(list._moves, list._moveCount, board, board.getTurn());
         // list._moveCount = new KnightMoveGenerator().generate(list._moves, list._moveCount, board, board.getTurn());
-        list._moveCount = new RookMoveGenerator().generate(list._moves, list._moveCount, board, board.getTurn());        
+        // list._moveCount = new RookMoveGenerator().generate(list._moves, list._moveCount, board, board.getTurn());        
+        list._moveCount = new BishopMoveGenerator().generate(list._moves, list._moveCount, board, board.getTurn());        
 
         return list;
     }
