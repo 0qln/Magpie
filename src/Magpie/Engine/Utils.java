@@ -61,6 +61,10 @@ public final class Utils
         board[0] &= board[0] - 1;
         return lsb;
     }
+    
+    public static long rshift(long value, int amount) {
+        return amount > 0 ? value >>> amount : value << -amount; 
+    }
 
     public static void printBB(long bb) {
         String result = "";
