@@ -29,17 +29,20 @@ public abstract class Builder<T> {
     protected <TChild extends Builder<?>> boolean ok(TChild childInstance) {
         try {
             for (Field field : childInstance.getClass().getDeclaredFields()) {
+                field.setAccessible(true);
                 if (field.isAnnotationPresent(Required.class)
                         && field.get(childInstance) == null)
                     return false;
             }
             return true;
-        } catch (Exception e) {
+        } catch (IllegalAccessException e) {
+            // This shouldn't happen, as we have forced the field to be accesible.
+            System.out.println("Parent builder failed to access field of child.");
             return false;
         }
     }
 
-    public final T build() {
+    public final T build() throws FieldNotSetException {
         return build(true);
     }
 
@@ -47,7 +50,7 @@ public abstract class Builder<T> {
      * @param checkFields Check if required fields are set. (Reccomendation: [ Release build: Off | Development build: On ])
      * @return The instance that the builder prodeced
      */
-    public final T build(boolean checkFields) {
+    public final T build(boolean checkFields) throws FieldNotSetException {
         if (!checkFields)
             return _buildT();
 
