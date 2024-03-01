@@ -33,6 +33,10 @@ public class RookMoveGenerator extends MoveGenerator {
         while (r[0] != 0) {
             final int from = popLsb(r);
             toBB[0] = attacks(from, pieces) & mask;
+
+            // [Case specific restriction] when pinned, only allow destination squares that
+            // wouldn't expose the king.
+
             while (toBB[0] != 0)
                 list[index++] = Move.create(from, popLsb(toBB), flag);
         }
@@ -40,28 +44,43 @@ public class RookMoveGenerator extends MoveGenerator {
     }
 
     public int generateQuiets(short[] list, int index, Board board, int color) {
-        final long pieces = board.getCBitboard(Color.Black) | board.getCBitboard(Color.White);
+
+        // [Ignored case] in case of a double check, this function should not get called
+        // assert (board.isInDoubleCheck() == false);
+
         return generate(
                 list,
                 index,
-                ~pieces,
-                pieces,
+                // only non-occupied squares
+                ~board.getOccupancy()
+                        // [General restriction] when in check, allow only check blocking moves
+                        // & (board.isInSingleCheck() ? board.getCheckBlockSqs() : ~0x0L)
+                        ,
+                board.getOccupancy(),
                 board.getBitboard(PieceType.Rook, color),
                 Move.QUIET_MOVE_FLAG);
     }
 
     public int generateCaptures(short[] list, int index, Board board, int color) {
+
+        // [Ignored case] in case of a double check, this function should not get called
+        // assert (board.isInDoubleCheck() == false);
+
         return generate(
                 list,
                 index,
-                board.getCBitboard(Color.NOT(color)),
-                board.getCBitboard(Color.Black) | board.getCBitboard(Color.White),
+                // Filter out squares with enemy pieces
+                board.getCBitboard(Color.NOT(color))
+                        // [General restriction] when in check, allow only check resolving captures
+                        // & (board.isInSingleCheck() ? board.getCheckers() : ~0x0L)
+                        ,
+                board.getOccupancy(),
                 board.getBitboard(PieceType.Rook, color),
                 Move.CAPTURE_FLAG);
     }
 
     // TODO: Replace with magic bitboards
-    private long attacks(int square, long occupied) {
+    public static final long attacks(int square, long occupied) {
         final long fileBB = Masks.Files[square % 8];
         final long rankBB = Masks.Ranks[square / 8];
         final long nortBB = Utils.splitBBNorth(square);
