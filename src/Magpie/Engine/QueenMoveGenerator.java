@@ -13,5 +13,8 @@ public class QueenMoveGenerator extends MoveGenerator {
         return index;
     }
 
+    public static final long attacks(int square, long occupied) {
+        return RookMoveGenerator.attacks(square, occupied) | BishopMoveGenerator.attacks(square, occupied);
+    }
 
 }
