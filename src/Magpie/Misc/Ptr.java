@@ -14,6 +14,11 @@ public class Ptr <T> {
     public T get() {
         return _instance;
     }
+    
+    @SuppressWarnings("unchecked")
+    public <TResult> TResult getAs() {
+        return (TResult)_instance;
+    }
 
     public void set(T instance) {
         this._instance = instance;
