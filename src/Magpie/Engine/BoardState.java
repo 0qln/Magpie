@@ -176,7 +176,7 @@ public class BoardState {
 
             final long[] enemies = { _origin.getCBitboard(Color.NOT(_origin.getTurn())) };
             final long king = _origin.getBitboard(PieceType.King, _origin.getTurn());
-            printBB(king);
+            // printBB(king);
             while (enemies[0] != 0) {
                 final int enemy = popLsb(enemies);
                 final long pieces = _origin.getOccupancy();
@@ -190,14 +190,16 @@ public class BoardState {
                     case PieceType.King: attacks = KingMoveGenerator.attacks(enemy); break;
                     default: continue;
                 }
-                printBB(attacks);
 
-                if ((attacks & king) != 0) {
+                if ((attacks & king) != 0) 
                     checkers |= target(enemy);                    
+                
 
-                    nstmAttacks |= attacks;
-                }
+                nstmAttacks |= attacks;
             }
+
+            // printBB(checkers);
+            // printBB(nstmAttacks);
 
             return new BoardState(
                     checkers,
