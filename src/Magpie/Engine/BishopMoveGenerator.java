@@ -61,7 +61,7 @@ public class BishopMoveGenerator extends MoveGenerator {
     }
 
     // TODO: Replace with magic bitboards
-    private long attacks(final int square, final long occupied) {
+    public static final long attacks(final int square, final long occupied) {
         final int rank = square / 8, file = square % 8;
         final long a1h8BB = Masks.Diags_A1H8[7 - rank + file], a8h1BB = Masks.Diags_A8H1[rank + file];
         final long nortBB = Utils.splitBBNorth(square), soutBB = Utils.splitBBSouth(square);
