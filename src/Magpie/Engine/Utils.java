@@ -52,6 +52,10 @@ public final class Utils
         boards[index] = (boards[index] & ~(1L << squareIdx)) | ((value ? 1L : 0L) << squareIdx);
     }
 
+    public static final int countBits(long bb) {
+        return Long.bitCount(bb);
+    }
+
     // excluding the square itself
     public static final long splitBBNorth(int square) {
         return ~0L << square + 1;
