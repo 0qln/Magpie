@@ -1,13 +1,32 @@
 package Engine;
 
-import java.lang.reflect.Field;
-import java.util.Arrays;
-import java.util.BitSet;
-import java.util.function.Consumer;
+import static Engine.Utils.popLsb;
+import static Engine.Utils.printBB;
+import static Engine.Utils.target;
 
-public class BoardState
-{
-   
+import java.util.BitSet;
+
+public class BoardState {
+
+    /*
+     * Keep track of:
+     * 
+     * 1. The pieces that are checking
+     * 1.0 (As bitboard)
+     * 1.1 -> Double check and single check == bitcnt
+     * 
+     * 2. The squares that can block a check
+     * 2.0 (As bitboard)
+     * 
+     * 3. Pins
+     * 3.0 (As bitboard)
+     * 3.1 -> XRay attacks
+     * 3.2 Including the square that the pinning piece is standing on
+     * 
+     */
+    private long _checkers, _blockers, _pins;
+    private long _nstmAttacks;
+
     // Plys until 50 move rule
     private int _plys50 = 0;
 
@@ -18,30 +37,41 @@ public class BoardState
     private int _epSquare = -1;
 
     // Which side can castle where?
+    // [ 00 ->  ]
     private BitSet _castling = new BitSet(4);
-
-    // checkers 
-    private long _checkers = 0;
-
-    // check blockers, indexed by color
-    private long[] _blockers = new long[2];
-    
-    // pinners, indexed by color
-    private long[] _pinners = new long[2];
 
     // captured piece, the piece that was captured when this state was reached
     private int _captured = Piece.None[0];
 
-    // check squares, indexed by piece type
-    private long[] _checks = new long[7];
+    public BoardState(
+            long _checkers,
+            long _blockers,
+            long _pins,
+            int _plys50,
+            int _ply,
+            int _epSquare,
+            BitSet _castling,
+            int _captured,
+            long _nstmAttacks) {
+        this._checkers = _checkers;
+        this._blockers = _blockers;
+        this._pins = _pins;
+        this._plys50 = _plys50;
+        this._ply = _ply;
+        this._epSquare = _epSquare;
+        this._castling = _castling;
+        this._captured = _captured;
+        this._nstmAttacks = _nstmAttacks;
+    }
 
-
-    private BoardState() {}
-
+    public long getCheckers() {
+        return _checkers;
+    }
 
     public int getPlys50() {
         return _plys50;
     }
+
     public void setPlys50(int value) {
         _plys50 = value;
     }
@@ -50,75 +80,57 @@ public class BoardState
         return _ply;
     }
 
-
     public int getEpSquare() {
         return _epSquare;
     }
+
     public void setEpSquare(int value) {
         _epSquare = value;
     }
-
 
     public BitSet getCastling() {
         return _castling;
     }
 
-    /**
-     * @param kingside [ 1 | 0 ] 
-     * @param color 
-     * @param value
-     */
     public void setCastlingRights(int kingside, int color, boolean value) {
         _castling.set(color << 1 | kingside, value);
     }
-
-    public long getCheckers() {
-        return _checkers;
-    }
-
-
-    public long[] getBlockers() {
-        return _blockers;
-    }
-
-
-    public long[] getPinners() {
-        return _pinners;
-    }
-
 
     public int getCaptured() {
         return _captured;
     }
 
-
-    public long[] getChecks() {
-        return _checks;
+    public long getNstmAttacks() {
+        return _nstmAttacks;
     }
 
+    public static class Builder extends Misc.Builder<BoardState> {
 
-    public static class Builder {
-       
         // Cache the target values
-        @BuilderRequired private Integer _plys50;
-        @BuilderRequired private Integer _ply;
-        @BuilderNotRequired private int _epSquare = -1;
-        @BuilderRequired private BitSet _castling;
-        @BuilderNotRequired private int _captured = Piece.None[0];
+        @Required
+        private Integer _plys50;
+        @Required
+        private Integer _ply;
+        @NotRequired
+        private int _epSquare = -1;
+        @Required
+        private BitSet _castling;
+        @NotRequired
+        private int _captured = Piece.None[0];
         // Dynamically used for computation on build
-        // TODO: make required, when it is used in later deployment
-        @BuilderNotRequired private boolean _givesCheck = false;
-        @BuilderRequired private Board _origin;
-
+        // @BuilderRequired
+        // private boolean _comesWithCheck = false;
+        @Required
+        private Board _origin;
 
         public Builder(Board origin) {
             this._origin = origin;
         }
 
-        public Builder givesCheck(boolean does) {
-            _givesCheck = does;
-            return this;
-        }
+        // public Builder comesWithCheck(boolean does) {
+        // _comesWithCheck = does;
+        // return this;
+        // }
 
         public Builder plys50(int plys50) {
             this._plys50 = plys50;
@@ -140,8 +152,17 @@ public class BoardState
             return this;
         }
 
+        public Builder castling(BitSet set) {
+            _castling = (BitSet)set.clone();
+            return this;
+        }
+
         public BitSet getCastling() {
             return _castling;
+        }
+
+        public void setCastlingRights(int kingside, int color, boolean value) {
+            _castling.set(color << 1 | kingside, value);
         }
 
         public Builder captured(int captured) {
@@ -149,56 +170,45 @@ public class BoardState
             return this;
         }
 
-        public BoardState buildUnchecked() {
-            BoardState boardState = new BoardState();
+        @Override
+        protected BoardState _buildT() {
+            long checkers = 0, blockers = ~0L, pins = 0, nstmAttacks = 0;
 
-            // User defined
-            boardState._plys50 = this._plys50;
-            boardState._ply = (this._ply);
-            boardState._epSquare = (this._epSquare);
-            boardState._castling = (this._castling);
-            boardState._captured = (this._captured);
+            final long[] enemies = { _origin.getCBitboard(Color.NOT(_origin.getTurn())) };
+            final long king = _origin.getBitboard(PieceType.King, _origin.getTurn());
+            printBB(king);
+            while (enemies[0] != 0) {
+                final int enemy = popLsb(enemies);
+                final long pieces = _origin.getOccupancy();
+                final long attacks;
+                switch (Piece.getType(_origin.getPiece(enemy))) {
+                    case PieceType.Pawn: attacks = PawnMoveGenerator.attacks(enemy); break;
+                    case PieceType.Knight: attacks = KnightMoveGenerator.attacks(enemy); break;
+                    case PieceType.Bishop: attacks = BishopMoveGenerator.attacks(enemy, pieces); break;
+                    case PieceType.Rook: attacks = RookMoveGenerator.attacks(enemy, pieces); break;
+                    case PieceType.Queen: attacks = QueenMoveGenerator.attacks(enemy, pieces); break;
+                    case PieceType.King: attacks = KingMoveGenerator.attacks(enemy); break;
+                    default: continue;
+                }
+                printBB(attacks);
 
-            // Auto Generated
-            // TODO: generate these
-            // boardState._checkers = _givesCheck ? (this._checkers) : 0;
-            // boardState._blockers = (this._blockers);
-            // boardState._pinners = (this._pinners);
-            // boardState._checks = (this._checks);
+                if ((attacks & king) != 0) {
+                    checkers |= target(enemy);                    
 
-            return boardState;
-
-        }
-
-        public BoardState build() throws IllegalArgumentException, IllegalAccessException {
-            BoardState boardState = new BoardState();
-
-            // Check if required fields are set
-            // TODO: reflection is slow, so maybe remove this to speed up in the release build
-            for (Field field : this.getClass().getDeclaredFields()) {
-                if (field.isAnnotationPresent(BuilderRequired.class) && field.get(this) == null) {
-                    throw new IllegalStateException("Required field not set: " + field.getName());
+                    nstmAttacks |= attacks;
                 }
             }
 
-            // User defined
-            boardState._plys50 = this._plys50;
-            boardState._ply = (this._ply);
-            boardState._epSquare = (this._epSquare);
-            boardState._castling = (this._castling);
-            boardState._captured = (this._captured);
-
-            // Auto Generated
-            // TODO: generate these
-            // boardState._checkers = _givesCheck ? (this._checkers) : 0;
-            // boardState._blockers = (this._blockers);
-            // boardState._pinners = (this._pinners);
-            // boardState._checks = (this._checks);
-
-            return boardState;
+            return new BoardState(
+                    checkers,
+                    blockers,
+                    pins,
+                    this._plys50,
+                    this._ply,
+                    this._epSquare,
+                    this._castling,
+                    this._captured,
+                    nstmAttacks);
         }
     }
-
-
-    
 }

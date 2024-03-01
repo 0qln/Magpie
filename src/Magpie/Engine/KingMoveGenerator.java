@@ -53,7 +53,12 @@ public class KingMoveGenerator extends MoveGenerator {
                 Move.CAPTURE_FLAG);
     }
 
-    public long attacks(int square) {
+    // public long generatePin(int kingSq, int otherSq, Board board, int color) {
+    //     long rooksEn = board.getBitboard(PieceType.Rook, Color.NOT(color));
+
+    // }
+
+    public static final long attacks(int square) {
         return ATTACKS[square];
     }
 
