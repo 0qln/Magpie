@@ -11,10 +11,10 @@ public final class Main
     public static Scanner scanner = new Scanner(System.in);
     private static Logger logger = LoggerConfigurator.configureLogger(Main.class);
 
-    public static void main(String[] args) throws Exception
+    public static void main(String[] args) throws Misc.Builder.FieldNotSetException
     {
         scanner.useDelimiter("\n");
-        Ptr<Engine.IBoard> board = Ptr.to(new Engine.Board());
+        Ptr<Engine.IBoard> board = Ptr.to(new Engine.Board.Builder().build());
         CommandParser parser = new CommandParser();
         while (true) {
             String input = scanner.next();
