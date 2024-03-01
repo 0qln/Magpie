@@ -13,12 +13,9 @@ public class FenCommand extends PositionCommand
     
     @Override
     protected void setPosition() {
-        Engine.IBoard newPosition = _board.get().getBuilder().build();
-
-        Engine.FenDecoder
-            .decode(_fen)
-            .setUpFen(newPosition);
-
-        _board.set(newPosition);
+        _board.set(_board.get()
+            .getBuilder()
+            .fen(_fen)
+            .build());
     }
 }

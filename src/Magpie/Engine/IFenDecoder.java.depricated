@@ -1,0 +1,7 @@
+package Engine;
+
+@FunctionalInterface
+public interface IFenDecoder<TBoard extends IBoard>
+{
+    TBoard setUpFen();
+}

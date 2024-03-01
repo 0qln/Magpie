@@ -2,9 +2,6 @@ package Engine;
 
 import java.util.*;
 import java.util.function.BiConsumer;
-import java.util.function.Consumer;
-
-import Misc.Ptr;
 
 public class Board implements IBoard {
     // Bitboard array to store the color of the pieces
@@ -28,21 +25,13 @@ public class Board implements IBoard {
     // Game ply
     private int _ply;
 
-    public Board() throws IllegalArgumentException, IllegalAccessException {
-        _stateStack.push(new BoardState.Builder(this)
-                .castling(new byte[] { 0, 0, 0, 0 })
-                .ply(0)
-                .plys50(0)
-                .build());
-    }
-
     public long perft(int depth, BiConsumer<Short, Long> callback) {
         if (depth == 0) {
             return 1;
         }
 
         long moveC = 0, c;
-        for (short move : MoveList.generate(this).getMoves()) {
+        for (short move : MoveList.legal(this).getMoves()) {
             makeMove(move);
             moveC += (c = perft(depth - 1));
             callback.accept(move, c);
@@ -58,7 +47,7 @@ public class Board implements IBoard {
         }
 
         long moveC = 0;
-        for (short move : MoveList.generate(this).getMoves()) {
+        for (short move : MoveList.legal(this).getMoves()) {
             makeMove(move);
             moveC += perft(depth - 1);
             undoMove(move);
@@ -84,7 +73,7 @@ public class Board implements IBoard {
         // Create new board state
         BoardState.Builder newState = new BoardState.Builder(this);
         newState
-                .givesCheck(false) // TODO
+                // .comesWithCheck(false) // TODO
                 .castling(_stateStack.getFirst().getCastling().toByteArray())
                 .ply(_ply)
                 .plys50(_ply);
@@ -149,7 +138,7 @@ public class Board implements IBoard {
         }
 
         // Update board state
-        _stateStack.push(newState.buildUnchecked());
+        _stateStack.push(newState.build());
     }
 
     @Override
@@ -174,16 +163,15 @@ public class Board implements IBoard {
 
         // Handle castling
         if (flag == Move.KING_CASTLE_FLAG) {
-            removePiece (fromRank * 8 + Files.G);
-            addPiece    (fromRank * 8 + Files.E, Piece.create(PieceType.King, us));
-            removePiece (fromRank * 8 + Files.F);
-            addPiece    (fromRank * 8 + Files.H, Piece.create(PieceType.Rook, us));
-        }
-        else if (flag == Move.QUEEN_CASTLE_FLAG) {
-            removePiece (fromRank * 8 + Files.C);
-            addPiece    (fromRank * 8 + Files.E, Piece.create(PieceType.King, us));
-            removePiece (fromRank * 8 + Files.D);
-            addPiece    (fromRank * 8 + Files.A, Piece.create(PieceType.Rook, us));
+            removePiece(fromRank * 8 + Files.G);
+            addPiece(fromRank * 8 + Files.E, Piece.create(PieceType.King, us));
+            removePiece(fromRank * 8 + Files.F);
+            addPiece(fromRank * 8 + Files.H, Piece.create(PieceType.Rook, us));
+        } else if (flag == Move.QUEEN_CASTLE_FLAG) {
+            removePiece(fromRank * 8 + Files.C);
+            addPiece(fromRank * 8 + Files.E, Piece.create(PieceType.King, us));
+            removePiece(fromRank * 8 + Files.D);
+            addPiece(fromRank * 8 + Files.A, Piece.create(PieceType.Rook, us));
         }
 
         // Move the piece
@@ -384,20 +372,110 @@ public class Board implements IBoard {
         return getCBitboard(Color.White) | getCBitboard(Color.Black);
     }
 
+    public long getNstmAttacks() {
+        return _stateStack.getFirst().getNstmAttacks();
+    }
+
+    public long getCheckers() {
+        return _stateStack.getFirst().getCheckers();
+    }
+
+    public boolean isNotInCheck() {
+        return Utils.countBits(_stateStack.getFirst().getCheckers()) == 0;
+    }
+
+    public boolean isInSingleCheck() {
+        return Utils.countBits(_stateStack.getFirst().getCheckers()) == 1;
+    }
+
+    public boolean isInDoubleCheck() {
+        return Utils.countBits(_stateStack.getFirst().getCheckers()) == 2;
+    }
+
+    @SuppressWarnings("unchecked")
     @Override
-    public IBoardBuilder getBuilder() {
+    public Builder getBuilder() {
         return new Builder();
     }
 
-    public static class Builder implements IBoardBuilder {
+    public static class Builder extends BoardBuilder<Board> {
+
+        @NotRequired
+        private String[] _fen = null;
+
         @Override
-        public IBoard build() {
-            try {
-                return new Board();
-            } catch (IllegalArgumentException | IllegalAccessException e) {
-                e.printStackTrace();
-                return null;
+        public Board _buildT() {
+            if (_fen != null) {
+                Board board1 = new Board();
+                
+                // Set up pieces
+                int squareIdx = 63;
+                for (int i = 0; i < _fen[0].length(); i++) {
+                    // skip slashes
+                    if (_fen[0].charAt(i) == '/') {
+                        continue;
+                    }
+                
+                    // handle digit
+                    if (Character.isDigit(_fen[0].charAt(i))) {
+                        squareIdx -= _fen[0].charAt(i) - '0';
+                        continue;
+                    }
+                
+                    // get piece char as Piece Type
+                    int piece = Piece.fromChar(_fen[0].charAt(i));
+                
+                    // evaluate
+                    board1.addPiece(squareIdx ^ 7, piece);
+                
+                    squareIdx--;
+                }
+                
+                // turn
+                board1.setTurn(_fen[1].contains("w")
+                        ? Color.White
+                        : Color.Black);
+                
+                var stateBuilder = new BoardState.Builder(board1);
+                stateBuilder
+                        // castling
+                        .castling(Castling.create(
+                                _fen[2].contains("K"),
+                                _fen[2].contains("Q"),
+                                _fen[2].contains("k"),
+                                _fen[2].contains("q")))
+                
+                        // en passant
+                        .epSquare(!_fen[3].contains("-")
+                                ? Misc.Utils.toSquareIndex(_fen[3])
+                                : -1)
+                
+                        // plys for 50 move rule
+                        .plys50(Integer.parseInt(_fen[4]))
+                        .ply(0);
+                
+                board1._stateStack.push(stateBuilder.build());
+                
+                return board1;
             }
+            else {
+                Board board = new Board();
+    
+                board._stateStack.push(
+                        new BoardState.Builder(board)
+                                .castling(Castling.empty())
+                                .ply(0)
+                                .plys50(0)
+                                .build());
+    
+                return board;
+            }
+        }
+
+        @Override
+        public Builder fen(String[] fen) {
+            _fen = fen;
+            return this;
         }
     }
 }

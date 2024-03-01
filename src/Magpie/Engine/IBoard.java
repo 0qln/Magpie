@@ -17,5 +17,5 @@ public interface IBoard
     public void setPlys50(int int1);
     public void setTurn(int black);
 
-    public IBoardBuilder getBuilder();
+    public <TBoard extends IBoard> BoardBuilder<TBoard> getBuilder();
 }
