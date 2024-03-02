@@ -1,30 +1,12 @@
 package Engine;
 
-import static Engine.Utils.popLsb;
-import static Engine.Utils.printBB;
-import static Engine.Utils.target;
+import static Engine.Utils.*;
 
 import java.util.BitSet;
 
 public class BoardState {
 
-    /*
-     * Keep track of:
-     * 
-     * 1. The pieces that are checking
-     * 1.0 (As bitboard)
-     * 1.1 -> Double check and single check == bitcnt
-     * 
-     * 2. The squares that can block a check
-     * 2.0 (As bitboard)
-     * 
-     * 3. Pins
-     * 3.0 (As bitboard)
-     * 3.1 -> XRay attacks
-     * 3.2 Including the square that the pinning piece is standing on
-     * 
-     */
-    private long _checkers, _blockers, _pins;
+    private long _checkers, _blockers;
     private long _nstmAttacks;
 
     // Plys until 50 move rule
@@ -46,7 +28,6 @@ public class BoardState {
     public BoardState(
             long _checkers,
             long _blockers,
-            long _pins,
             int _plys50,
             int _ply,
             int _epSquare,
@@ -55,7 +36,6 @@ public class BoardState {
             long _nstmAttacks) {
         this._checkers = _checkers;
         this._blockers = _blockers;
-        this._pins = _pins;
         this._plys50 = _plys50;
         this._ply = _ply;
         this._epSquare = _epSquare;
@@ -102,6 +82,10 @@ public class BoardState {
 
     public long getNstmAttacks() {
         return _nstmAttacks;
+    }
+
+    public long getBlockers() {
+        return _blockers;
     }
 
     public static class Builder extends Misc.Builder<BoardState> {
@@ -172,11 +156,12 @@ public class BoardState {
 
         @Override
         protected BoardState _buildT() {
-            long checkers = 0, blockers = ~0L, pins = 0, nstmAttacks = 0;
+            long checkers = 0, blockers = 0, nstmAttacks = 0;
 
-            final long[] enemies = { _origin.getCBitboard(Color.NOT(_origin.getTurn())) };
-            final long king = _origin.getBitboard(PieceType.King, _origin.getTurn());
-            // printBB(king);
+            final int us = _origin.getTurn();
+            long[] enemies = { _origin.getCBitboard(Color.NOT(us)) };
+            final long kingBB = _origin.getBitboard(PieceType.King, us);
+            final int kingSq = lsb(kingBB);
             while (enemies[0] != 0) {
                 final int enemy = popLsb(enemies);
                 final long pieces = _origin.getOccupancy();
@@ -191,20 +176,45 @@ public class BoardState {
                     default: continue;
                 }
 
-                if ((attacks & king) != 0) 
+                if ((attacks & kingBB) != 0) 
                     checkers |= target(enemy);                    
                 
 
                 nstmAttacks |= attacks;
             }
 
+            // System.out.println(_origin.toString());
+
+            long[] xRayCheckers = { 
+                (
+                    Rook.generator.attacks(kingSq) & (_origin.getTBitboard(PieceType.Rook) | _origin.getTBitboard(PieceType.Queen)) |
+                    Bishop.generator.attacks(kingSq) & (_origin.getTBitboard(PieceType.Bishop) | _origin.getTBitboard(PieceType.Queen))
+                ) 
+                & _origin.getCBitboard(Color.NOT(us)) 
+            };
+
+            // printBB(xRayCheckers);
+
+            while (xRayCheckers[0] != 0) {
+                int xRayChecker = popLsb(xRayCheckers);
+                long betweenSquaresBB = Masks.squaresBetweenBB(kingSq, xRayChecker);
+                long piecesBetweenSniperAndKingBB = _origin.getCBitboard(us) & betweenSquaresBB;
+
+                // printBB(betweenSquaresBB);
+
+                if (countBits(piecesBetweenSniperAndKingBB) == 1) {
+                    blockers |= piecesBetweenSniperAndKingBB;
+                    // pinners |= sniper;
+                }
+            }
+
+            // printBB(blockers);
             // printBB(checkers);
             // printBB(nstmAttacks);
 
             return new BoardState(
                     checkers,
                     blockers,
-                    pins,
                     this._plys50,
                     this._ply,
                     this._epSquare,
