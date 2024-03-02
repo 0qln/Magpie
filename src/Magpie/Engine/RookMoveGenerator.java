@@ -69,7 +69,7 @@ public class RookMoveGenerator extends MoveGenerator {
         return generate(
                 list,
                 index,
-                // Filter out squares with enemy pieces
+                // only squares with enemy pieces
                 board.getCBitboard(Color.NOT(color))
                         // [General restriction] when in check, allow only check resolving captures
                         // & (board.isInSingleCheck() ? board.getCheckers() : ~0x0L)
