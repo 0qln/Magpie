@@ -90,6 +90,22 @@ public final class Utils
         return 1L << square;
     }
 
+    public static final int rank(int square) {
+        return square / 8;
+    }
+
+    public static final int file(int square) {
+        return square % 8;
+    }
+
+    public static final int diagA1H8(int square) {
+        return 7 - rank(square) + file(square);
+    }
+
+    public static final int diagA8H1(int square) {
+        return rank(square) + file(square);
+    }
+
     public static final void printBB(long bb) {
         String result = "";
         for (int rank = 7; rank >= 0; rank--) {
