@@ -206,6 +206,13 @@ public class Board implements IBoard {
     @Override
     public IMoveDecoder getMoveDecoder() {
         return str -> {
+
+            // For raw input moves
+            if (str.charAt(0) == '@') {
+                // e.g. @-14297
+                return Short.parseShort(str.substring(1, str.length()));
+            }
+
             int from = Misc.Utils.toSquareIndex(str.substring(0, 2));
             int to = Misc.Utils.toSquareIndex(str.substring(2, 4));
 
@@ -413,7 +420,7 @@ public class Board implements IBoard {
         public Board _buildT() {
             if (_fen != null) {
                 Board board1 = new Board();
-                
+
                 // Set up pieces
                 int squareIdx = 63;
                 for (int i = 0; i < _fen[0].length(); i++) {
@@ -421,27 +428,27 @@ public class Board implements IBoard {
                     if (_fen[0].charAt(i) == '/') {
                         continue;
                     }
-                
+
                     // handle digit
                     if (Character.isDigit(_fen[0].charAt(i))) {
                         squareIdx -= _fen[0].charAt(i) - '0';
                         continue;
                     }
-                
+
                     // get piece char as Piece Type
                     int piece = PieceUtil.fromChar(_fen[0].charAt(i));
-                
+
                     // evaluate
                     board1.addPiece(squareIdx ^ 7, piece);
-                
+
                     squareIdx--;
                 }
-                
+
                 // turn
                 board1.setTurn(_fen[1].contains("w")
                         ? Color.White
                         : Color.Black);
-                
+
                 var stateBuilder = new BoardState.Builder(board1);
                 stateBuilder
                         // castling
@@ -450,30 +457,29 @@ public class Board implements IBoard {
                                 _fen[2].contains("Q"),
                                 _fen[2].contains("k"),
                                 _fen[2].contains("q")))
-                
+
                         // en passant
                         .epSquare(!_fen[3].contains("-")
                                 ? Misc.Utils.toSquareIndex(_fen[3])
                                 : -1)
-                
+
                         // plys for 50 move rule
                         .plys50(Integer.parseInt(_fen[4]))
                         .ply(0);
-                
+
                 board1._stateStack.push(stateBuilder.build());
-                
+
                 return board1;
-            }
-            else {
+            } else {
                 Board board = new Board();
-    
+
                 board._stateStack.push(
                         new BoardState.Builder(board)
                                 .castling(Castling.empty())
                                 .ply(0)
                                 .plys50(0)
                                 .build());
-    
+
                 return board;
             }
         }

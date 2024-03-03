@@ -66,13 +66,16 @@ public class CommandParser {
                 }
                 int movesidx = Misc.Utils.indexOf(args, e -> e.equals("moves"));
                 String[] moves = movesidx == -1 ? new String[0] : Arrays.copyOfRange(args, movesidx + 1, args.length);
-                if (args[0].equals("startpos")) {
-                    return Optional.of(b -> new Interface.UCI.StartposCommand(b, moves));
-                } else if (args[0].equals("fen")) {
-                    String[] fen = Arrays.copyOfRange(args, 1, movesidx == -1 ? args.length : movesidx);
-                    return Optional.of(b -> new Interface.UCI.FenCommand(b, moves, fen));
-                } else
-                    return Optional.empty();
+                switch (args[0]) {
+                    case "startposition":
+                    case "startpos":
+                        return Optional.of(b -> new Interface.UCI.StartposCommand(b, moves));
+                    case "fen":
+                        String[] fen = Arrays.copyOfRange(args, 1, movesidx == -1 ? args.length : movesidx);
+                        return Optional.of(b -> new Interface.UCI.FenCommand(b, moves, fen));
+                    default:
+                        return Optional.empty();
+                }
 
             case "print":
                 logger.info("Parsing Print command.");

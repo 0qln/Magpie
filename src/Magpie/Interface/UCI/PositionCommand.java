@@ -18,8 +18,9 @@ public abstract class PositionCommand extends Command
     
     public void run() {
         setPosition();
-        for (String move : _moves) {
-            _board.get().makeMove(_board.get().getMoveDecoder().decode(move));
+        for (String moveStr : _moves) {
+            var move = _board.get().getMoveDecoder().decode(moveStr);
+            _board.get().makeMove(move);
         }
     }
 
