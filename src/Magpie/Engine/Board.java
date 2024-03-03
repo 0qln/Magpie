@@ -43,7 +43,7 @@ public class Board implements IBoard {
         return moveC;
     }
 
-    private long perft(int depth) {
+    public long perft(int depth) {
         if (depth == 0) {
             return 1;
         }
@@ -417,7 +417,7 @@ public class Board implements IBoard {
         private String[] _fen = null;
 
         @Override
-        public Board _buildT() {
+        protected Board _buildT() {
             if (_fen != null) {
                 Board board1 = new Board();
 
@@ -487,6 +487,11 @@ public class Board implements IBoard {
         @Override
         public Builder fen(String[] fen) {
             _fen = fen;
+            return this;
+        }
+
+        public Builder fen(String fen) {
+            _fen = fen.split(" ");
             return this;
         }
     }
