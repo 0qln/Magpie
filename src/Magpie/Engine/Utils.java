@@ -58,14 +58,18 @@ public final class Utils
 
     // excluding the square itself
     public static final long splitBBNorth(int square) {
-        return ~0L << square + 1;
+        return ~0L << (square)
+            // For some reason this has to be done seperately
+            << 1;
     }
     public static final long splitBBSouth(int square) {
-        return ~0L >>> (64 - square);
+        return ~0L >>> (63 - square)
+            // For some reason this has to be done seperately
+            >>> 1;
     }
 
     public static final int lsb(long board) {
-        return board == 0 ? 0 : Long.numberOfTrailingZeros(board);
+        return board == 0 ? 63 : Long.numberOfTrailingZeros(board);
     }
 
     public static final int msb(long board) {
