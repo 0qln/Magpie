@@ -87,6 +87,16 @@ public class Rook extends SlidingPiece {
         }
 
         @Override
+        public long attacks(int square, int color) {
+            return attacks(square);
+        }
+
+        @Override
+        public long attacks(int square, long occupied, int color) {
+            return attacks(square, occupied);
+        }
+
+        @Override
         public long attacks(int square) {
             return (Masks.Files[file(square)] | Masks.Ranks[rank(square)]) ^ target(square);
         }

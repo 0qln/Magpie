@@ -85,13 +85,13 @@ public class Knight extends Piece {
         }
 
         @Override
-        public final long attacks(int square) {
+        public final long attacks(int square, int color) {
             return ATTACKS[square];
         }
 
         @Override
-        public final long attacks(int square, long occupied) {
-            return attacks(square);
+        public final long attacks(int square, long occupied, int color) {
+            return attacks(square, color);
         }
 
         private static final long[] ATTACKS = {

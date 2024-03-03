@@ -6,6 +6,8 @@ public abstract class SlidingPiece extends Piece {
 
     public static abstract class MoveGenerator extends Piece.MoveGenerator {
 
+        public abstract long attacks(int square);
+
         public abstract long attacks(int square, long occupied);
 
         /**
@@ -24,7 +26,7 @@ public abstract class SlidingPiece extends Piece {
             long[] b = { sliders }, toBB = { 0 };
             while (b[0] != 0) {
                 final int from = popLsb(b);
-                toBB[0] = this.attacks(from, pieces) & mask;
+                toBB[0] = this.attacks(from, pieces, -1) & mask;
                 while (toBB[0] != 0)
                     list[index++] = Move.create(from, popLsb(toBB), flag);
             }

@@ -158,8 +158,8 @@ public class BoardState {
         protected BoardState _buildT() {
             long checkers = 0, blockers = 0, nstmAttacks = 0, pinners = 0;
 
-            final int us = _origin.getTurn();
-            final long enemiesBB = _origin.getCBitboard(Color.NOT(us));
+            final int us = _origin.getTurn(), nus = Color.NOT(us);
+            final long enemiesBB = _origin.getCBitboard(nus);
             long[] enemies = { enemiesBB };
             final long kingBB = _origin.getBitboard(PieceType.King, us);
             final int kingSq = lsb(kingBB);
@@ -170,7 +170,7 @@ public class BoardState {
                 final long attacks = Piece
                     .fromID(enemyID)
                     .getGenerator()
-                    .attacks(enemySquare, pieces);
+                    .attacks(enemySquare, pieces, nus);
 
                 if ((attacks & kingBB) != 0) 
                     checkers |= target(enemySquare);                    

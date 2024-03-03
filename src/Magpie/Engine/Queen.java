@@ -15,9 +15,18 @@ public class Queen extends SlidingPiece {
     public static class MoveGenerator extends SlidingPiece.MoveGenerator {
 
         @Override
+        public long attacks(int square, int color) {
+            return attacks(square);
+        }
+
+        @Override
+        public long attacks(int square, long occupied, int color) {
+            return attacks(square, occupied);
+        }
+
+        @Override
         public long attacks(int square, long occupied) {
-            return Rook.generator.attacks(square, occupied)
-                    | Bishop.generator.attacks(square, occupied);
+            return Rook.generator.attacks(square, occupied) | Bishop.generator.attacks(square, occupied);
         }
 
         @Override

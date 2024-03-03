@@ -34,7 +34,7 @@ public class King extends Piece {
                 final long mask, final long king,
                 final int flag) {
             final int from = lsb(king);
-            final long[] toBB = { attacks(from) & mask };
+            final long[] toBB = { attacks(from, -1) & mask };
             while (toBB[0] != 0)
                 list[index++] = Move.create(from, popLsb(toBB), flag);
             return index;
@@ -69,13 +69,13 @@ public class King extends Piece {
         }
 
         @Override
-        public final long attacks(int square) {
+        public final long attacks(int square, int color) {
             return ATTACKS[square];
         }
 
         @Override
-        public final long attacks(int square, long occupied) {
-            return attacks(square);
+        public final long attacks(int square, long occupied, int color) {
+            return attacks(square, color);
         }
 
         private static final long[] ATTACKS = {

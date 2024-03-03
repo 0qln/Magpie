@@ -30,7 +30,7 @@ public class Pawn extends Piece {
             return color == Color.White
                     ? whiteResolves(list, index, board)
                     : blackResolves(list, index, board);
-        } 
+        }
 
         private int white(short[] list, int index, Board board) {
             final long pawns = board.getBitboard(PieceType.Pawn, Color.White);
@@ -159,7 +159,7 @@ public class Pawn extends Piece {
             final long pieces = board.getOccupancy();
 
             int from, to;
-            long[] toBB = {0}, fromBB = {0};
+            long[] toBB = { 0 }, fromBB = { 0 };
 
             final long checkerBB = board.getCheckers();
             final int checker = lsb(checkerBB);
@@ -169,28 +169,28 @@ public class Pawn extends Piece {
             // Single step
             toBB[0] = shift(pawns, CompassRose.Nort) & mask;
             fromBB[0] = shift(toBB, CompassRose.Sout);
-            while (toBB[0] != 0) 
+            while (toBB[0] != 0)
                 list[index++] = Move.create(popLsb(fromBB), popLsb(toBB), Move.QUIET_MOVE_FLAG);
-            
+
             // Double step
             toBB[0] = shift(pawns & STEP2[Color.White], 2 * CompassRose.Nort) & mask;
             toBB[0] ^= shift(shift(toBB, CompassRose.Sout) & pieces, CompassRose.Nort);
             fromBB[0] = shift(toBB, 2 * CompassRose.Sout);
-            while (toBB[0] != 0) 
+            while (toBB[0] != 0)
                 list[index++] = Move.create(popLsb(fromBB), popLsb(toBB), Move.DOUBLE_PAWN_PUSH_FLAG);
-            
+
             // Capture west
             toBB[0] = shift(pawns & Masks.West, CompassRose.NoWe) & checkerBB;
             fromBB[0] = shift(toBB, CompassRose.SoEa);
-            while (toBB[0] != 0) 
+            while (toBB[0] != 0)
                 list[index++] = Move.create(popLsb(fromBB), popLsb(toBB), Move.CAPTURE_FLAG);
-            
+
             // Capture east
             toBB[0] = shift(pawns & Masks.East, CompassRose.NoEa) & checkerBB;
             fromBB[0] = shift(toBB, CompassRose.SoWe);
-            while (toBB[0] != 0) 
+            while (toBB[0] != 0)
                 list[index++] = Move.create(popLsb(fromBB), popLsb(toBB), Move.CAPTURE_FLAG);
-            
+
             // En passant
             toBB[0] = target(board.getEnPassantSquare());
             if (shift(toBB[0], CompassRose.Sout) == checkerBB) {
@@ -213,39 +213,38 @@ public class Pawn extends Piece {
             final int checker = lsb(checkerBB);
             final int king = lsb(board.getBitboard(PieceType.King, Color.Black));
             final long mask = Masks.squaresBetween(king, checker);
-            long[] toBB = {0}, fromBB = {0};
+            long[] toBB = { 0 }, fromBB = { 0 };
 
             // Single step
             toBB[0] = shift(pawns, CompassRose.Sout) & mask;
             fromBB[0] = shift(toBB, CompassRose.Nort);
-            while (toBB[0] != 0) 
+            while (toBB[0] != 0)
                 list[index++] = Move.create(popLsb(fromBB), popLsb(toBB), Move.QUIET_MOVE_FLAG);
-            
+
             // Double step
             toBB[0] = shift(pawns & STEP2[Color.Black], 2 * CompassRose.Sout) & mask;
             toBB[0] ^= shift(shift(toBB, CompassRose.Nort) & pieces, CompassRose.Sout);
             fromBB[0] = shift(toBB, 2 * CompassRose.Nort);
-            while (toBB[0] != 0) 
+            while (toBB[0] != 0)
                 list[index++] = Move.create(popLsb(fromBB), popLsb(toBB), Move.DOUBLE_PAWN_PUSH_FLAG);
-            
+
             // Capture west
             toBB[0] = shift(pawns & Masks.West, CompassRose.SoWe) & checkerBB;
             fromBB[0] = shift(toBB, CompassRose.NoEa);
-            while (toBB[0] != 0) 
+            while (toBB[0] != 0)
                 list[index++] = Move.create(popLsb(fromBB), popLsb(toBB), Move.CAPTURE_FLAG);
-            
+
             // Capture east
             toBB[0] = shift(pawns & Masks.East, CompassRose.SoEa) & checkerBB;
             fromBB[0] = shift(toBB, CompassRose.NoWe);
-            while (toBB[0] != 0) 
+            while (toBB[0] != 0)
                 list[index++] = Move.create(popLsb(fromBB), popLsb(toBB), Move.CAPTURE_FLAG);
-            
+
             // En passant
             toBB[0] = target(board.getEnPassantSquare());
             if (shift(toBB[0], CompassRose.Nort) == checkerBB) {
-                fromBB[0] = 
-                    (shift(toBB, CompassRose.NoWe) & pawns & Masks.East) | 
-                    (shift(toBB, CompassRose.NoEa) & pawns & Masks.West);
+                fromBB[0] = (shift(toBB, CompassRose.NoWe) & pawns & Masks.East) |
+                        (shift(toBB, CompassRose.NoEa) & pawns & Masks.West);
                 while (fromBB[0] != 0)
                     list[index++] = Move.create(popLsb(fromBB), board.getEnPassantSquare(), Move.EN_PASSANT_FLAG);
             }
@@ -254,66 +253,120 @@ public class Pawn extends Piece {
         }
 
         @Override
-        public final long attacks(int square) {
-            return ATTACKS[square];
+        public final long attacks(int square, int color) {
+            return ATTACKS[color][square];
         }
 
         @Override
-        public final long attacks(int square, long occupied) {
-            return attacks(square);
+        public final long attacks(int square, long occupied, int color) {
+            return attacks(square, color);
         }
 
-        private static final long[] ATTACKS = {
-                0, 0, 0, 0, 0, 0, 0, 0,
-                0x20000L,
-                0x50000L,
-                0xa0000L,
-                0x140000L,
-                0x280000L,
-                0x500000L,
-                0xa00000L,
-                0x400000L,
-                0x2000000L,
-                0x5000000L,
-                0xa000000L,
-                0x14000000L,
-                0x28000000L,
-                0x50000000L,
-                0xa0000000L,
-                0x40000000L,
-                0x200000000L,
-                0x500000000L,
-                0xa00000000L,
-                0x1400000000L,
-                0x2800000000L,
-                0x5000000000L,
-                0xa000000000L,
-                0x4000000000L,
-                0x20000000000L,
-                0x50000000000L,
-                0xa0000000000L,
-                0x140000000000L,
-                0x280000000000L,
-                0x500000000000L,
-                0xa00000000000L,
-                0x400000000000L,
-                0x2000000000000L,
-                0x5000000000000L,
-                0xa000000000000L,
-                0x14000000000000L,
-                0x28000000000000L,
-                0x50000000000000L,
-                0xa0000000000000L,
-                0x40000000000000L,
-                0x200000000000000L,
-                0x500000000000000L,
-                0xa00000000000000L,
-                0x1400000000000000L,
-                0x2800000000000000L,
-                0x5000000000000000L,
-                0xa000000000000000L,
-                0x4000000000000000L,
-                0, 0, 0, 0, 0, 0, 0, 0,
+        private static final long[][] ATTACKS = {
+                {
+                        0, 0, 0, 0, 0, 0, 0, 0,
+                        0x20000L,
+                        0x50000L,
+                        0xa0000L,
+                        0x140000L,
+                        0x280000L,
+                        0x500000L,
+                        0xa00000L,
+                        0x400000L,
+                        0x2000000L,
+                        0x5000000L,
+                        0xa000000L,
+                        0x14000000L,
+                        0x28000000L,
+                        0x50000000L,
+                        0xa0000000L,
+                        0x40000000L,
+                        0x200000000L,
+                        0x500000000L,
+                        0xa00000000L,
+                        0x1400000000L,
+                        0x2800000000L,
+                        0x5000000000L,
+                        0xa000000000L,
+                        0x4000000000L,
+                        0x20000000000L,
+                        0x50000000000L,
+                        0xa0000000000L,
+                        0x140000000000L,
+                        0x280000000000L,
+                        0x500000000000L,
+                        0xa00000000000L,
+                        0x400000000000L,
+                        0x2000000000000L,
+                        0x5000000000000L,
+                        0xa000000000000L,
+                        0x14000000000000L,
+                        0x28000000000000L,
+                        0x50000000000000L,
+                        0xa0000000000000L,
+                        0x40000000000000L,
+                        0x200000000000000L,
+                        0x500000000000000L,
+                        0xa00000000000000L,
+                        0x1400000000000000L,
+                        0x2800000000000000L,
+                        0x5000000000000000L,
+                        0xa000000000000000L,
+                        0x4000000000000000L,
+                        0, 0, 0, 0, 0, 0, 0, 0,
+                },
+                {
+                        0, 0, 0, 0, 0, 0, 0, 0,
+                        0x2L,
+                        0x5L,
+                        0xaL,
+                        0x14L,
+                        0x28L,
+                        0x50L,
+                        0xa0L,
+                        0x40L,
+                        0x200L,
+                        0x500L,
+                        0xa00L,
+                        0x1400L,
+                        0x2800L,
+                        0x5000L,
+                        0xa000L,
+                        0x4000L,
+                        0x20000L,
+                        0x50000L,
+                        0xa0000L,
+                        0x140000L,
+                        0x280000L,
+                        0x500000L,
+                        0xa00000L,
+                        0x400000L,
+                        0x2000000L,
+                        0x5000000L,
+                        0xa000000L,
+                        0x14000000L,
+                        0x28000000L,
+                        0x50000000L,
+                        0xa0000000L,
+                        0x40000000L,
+                        0x200000000L,
+                        0x500000000L,
+                        0xa00000000L,
+                        0x1400000000L,
+                        0x2800000000L,
+                        0x5000000000L,
+                        0xa000000000L,
+                        0x4000000000L,
+                        0x20000000000L,
+                        0x50000000000L,
+                        0xa0000000000L,
+                        0x140000000000L,
+                        0x280000000000L,
+                        0x500000000000L,
+                        0xa00000000000L,
+                        0x400000000000L,
+                        0, 0, 0, 0, 0, 0, 0, 0,
+                }
         };
     }
 

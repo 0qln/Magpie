@@ -70,6 +70,16 @@ public class Bishop extends SlidingPiece {
         }
 
         @Override
+        public long attacks(int square, int color) {
+            return attacks(square);
+        }
+
+        @Override
+        public long attacks(int square, long occupied, int color) {
+            return attacks(square, occupied);
+        }
+
+        @Override
         public long attacks(int square) {
             final long a1h8BB = Masks.Diags_A1H8[diagA1H8(square)], a8h1BB = Masks.Diags_A8H1[diagA8H1(square)];
             return (a1h8BB | a8h1BB) ^ target(square);

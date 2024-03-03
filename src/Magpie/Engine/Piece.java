@@ -11,8 +11,8 @@ public abstract class Piece {
         // Returns index of next empty list slot.
         abstract int resolves(short[] list, int index, Board board, int color);
 
-        public abstract long attacks(int square);
-        public abstract long attacks(int square, long occupied);
+        public abstract long attacks(int square, int color);
+        public abstract long attacks(int square, long occupied, int color);
     }
 
     public static Piece fromID(int id) {
