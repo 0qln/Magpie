@@ -25,6 +25,12 @@ public class CheckInfoCommand extends InfoCommand {
         System.out.println("Nstm:");
         printBB(board.getNstmAttacks());
 
+        System.out.println("");
+        printBB(board.getBlockers());
+
+        printBB(board.getCheckers());
+
+
     }
 
 }
