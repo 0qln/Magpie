@@ -113,7 +113,7 @@ public class Pawn extends Piece {
                 list[index++] = Move.create(from, to, Move.DOUBLE_PAWN_PUSH_FLAG);
             }
 
-            // Capture right
+            // Capture west
             toBB[0] = shift(pawns & Masks.West, CompassRose.SoWe) & enemies;
             fromBB[0] = shift(toBB, CompassRose.NoEa);
             while (toBB[0] != 0) {
@@ -122,7 +122,7 @@ public class Pawn extends Piece {
                 list[index++] = Move.create(from, to, Move.CAPTURE_FLAG);
             }
 
-            // Capture left
+            // Capture east
             toBB[0] = shift(pawns & Masks.East, CompassRose.SoEa) & enemies;
             fromBB[0] = shift(toBB, CompassRose.NoWe);
             while (toBB[0] != 0) {
