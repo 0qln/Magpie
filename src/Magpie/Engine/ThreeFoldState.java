@@ -16,7 +16,7 @@ public class ThreeFoldState {
     public ThreeFoldState(Board board) {
         stm = board.getTurn();
         for (int i = 0; i < pieces.length; i++) {
-            pieces[i] = (byte)board.getPiece(i);
+            pieces[i] = (byte)board.getPieceID(i);
         }
         castlingCardinality = (byte)board.getCastlingCardinality();
         ep = (byte)board.getEnPassantSquare();

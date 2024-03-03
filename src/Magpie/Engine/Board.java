@@ -1,5 +1,7 @@
 package Engine;
 
+import static Engine.Utils.target;
+
 import java.util.*;
 import java.util.function.BiConsumer;
 
@@ -63,8 +65,8 @@ public class Board implements IBoard {
         final int to = Move.getTo(move);
         final int flag = Move.getFlag(move);
         final int rNormF = from / 8 * 8;
-        final int movingPiece = getPiece(from);
-        int capturedPiece = flag == Move.EN_PASSANT_FLAG ? Piece.create(PieceType.Pawn, nus) : getPiece(to);
+        final int movingPiece = getPieceID(from);
+        int capturedPiece = flag == Move.EN_PASSANT_FLAG ? PieceUtil.create(PieceType.Pawn, nus) : getPieceID(to);
 
         // Increment game counters
         _turn = Color.NOT(_turn);
@@ -83,17 +85,17 @@ public class Board implements IBoard {
             movePiece(rNormF + Files.E, rNormF + Files.G);
             movePiece(rNormF + Files.H, rNormF + Files.F);
             newState.getCastling().set((us << 1) | 1, false);
-            capturedPiece = Piece.None[0];
+            capturedPiece = PieceUtil.None[0];
         } else if (flag == Move.QUEEN_CASTLE_FLAG) {
             movePiece(rNormF + Files.E, rNormF + Files.C);
             movePiece(rNormF + Files.A, rNormF + Files.D);
             newState.getCastling().set((us << 1) | 0, false);
-            capturedPiece = Piece.None[0];
+            capturedPiece = PieceUtil.None[0];
         }
 
         // Handle captures
         // Also get's activated on a promotion with capture, which is right.
-        else if (Piece.getType(capturedPiece) != PieceType.None) {
+        else if (PieceUtil.getType(capturedPiece) != PieceType.None) {
             int captureSquare = to;
 
             // Handle en passant captures
@@ -120,7 +122,7 @@ public class Board implements IBoard {
         newState.captured(capturedPiece);
 
         // Pawns
-        if (Piece.getType(movingPiece) == PieceType.Pawn) {
+        if (PieceUtil.getType(movingPiece) == PieceType.Pawn) {
             // Handle double pawn pushes
             if (flag == Move.DOUBLE_PAWN_PUSH_FLAG)
                 newState.epSquare(to + (us * 2 - 1) * 8);
@@ -128,7 +130,7 @@ public class Board implements IBoard {
             // Handle promotions
             if (flag >= Move.PROMOTION_KNIGHT_FLAG && flag <= Move.CAPTURE_PROMOTION_QUEEN_FLAG) {
                 int flagHack = flag <= Move.PROMOTION_QUEEN_FLAG ? flag : flag - 4;
-                int newPiece = Piece.create(flagHack, us);
+                int newPiece = PieceUtil.create(flagHack, us);
                 removePiece(to);
                 addPiece(to, newPiece);
             }
@@ -158,20 +160,20 @@ public class Board implements IBoard {
         if (flag >= Move.PROMOTION_KNIGHT_FLAG && flag <= Move.CAPTURE_PROMOTION_QUEEN_FLAG) {
             // Replace the promotion with a pawn, the pawn will be moved later.
             removePiece(to);
-            addPiece(to, Piece.create(PieceType.Pawn, us));
+            addPiece(to, PieceUtil.create(PieceType.Pawn, us));
         }
 
         // Handle castling
         if (flag == Move.KING_CASTLE_FLAG) {
             removePiece(fromRank * 8 + Files.G);
-            addPiece(fromRank * 8 + Files.E, Piece.create(PieceType.King, us));
+            addPiece(fromRank * 8 + Files.E, PieceUtil.create(PieceType.King, us));
             removePiece(fromRank * 8 + Files.F);
-            addPiece(fromRank * 8 + Files.H, Piece.create(PieceType.Rook, us));
+            addPiece(fromRank * 8 + Files.H, PieceUtil.create(PieceType.Rook, us));
         } else if (flag == Move.QUEEN_CASTLE_FLAG) {
             removePiece(fromRank * 8 + Files.C);
-            addPiece(fromRank * 8 + Files.E, Piece.create(PieceType.King, us));
+            addPiece(fromRank * 8 + Files.E, PieceUtil.create(PieceType.King, us));
             removePiece(fromRank * 8 + Files.D);
-            addPiece(fromRank * 8 + Files.A, Piece.create(PieceType.Rook, us));
+            addPiece(fromRank * 8 + Files.A, PieceUtil.create(PieceType.Rook, us));
         }
 
         // Move the piece
@@ -180,7 +182,7 @@ public class Board implements IBoard {
 
             // Handle captures
             final int captured = _stateStack.getFirst().getCaptured();
-            if (Piece.getType(captured) != PieceType.None) {
+            if (PieceUtil.getType(captured) != PieceType.None) {
                 int captureSquare = to;
 
                 // Handle en passant captures
@@ -208,8 +210,8 @@ public class Board implements IBoard {
             int to = Misc.Utils.toSquareIndex(str.substring(2, 4));
 
             // Use board context to determine the flag [e.g. castling, capturing, promotion]
-            int movingPieceType = Piece.getType(getPiece(from));
-            int destPieceType = Piece.getType(getPiece(to));
+            int movingPieceType = PieceUtil.getType(getPieceID(from));
+            int destPieceType = PieceUtil.getType(getPieceID(to));
             int absDist = Math.abs(from - to);
             boolean captures = destPieceType == PieceType.None;
             int flag = captures ? Move.QUIET_MOVE_FLAG : Move.CAPTURE_FLAG;
@@ -263,13 +265,13 @@ public class Board implements IBoard {
 
     @Override
     public void addPiece(int square, int piece) {
-        long bb = 1L << square;
+        long bb = target(square);
 
         // add piece on type bitboard
-        _tBitboards[Piece.getType(piece)] |= bb;
+        _tBitboards[PieceUtil.getType(piece)] |= bb;
 
         // add piece on color bitboard
-        _cBitboards[Piece.getColor(piece)] |= bb;
+        _cBitboards[PieceUtil.getColor(piece)] |= bb;
 
         // pieces
         _pieces[square] = piece;
@@ -280,33 +282,33 @@ public class Board implements IBoard {
 
     @Override
     public void removePiece(int square) {
-        int piece = getPiece(square);
-        long bb = 1L << piece;
+        int piece = getPieceID(square);
+        long bb = target(square);
 
         // toggle piece on type bitboard
-        _tBitboards[Piece.getType(piece)] ^= bb;
+        _tBitboards[PieceUtil.getType(piece)] ^= bb;
 
         // toggle piece on color bitboard
-        _cBitboards[Piece.getColor(piece)] ^= bb;
+        _cBitboards[PieceUtil.getColor(piece)] ^= bb;
 
         // pieces
-        _pieces[square] = Piece.None[0];
+        _pieces[square] = PieceUtil.None[0];
 
         // decrement piece count
         _pieceCount[piece]--;
     }
 
     @Override
-    public int getPiece(int square) {
+    public int getPieceID(int square) {
         return _pieces[square];
     }
 
     private void movePiece(int from, int to) {
         int piece = _pieces[from];
-        long fromTo = (1L << from) | (1L << to);
-        _tBitboards[Piece.getType(piece)] ^= fromTo;
-        _cBitboards[Piece.getColor(piece)] ^= fromTo;
-        _pieces[from] = Piece.None[0];
+        long fromTo = target(from) | target(to);
+        _tBitboards[PieceUtil.getType(piece)] ^= fromTo;
+        _cBitboards[PieceUtil.getColor(piece)] ^= fromTo;
+        _pieces[from] = PieceUtil.None[0];
         _pieces[to] = piece;
     }
 
@@ -321,8 +323,8 @@ public class Board implements IBoard {
             result += (rank + 1) + "  ";
             for (int file = 0; file <= 7; file++) {
                 int square = Misc.Utils.sqaureIndex0(rank, file);
-                int piece = getPiece(square);
-                char c = Piece.toChar(piece);
+                int piece = getPieceID(square);
+                char c = PieceUtil.toChar(piece);
                 result += c + " ";
             }
             result += "\n";
@@ -427,7 +429,7 @@ public class Board implements IBoard {
                     }
                 
                     // get piece char as Piece Type
-                    int piece = Piece.fromChar(_fen[0].charAt(i));
+                    int piece = PieceUtil.fromChar(_fen[0].charAt(i));
                 
                     // evaluate
                     board1.addPiece(squareIdx ^ 7, piece);

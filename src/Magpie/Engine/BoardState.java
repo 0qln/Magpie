@@ -23,7 +23,7 @@ public class BoardState {
     private BitSet _castling = new BitSet(4);
 
     // captured piece, the piece that was captured when this state was reached
-    private int _captured = Piece.None[0];
+    private int _captured = PieceUtil.None[0];
 
     public BoardState(
             long _checkers,
@@ -100,7 +100,7 @@ public class BoardState {
         @Required
         private BitSet _castling;
         @NotRequired
-        private int _captured = Piece.None[0];
+        private int _captured = PieceUtil.None[0];
         // Dynamically used for computation on build
         // @BuilderRequired
         // private boolean _comesWithCheck = false;
@@ -156,28 +156,24 @@ public class BoardState {
 
         @Override
         protected BoardState _buildT() {
-            long checkers = 0, blockers = 0, nstmAttacks = 0;
+            long checkers = 0, blockers = 0, nstmAttacks = 0, pinners = 0;
 
             final int us = _origin.getTurn();
-            long[] enemies = { _origin.getCBitboard(Color.NOT(us)) };
+            final long enemiesBB = _origin.getCBitboard(Color.NOT(us));
+            long[] enemies = { enemiesBB };
             final long kingBB = _origin.getBitboard(PieceType.King, us);
             final int kingSq = lsb(kingBB);
             while (enemies[0] != 0) {
-                final int enemy = popLsb(enemies);
+                final int enemySquare = popLsb(enemies);
                 final long pieces = _origin.getOccupancy();
-                final long attacks;
-                switch (Piece.getType(_origin.getPiece(enemy))) {
-                    case PieceType.Pawn: attacks = PawnMoveGenerator.attacks(enemy); break;
-                    case PieceType.Knight: attacks = KnightMoveGenerator.attacks(enemy); break;
-                    case PieceType.Bishop: attacks = BishopMoveGenerator.attacks(enemy, pieces); break;
-                    case PieceType.Rook: attacks = RookMoveGenerator.attacks(enemy, pieces); break;
-                    case PieceType.Queen: attacks = QueenMoveGenerator.attacks(enemy, pieces); break;
-                    case PieceType.King: attacks = KingMoveGenerator.attacks(enemy); break;
-                    default: continue;
-                }
+                final int enemyID = _origin.getPieceID(enemySquare);
+                final long attacks = Piece
+                    .fromID(enemyID)
+                    .getGenerator()
+                    .attacks(enemySquare, pieces);
 
                 if ((attacks & kingBB) != 0) 
-                    checkers |= target(enemy);                    
+                    checkers |= target(enemySquare);                    
                 
 
                 nstmAttacks |= attacks;
@@ -204,10 +200,11 @@ public class BoardState {
 
                 if (countBits(piecesBetweenSniperAndKingBB) == 1) {
                     blockers |= piecesBetweenSniperAndKingBB;
-                    // pinners |= sniper;
+                    pinners |= target(xRayChecker);
                 }
             }
 
+            // printBB(pinners);
             // printBB(blockers);
             // printBB(checkers);
             // printBB(nstmAttacks);

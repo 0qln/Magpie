@@ -1,8 +1,6 @@
 package Engine;
 
-import static Engine.Utils.popLsb;
-import static Engine.Utils.printBB;
-import static Engine.Utils.target;
+import static Engine.Utils.*;
 
 import java.util.Arrays;
 
@@ -17,12 +15,12 @@ public class MoveList {
     public static MoveList pseudoLegal(Board board) {
         MoveList list = new MoveList();
 
-        list._moveCount = new PawnMoveGenerator().generate(list._moves, list._moveCount, board, board.getTurn());
-        list._moveCount = new KnightMoveGenerator().generate(list._moves, list._moveCount, board, board.getTurn());
-        list._moveCount = new RookMoveGenerator().generate(list._moves, list._moveCount, board, board.getTurn());
-        list._moveCount = new BishopMoveGenerator().generate(list._moves, list._moveCount, board, board.getTurn());
-        list._moveCount = new QueenMoveGenerator().generate(list._moves, list._moveCount, board, board.getTurn());
-        list._moveCount = new KingMoveGenerator().generate(list._moves, list._moveCount, board, board.getTurn());
+        list._moveCount = Pawn.generator.generate(list._moves, list._moveCount, board, board.getTurn());
+        list._moveCount = Knight.generator.generate(list._moves, list._moveCount, board, board.getTurn());
+        list._moveCount = Rook.generator.generate(list._moves, list._moveCount, board, board.getTurn());
+        list._moveCount = Bishop.generator.generate(list._moves, list._moveCount, board, board.getTurn());
+        list._moveCount = Queen.generator.generate(list._moves, list._moveCount, board, board.getTurn());
+        list._moveCount = King.generator.generate(list._moves, list._moveCount, board, board.getTurn());
 
         return list;
     }
@@ -36,7 +34,7 @@ public class MoveList {
     public static MoveList checkResolves(Board board) {
         MoveList list = new MoveList();
 
-        // list._moveCount = new Move
+        // TODO
 
         return list;
     }
@@ -49,7 +47,7 @@ public class MoveList {
     public static MoveList checkResolvesByKing(Board board) {
         MoveList list = new MoveList();
 
-        list._moveCount = new KingMoveGenerator().generate(list._moves, list._moveCount, board, board.getTurn());
+        list._moveCount = King.generator.generate(list._moves, list._moveCount, board, board.getTurn());
 
         return list;
     }
@@ -64,76 +62,104 @@ public class MoveList {
 
         // // 1.1 If in check, generate only pseudo legal moves that resolve the check
         // if (board.isInSingleCheck()) {
-        //     candidates = checkResolves(board);
-        //     System.out.println("Single check");
+        // candidates = checkResolves(board);
+        // System.out.println("Single check");
         // }
         // // 1.2 If in double check, generate only pseudo legal king moves
         // else if (board.isInDoubleCheck()) {
-        //     candidates = checkResolvesByKing(board);
-        //     System.out.println("Double check");
+        // candidates = checkResolvesByKing(board);
+        // System.out.println("Double check");
         // }
         // // 1.3 Generate all pseudo legal quiet moves and captures
         // else {
-        //     candidates = pseudoLegal(board);
-        //     System.out.println("No check");
+        // candidates = pseudoLegal(board);
+        // System.out.println("No check");
         // }
 
         // 2. Filter out pseudo legal moves that are not legal.
         for (int i = 0; i < candidates._moveCount; i++) {
             final short move = candidates._moves[i];
             final int from = Move.getFrom(move), to = Move.getTo(move), flag = Move.getFlag(move);
-            final int movingP = board.getPiece(from);
-            final long kingBB = board.getBitboard(PieceType.King, board.getTurn());
+            final int movingP = board.getPieceID(from);
+            final int us = board.getTurn(), nus = Color.NOT(us);
+            final long kingBB = board.getBitboard(PieceType.King, us);
             final long nstm = board.getNstmAttacks();
 
-            // 2.1 Castling through check is not legal
-            if (flag == Move.KING_CASTLE_FLAG) {
-                if ((nstm & 0x60) != 0) {
-                    // continue;
-                }
-            }
-            if (flag == Move.QUEEN_CASTLE_FLAG) {
-                if ((nstm & 0xC) != 0) {
-                    // continue;
-                }
-            }
+            // 1. En passant
+            if (flag == Move.EN_PASSANT_FLAG) {
+                final int kingSquare = lsb(kingBB);
+                final int captureSquare = to + (us * 2 - 1) * 8;
+                final long occupationAfterEpCapture = (
+                    (board.getOccupancy() ^ target(from) ^ target(captureSquare)) | target(to)
+                );
 
-            // 2.1 King moving into a check is not legal
-            if (Piece.getType(movingP) == PieceType.King) {
-                final long updatedNstm = nstm | slidingAttacks(
-                        board, new long[] { board.getCheckers() }, board.getOccupancy() ^ kingBB);
-                printBB(updatedNstm);
-                if ((target(to) & updatedNstm) != 0) {
+                // From perspective of the king, check if he is attacked
+                if (
+                    (Rook.generator.attacks(kingSquare, occupationAfterEpCapture) & (board.getBitboard(PieceType.Rook, nus) |
+                                                                                     board.getBitboard(PieceType.Queen, nus)))  != 0
+                    ||
+                    (Bishop.generator.attacks(kingSquare, occupationAfterEpCapture) & (board.getBitboard(PieceType.Bishop, nus) | 
+                                                                                       board.getBitboard(PieceType.Queen, nus))) != 0
+                )
+                {
+                    // King is exposed after en passant capture
                     continue;
                 }
             }
 
+            // 2. Castling through check is not legal
+            if (flag == Move.KING_CASTLE_FLAG) {
+                if ((nstm & 0x60) != 0) {
+                    continue;
+                }
+            }
+            if (flag == Move.QUEEN_CASTLE_FLAG) {
+                if ((nstm & 0xC) != 0) {
+                    continue;
+                }
+            }
+
+            // 3. King moving into a check is not legal
+            if (PieceUtil.getType(movingP) == PieceType.King) {
+                // When the king has moved and a sliding piece was a checker, the attacks of
+                // that sliding piece will have changed
+                final long occupationAfterKingMove = board.getOccupancy() ^ kingBB | target(to);
+                // Only sliding piece attacks will have changed if the king has moved 
+                long updatedNstm = nstm;
+                long[] checkers = { board.getCheckers() };
+                while (checkers[0] != 0) {
+                    int square = popLsb(checkers);
+                    Piece.MoveGenerator gen = Piece.fromID(board.getPieceID(square)).getGenerator();
+                    if (gen instanceof SlidingPiece.MoveGenerator)
+                        updatedNstm |= ((SlidingPiece.MoveGenerator)gen).attacks(square, occupationAfterKingMove);
+                }
+
+                // printBB(updatedNstm);
+
+                if ((target(to) & updatedNstm) != 0) {
+                    // King has moved into a check
+                    continue;
+                }
+            }
+
+            // 4. [ Non king move ] Pinned pieces movements are restricted
+            else {
+                // Is piece a blocker of a check? -> pinned!
+                if ((board.getBlockers() & target(from)) != 0) {
+                    // If the piece is pinned, it can only move along the ray of it's pin.
+                    if ((Masks.ray(from, to) & kingBB) == 0) {
+                        // The destination square of the pinned piece is not on the ray of
+                        // it's pin and it's king.
+                        continue;
+                    }
+                }
+            }
+
+            // No checks have failed, we can presume the move is legal.
             list._moves[list._moveCount++] = candidates._moves[i];
         }
 
         return list;
-    }
-
-    private static final long slidingAttacks(Board board, long[] sliders, long occupied) {
-        long result = 0;
-        while (sliders[0] != 0)
-            result |= slidingAttack(board, popLsb(sliders), occupied);
-        return result;
-    }
-
-    private static final long slidingAttack(Board board, int square, long occupied) {
-        int type = Piece.getType(board.getPiece(square));
-        switch (type) {
-            case PieceType.Bishop:
-                return BishopMoveGenerator.attacks(square, occupied);
-            case PieceType.Rook:
-                return RookMoveGenerator.attacks(square, occupied);
-            case PieceType.Queen:
-                return QueenMoveGenerator.attacks(square, occupied);
-
-            default:
-                return 0;
-        }
     }
 
     public short[] getMoves() {

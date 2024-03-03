@@ -5,7 +5,7 @@ import java.util.*;
 import java.util.logging.*;
 import Misc.Utils;
 import Misc.LoggerConfigurator;
-import Engine.Piece;
+import Engine.PieceUtil;
 
 public class CommandParser {
     public static final String EmptyCommand = "EmptyCommand";
@@ -94,7 +94,7 @@ public class CommandParser {
                         if (args.length <= 2) {
                             return Optional.empty();
                         }
-                        int piece = Piece.fromChar(args[2].charAt(0));
+                        int piece = PieceUtil.fromChar(args[2].charAt(0));
                         logger.info("Piece: " + piece);
                         return Optional.of(b -> new Interface.Custom.PieceAddCommand(b, square, piece));
                     default:

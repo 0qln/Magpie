@@ -8,7 +8,7 @@ public interface IBoard
     public void undoMove(short move);
 
     public void addPiece(int square, int piece);
-    public int getPiece(int square);
+    public int getPieceID(int square);
     public void removePiece(int square);
     public int getTurn();
     public int getEnPassantSquare();

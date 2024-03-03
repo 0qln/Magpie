@@ -91,18 +91,18 @@ public final class Masks {
         for (int i = 0; i < 64; i++) {
             for (int j = 0; j < 64; j++) {
 
-                SlidingPiece pt;
+                SlidingPiece.MoveGenerator gen;
 
                 if (rank(i) == rank(j) || file(i) == file(j)) {
-                    pt = new Rook();
+                    gen = Rook.generator;
                 } else if (diagA1H8(i) == diagA1H8(j) || diagA8H1(i) == diagA8H1(j)) {
-                    pt = new Bishop();
+                    gen = Bishop.generator;
                 } else {
                     continue;
                 }
 
-                long iBB = pt.getGenerator().attacks(i, 0);
-                long jBB = pt.getGenerator().attacks(j, 0);
+                long iBB = gen.attacks(i, 0);
+                long jBB = gen.attacks(j, 0);
                 rays[i][j] = target(i) | target(j) | (iBB & jBB);
 
             }
