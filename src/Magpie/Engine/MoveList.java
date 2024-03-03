@@ -34,7 +34,12 @@ public class MoveList {
     public static MoveList checkResolves(Board board) {
         MoveList list = new MoveList();
 
-        // TODO
+        list._moveCount = Pawn.generator.resolves(list._moves, list._moveCount, board, board.getTurn());
+        list._moveCount = Knight.generator.resolves(list._moves, list._moveCount, board, board.getTurn());
+        list._moveCount = Rook.generator.resolves(list._moves, list._moveCount, board, board.getTurn());
+        list._moveCount = Bishop.generator.resolves(list._moves, list._moveCount, board, board.getTurn());
+        list._moveCount = Queen.generator.resolves(list._moves, list._moveCount, board, board.getTurn());
+        list._moveCount = King.generator.resolves(list._moves, list._moveCount, board, board.getTurn());
 
         return list;
     }
@@ -57,24 +62,21 @@ public class MoveList {
 
         // 1. Generate pseudo legal moves.
 
-        // temporary
-        candidates = pseudoLegal(board);
-
-        // // 1.1 If in check, generate only pseudo legal moves that resolve the check
-        // if (board.isInSingleCheck()) {
-        // candidates = checkResolves(board);
-        // System.out.println("Single check");
-        // }
-        // // 1.2 If in double check, generate only pseudo legal king moves
-        // else if (board.isInDoubleCheck()) {
-        // candidates = checkResolvesByKing(board);
-        // System.out.println("Double check");
-        // }
-        // // 1.3 Generate all pseudo legal quiet moves and captures
-        // else {
+        // // temporary
         // candidates = pseudoLegal(board);
-        // System.out.println("No check");
-        // }
+
+        // 1.1 If in check, generate only pseudo legal moves that resolve the check
+        if (board.isInSingleCheck()) {
+            candidates = checkResolves(board);
+        }
+        // 1.2 If in double check, generate only pseudo legal king moves
+        else if (board.isInDoubleCheck()) {
+            candidates = checkResolvesByKing(board);
+        }
+        // 1.3 Generate all pseudo legal quiet moves and captures
+        else {
+            candidates = pseudoLegal(board);
+        }
 
         // 2. Filter out pseudo legal moves that are not legal.
         for (int i = 0; i < candidates._moveCount; i++) {

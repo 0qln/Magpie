@@ -116,7 +116,7 @@ public final class Masks {
         return RAYS[square1][square2];
     }
 
-    public static final long squaresBetweenBB(int square1, int square2) {
+    public static final long squaresBetween(int square1, int square2) {
         int northernSquare, southernSquare;
         if (square1 > square2) {
             northernSquare = square1;

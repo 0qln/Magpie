@@ -1,5 +1,7 @@
 package Engine;
 
+import static Engine.Utils.*;
+
 public class Knight extends Piece {
 
     public static final MoveGenerator generator = new MoveGenerator();
@@ -24,6 +26,44 @@ public class Knight extends Piece {
             index = addMoves(list, index, board, color, knights & Masks.SoSoEa, CompassRose.SoSoEa);
             index = addMoves(list, index, board, color, knights & Masks.SoSoWe, CompassRose.SoSoWe);
             index = addMoves(list, index, board, color, knights & Masks.NoNoWe, CompassRose.NoNoWe);
+
+            return index;
+        }
+
+        @Override
+        int resolves(short[] list, int index, Board board, int color) {
+            long knights = board.getBitboard(PieceType.Knight, color);
+
+            index = addResolves(list, index, board, color, knights & Masks.NoEaEa, CompassRose.NoEaEa);
+            index = addResolves(list, index, board, color, knights & Masks.SoEaEa, CompassRose.SoEaEa);
+            index = addResolves(list, index, board, color, knights & Masks.SoWeWe, CompassRose.SoWeWe);
+            index = addResolves(list, index, board, color, knights & Masks.NoWeWe, CompassRose.NoWeWe);
+            index = addResolves(list, index, board, color, knights & Masks.NoNoEa, CompassRose.NoNoEa);
+            index = addResolves(list, index, board, color, knights & Masks.SoSoEa, CompassRose.SoSoEa);
+            index = addResolves(list, index, board, color, knights & Masks.SoSoWe, CompassRose.SoSoWe);
+            index = addResolves(list, index, board, color, knights & Masks.NoNoWe, CompassRose.NoNoWe);
+
+            return index;
+        }
+
+        private int addResolves(short[] list, int index, Board board, int color, long knights, int dir) {
+            // Remove all knights whose dest square is occupied by an ally.
+            final long sao = shift(board.getCBitboard(color), -dir);
+            final long[] fromBB = { knights & ~sao };
+
+            final int checker = lsb(board.getCheckers());
+            final int king = lsb(board.getBitboard(PieceType.King, color));
+            final long mask = Masks.squaresBetween(king, checker);
+
+            while (fromBB[0] != 0) {
+                final int from = popLsb(fromBB);
+                final int to = from + dir;
+                if (checker == to
+                    || (target(to) & mask) != 0)
+                    list[index++] = Move.create(from, to, board.getPieceID(to) == PieceUtil.None[0]
+                            ? Move.QUIET_MOVE_FLAG
+                            : Move.CAPTURE_FLAG);
+            }
 
             return index;
         }

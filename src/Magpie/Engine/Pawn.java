@@ -16,12 +16,21 @@ public class Pawn extends Piece {
         // Indexed by color
         private static final long[] STEP2 = new long[] { Masks.Ranks[1], Masks.Ranks[6] };
 
+        // TODO: promotions
+
         @Override
         int generate(short[] list, int index, Board board, int color) {
             return color == Color.White
                     ? white(list, index, board)
                     : black(list, index, board);
         }
+
+        @Override
+        int resolves(short[] list, int index, Board board, int color) {
+            return color == Color.White
+                    ? whiteResolves(list, index, board)
+                    : blackResolves(list, index, board);
+        } 
 
         private int white(short[] list, int index, Board board) {
             final long pawns = board.getBitboard(PieceType.Pawn, Color.White);
@@ -75,7 +84,7 @@ public class Pawn extends Piece {
             toBB[0] = target(board.getEnPassantSquare());
             to = lsb(toBB[0]);
             fromBB[0] = shift(shift(pawns & Masks.East, CompassRose.NoEa) & toBB[0], CompassRose.SoWe);
-            fromBB[0] |= shift(shift(pawns & Masks.West, CompassRose.NoWe) & toBB[0], CompassRose.NoWe);
+            fromBB[0] |= shift(shift(pawns & Masks.West, CompassRose.NoWe) & toBB[0], CompassRose.SoEa);
             while (fromBB[0] != 0) {
                 from = popLsb(fromBB);
                 list[index++] = Move.create(from, to, Move.EN_PASSANT_FLAG);
@@ -140,6 +149,105 @@ public class Pawn extends Piece {
             while (fromBB[0] != 0) {
                 from = popLsb(fromBB);
                 list[index++] = Move.create(from, to, Move.EN_PASSANT_FLAG);
+            }
+
+            return index;
+        }
+
+        private int whiteResolves(short[] list, int index, Board board) {
+            final long pawns = board.getBitboard(PieceType.Pawn, Color.White);
+            final long pieces = board.getOccupancy();
+
+            int from, to;
+            long[] toBB = {0}, fromBB = {0};
+
+            final long checkerBB = board.getCheckers();
+            final int checker = lsb(checkerBB);
+            final int king = lsb(board.getBitboard(PieceType.King, Color.White));
+            final long mask = Masks.squaresBetween(king, checker);
+
+            // Single step
+            toBB[0] = shift(pawns, CompassRose.Nort) & mask;
+            fromBB[0] = shift(toBB, CompassRose.Sout);
+            while (toBB[0] != 0) 
+                list[index++] = Move.create(popLsb(fromBB), popLsb(toBB), Move.QUIET_MOVE_FLAG);
+            
+            // Double step
+            toBB[0] = shift(pawns & STEP2[Color.White], 2 * CompassRose.Nort) & mask;
+            toBB[0] ^= shift(shift(toBB, CompassRose.Sout) & pieces, CompassRose.Nort);
+            fromBB[0] = shift(toBB, 2 * CompassRose.Sout);
+            while (toBB[0] != 0) 
+                list[index++] = Move.create(popLsb(fromBB), popLsb(toBB), Move.DOUBLE_PAWN_PUSH_FLAG);
+            
+            // Capture west
+            toBB[0] = shift(pawns & Masks.West, CompassRose.NoWe) & checkerBB;
+            fromBB[0] = shift(toBB, CompassRose.SoEa);
+            while (toBB[0] != 0) 
+                list[index++] = Move.create(popLsb(fromBB), popLsb(toBB), Move.CAPTURE_FLAG);
+            
+            // Capture east
+            toBB[0] = shift(pawns & Masks.East, CompassRose.NoEa) & checkerBB;
+            fromBB[0] = shift(toBB, CompassRose.SoWe);
+            while (toBB[0] != 0) 
+                list[index++] = Move.create(popLsb(fromBB), popLsb(toBB), Move.CAPTURE_FLAG);
+            
+            // En passant
+            toBB[0] = target(board.getEnPassantSquare());
+            if (shift(toBB[0], CompassRose.Sout) == checkerBB) {
+                to = lsb(toBB[0]);
+                fromBB[0] = shift(shift(pawns & Masks.East, CompassRose.NoEa) & toBB[0], CompassRose.SoWe);
+                fromBB[0] |= shift(shift(pawns & Masks.West, CompassRose.NoWe) & toBB[0], CompassRose.SoEa);
+                while (fromBB[0] != 0) {
+                    from = popLsb(fromBB);
+                    list[index++] = Move.create(from, to, Move.EN_PASSANT_FLAG);
+                }
+            }
+
+            return index;
+        }
+
+        private int blackResolves(short[] list, int index, Board board) {
+            final long pawns = board.getBitboard(PieceType.Pawn, Color.Black);
+            final long pieces = board.getOccupancy();
+            final long checkerBB = board.getCheckers();
+            final int checker = lsb(checkerBB);
+            final int king = lsb(board.getBitboard(PieceType.King, Color.Black));
+            final long mask = Masks.squaresBetween(king, checker);
+            long[] toBB = {0}, fromBB = {0};
+
+            // Single step
+            toBB[0] = shift(pawns, CompassRose.Sout) & mask;
+            fromBB[0] = shift(toBB, CompassRose.Nort);
+            while (toBB[0] != 0) 
+                list[index++] = Move.create(popLsb(fromBB), popLsb(toBB), Move.QUIET_MOVE_FLAG);
+            
+            // Double step
+            toBB[0] = shift(pawns & STEP2[Color.Black], 2 * CompassRose.Sout) & mask;
+            toBB[0] ^= shift(shift(toBB, CompassRose.Nort) & pieces, CompassRose.Sout);
+            fromBB[0] = shift(toBB, 2 * CompassRose.Nort);
+            while (toBB[0] != 0) 
+                list[index++] = Move.create(popLsb(fromBB), popLsb(toBB), Move.DOUBLE_PAWN_PUSH_FLAG);
+            
+            // Capture west
+            toBB[0] = shift(pawns & Masks.West, CompassRose.SoWe) & checkerBB;
+            fromBB[0] = shift(toBB, CompassRose.NoEa);
+            while (toBB[0] != 0) 
+                list[index++] = Move.create(popLsb(fromBB), popLsb(toBB), Move.CAPTURE_FLAG);
+            
+            // Capture east
+            toBB[0] = shift(pawns & Masks.East, CompassRose.SoEa) & checkerBB;
+            fromBB[0] = shift(toBB, CompassRose.NoWe);
+            while (toBB[0] != 0) 
+                list[index++] = Move.create(popLsb(fromBB), popLsb(toBB), Move.CAPTURE_FLAG);
+            
+            // En passant
+            toBB[0] = target(board.getEnPassantSquare());
+            if (shift(toBB[0], CompassRose.Nort) == checkerBB) {
+                fromBB[0] = 
+                    (shift(toBB, CompassRose.NoWe) & pawns & Masks.East) | 
+                    (shift(toBB, CompassRose.NoEa) & pawns & Masks.West);
+                while (fromBB[0] != 0)
+                    list[index++] = Move.create(popLsb(fromBB), board.getEnPassantSquare(), Move.EN_PASSANT_FLAG);
             }
 
             return index;

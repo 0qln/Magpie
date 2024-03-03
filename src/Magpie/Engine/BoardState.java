@@ -193,7 +193,7 @@ public class BoardState {
 
             while (xRayCheckers[0] != 0) {
                 int xRayChecker = popLsb(xRayCheckers);
-                long betweenSquaresBB = Masks.squaresBetweenBB(kingSq, xRayChecker);
+                long betweenSquaresBB = Masks.squaresBetween(kingSq, xRayChecker);
                 long piecesBetweenSniperAndKingBB = _origin.getCBitboard(us) & betweenSquaresBB;
 
                 // printBB(betweenSquaresBB);

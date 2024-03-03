@@ -22,6 +22,13 @@ public class King extends Piece {
             return index;
         }
 
+        @Override
+        int resolves(short[] list, int index, Board board, int color) {
+            index = captures(list, index, board, color);
+            index = quiets(list, index, board, color);
+            return index;
+        }
+
         public int generate(
                 short[] list, int index,
                 final long mask, final long king,
@@ -47,7 +54,7 @@ public class King extends Piece {
             return generate(
                     list,
                     index,
-                    ~(board.getCBitboard(Color.Black) | board.getCBitboard(Color.White)),
+                    ~board.getOccupancy(),
                     board.getBitboard(PieceType.King, color),
                     Move.QUIET_MOVE_FLAG);
         }

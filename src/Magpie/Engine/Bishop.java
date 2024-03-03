@@ -25,13 +25,36 @@ public class Bishop extends SlidingPiece {
             return index;
         }
 
-        public int quiets(short[] list, int index, Board board, int color) {
-            final long pieces = board.getCBitboard(Color.Black) | board.getCBitboard(Color.White);
+        @Override
+        int resolves(short[] list, int index, Board board, int color) {
+            final long checkerBB = board.getCheckers();
+            final int checker = lsb(checkerBB);
+            final int king = lsb(board.getBitboard(PieceType.King, color));
+            final long mask = Masks.squaresBetween(king, checker);
+            // quiet
+            index = generate(
+                    list,
+                    index,
+                    ~board.getOccupancy() & mask,
+                    board.getOccupancy(),
+                    board.getBitboard(PieceType.Bishop, color),
+                    Move.QUIET_MOVE_FLAG);
+            // captures
             return generate(
                     list,
                     index,
-                    ~pieces,
-                    pieces,
+                    checkerBB,
+                    board.getOccupancy(),
+                    board.getBitboard(PieceType.Bishop, color),
+                    Move.CAPTURE_FLAG);
+        }
+
+        public int quiets(short[] list, int index, Board board, int color) {
+            return generate(
+                    list,
+                    index,
+                    ~board.getOccupancy(),
+                    board.getOccupancy(),
                     board.getBitboard(PieceType.Bishop, color),
                     Move.QUIET_MOVE_FLAG);
         }
@@ -41,7 +64,7 @@ public class Bishop extends SlidingPiece {
                     list,
                     index,
                     board.getCBitboard(Color.NOT(color)),
-                    board.getCBitboard(Color.Black) | board.getCBitboard(Color.White),
+                    board.getOccupancy(),
                     board.getBitboard(PieceType.Bishop, color),
                     Move.CAPTURE_FLAG);
         }
