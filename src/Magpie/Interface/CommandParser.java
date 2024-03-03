@@ -122,6 +122,22 @@ public class CommandParser {
                         return Optional.empty();
                 }
 
+            case "go":
+                logger.info("Parsing Go command.");
+
+                if (args.length <= 0)
+                    return Optional.empty();
+
+                switch (args[0]) {
+                    case "perft":
+                        return Optional.of(b -> new Interface.Custom.PerftCommand(b, args.length == 2
+                                ? Optional.of(Integer.parseInt(args[1]))
+                                : Optional.empty()));
+
+                    default:
+                        return Optional.empty();
+                }
+
             default:
             case EmptyCommand:
                 logger.warning("Empty or unknown command.");
