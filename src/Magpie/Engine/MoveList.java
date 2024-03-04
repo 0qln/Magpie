@@ -52,7 +52,7 @@ public class MoveList {
     public static MoveList checkResolvesByKing(Board board) {
         MoveList list = new MoveList();
 
-        list._moveCount = King.generator.generate(list._moves, list._moveCount, board, board.getTurn());
+        list._moveCount = King.generator.resolves(list._moves, list._moveCount, board, board.getTurn());
 
         return list;
     }
