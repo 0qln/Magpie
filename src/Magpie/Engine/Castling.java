@@ -46,24 +46,25 @@ public final class Castling {
             boolean queenSideWhite,
             boolean kingSideBlack,
             boolean queenSideBlack) {
-        return BitSet.valueOf(new byte[] {
-                fromBoolean(queenSideWhite),
-                fromBoolean(kingSideWhite),
-                fromBoolean(queenSideBlack),
-                fromBoolean(kingSideBlack)
-        });
+        BitSet result = new BitSet(4);
+        set(result, KingSide, Color.White, kingSideWhite);
+        set(result, QueenSide, Color.White, queenSideWhite);
+        set(result, KingSide, Color.Black, kingSideBlack);
+        set(result, QueenSide, Color.Black, queenSideBlack);
+        return result;
     }
 
     public static final void set(BitSet castling, int side, int color, boolean value) {
-        castling.set(sideToIndex(side) | (color << 1), value);
+        castling.set(toIndex(side, color), value);
+    }
+
+    public static final void set(BitSet castling, int color, boolean value) {
+        castling.set(toIndex(QueenSide, color), value);
+        castling.set(toIndex(KingSide, color), value);
     }
 
     public static final boolean get(BitSet castling, int side, int color) {
-        return castling.get(sideToIndex(side) | (color << 1));
-    }
-
-    private static final byte fromBoolean(boolean b) {
-        return b ? (byte) 1 : (byte) 0;
+        return castling.get(toIndex(side, color));
     }
 
     public static final boolean hasSpace(int side, int color, long boardOccupancy) {
@@ -77,5 +78,18 @@ public final class Castling {
     private static final int sideToIndex(int side) {
         assert (side == QueenSide || side == KingSide);
         return side - 5;
+    }
+
+    private static final int toIndex(int side, int color) {
+        return (color << 1) | sideToIndex(side);
+    }
+
+    public static final String toString(BitSet castling) {
+        String result = "" +
+        (get(castling, KingSide, Color.White) ? "K" : "") +
+        (get(castling, QueenSide, Color.White) ? "Q" : "") +
+        (get(castling, KingSide, Color.Black) ? "k" : "") +
+        (get(castling, QueenSide, Color.Black) ? "q" : "");
+        return result.equals("") ? "-" : result;
     }
 }
