@@ -189,6 +189,9 @@ public class CommandParser {
     }
 
     private String[] getArguments(String[] processedInput) {
+        if (processedInput.length <= 1)
+            return new String[0];
+
         logger.info("Getting arguments from processed input.");
         String[] result = Arrays.copyOfRange(processedInput, 1, processedInput.length);
         logger.info("Extracted args: " + String.join(", ", result));
