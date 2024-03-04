@@ -346,7 +346,8 @@ public class Board implements IBoard {
     }
 
     public boolean canCastle(int side, int color) {
-        return Castling.hasSpace(side, color, getOccupancy());
+        return Castling.hasSpace(side, color, getOccupancy()) 
+                && Castling.get(getCastling(), side, color);
     }
 
     @Override
@@ -463,7 +464,7 @@ public class Board implements IBoard {
                                 : -1)
 
                         // plys for 50 move rule
-                        .plys50(Integer.parseInt(_fen[4]))
+                        .plys50(_fen.length > 4 ? Integer.parseInt(_fen[4]) : 0)
                         .ply(0);
 
                 board1._stateStack.push(stateBuilder.build());
