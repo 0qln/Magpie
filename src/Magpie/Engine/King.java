@@ -43,10 +43,10 @@ public class King extends Piece {
         public int generateCastling(short[] list, int index, Board board, int color) {
             final int rank = color == Color.White ? 0 : 7;
             final int from = Utils.sqaureIndex0(rank, Files.E);
-            if (board.canCastle(0, color))
+            if (board.canCastle(Castling.KingSide, color))
+                list[index++] = Move.create(from, Utils.sqaureIndex0(rank, Files.G), Move.KING_CASTLE_FLAG);
+            if (board.canCastle(Castling.QueenSide, color))
                 list[index++] = Move.create(from, Utils.sqaureIndex0(rank, Files.C), Move.QUEEN_CASTLE_FLAG);
-            if (board.canCastle(1, color))
-                list[index++] = Move.create(from, Utils.sqaureIndex0(rank, Files.G), Move.QUEEN_CASTLE_FLAG);
             return index;
         }
 

@@ -4,11 +4,6 @@ import static Engine.Utils.*;
 
 public final class Masks {
 
-    public static final long[] Castling = {
-            0x60L,
-            0xEL,
-    };
-
     public static final long[] Files = {
             0x0101010101010101L,
             0x0202020202020202L,

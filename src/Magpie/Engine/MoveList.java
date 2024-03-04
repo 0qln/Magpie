@@ -111,12 +111,12 @@ public class MoveList {
 
             // 2. Castling through check is not legal
             if (flag == Move.KING_CASTLE_FLAG) {
-                if ((nstm & 0x60) != 0) {
+                if (!Castling.hasNerve(Castling.KingSide, us, nstm)) {
                     continue;
                 }
             }
             if (flag == Move.QUEEN_CASTLE_FLAG) {
-                if ((nstm & 0xC) != 0) {
+                if (!Castling.hasNerve(Castling.QueenSide, us, nstm)) {
                     continue;
                 }
             }

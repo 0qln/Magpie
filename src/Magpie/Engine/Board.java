@@ -345,9 +345,8 @@ public class Board implements IBoard {
         _stateStack.getFirst().setCastlingRights(king, white, b);
     }
 
-    public boolean canCastle(int king, int color) {
-        return _stateStack.getFirst().getCastling().get(color << 1 | king)
-                && (getOccupancy() & Masks.Castling[king]) == 0;
+    public boolean canCastle(int side, int color) {
+        return Castling.hasSpace(side, color, getOccupancy());
     }
 
     @Override
