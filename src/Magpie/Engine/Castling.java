@@ -17,15 +17,35 @@ public final class Castling {
             new long[2],
     };
 
+    public static final int[][] RookSquares = {
+            new int[2], 
+            new int[2],
+    };
+
     static {
         MoveMask[sideToIndex(KingSide)][Color.White]    = 0x60L;
         MoveMask[sideToIndex(QueenSide)][Color.White]   = 0xEL;
         MoveMask[sideToIndex(KingSide)][Color.Black]    = 0x6000000000000000L;
         MoveMask[sideToIndex(QueenSide)][Color.Black]   = 0xE00000000000000L;
+
         CheckMask[sideToIndex(KingSide)][Color.White]    = 0x60L;
         CheckMask[sideToIndex(QueenSide)][Color.White]   = 0xCL;
         CheckMask[sideToIndex(KingSide)][Color.Black]    = 0x6000000000000000L;
         CheckMask[sideToIndex(QueenSide)][Color.Black]   = 0xC00000000000000L;
+
+        RookSquares[sideToIndex(KingSide)][Color.White]     = 07;
+        RookSquares[sideToIndex(QueenSide)][Color.White]    = 00;
+        RookSquares[sideToIndex(KingSide)][Color.Black]     = 63;
+        RookSquares[sideToIndex(QueenSide)][Color.Black]    = 56;
+    }
+
+    public static final void update(BitSet castling, int captureSquare, int nstm) {
+        if (captureSquare == RookSquares[sideToIndex(KingSide)][nstm]) {
+            set(castling, KingSide, nstm, false);
+        }
+        if (captureSquare == RookSquares[sideToIndex(QueenSide)][nstm]) {
+            set(castling, QueenSide, nstm, false);
+        }
     }
 
     /*
