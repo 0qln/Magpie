@@ -61,12 +61,25 @@ public final class Move {
         return (move & FLAG_MASK) >>> FLAG_SHIFT;
     }
 
+    // Returns the `PieceType` from a move, assuming the move actually is a promotion.
     public static int getPromotion(short move) {
         return (getFlag(move) - 2) % 4 + 2;
     }
 
     public static boolean isPromotion(short move) {
-        return getFlag(move) >= PROMOTION_KNIGHT_FLAG && getFlag(move) <= CAPTURE_PROMOTION_QUEEN_FLAG;
+        return isPromotion(getFlag(move));
+    }
+
+    public static boolean isPromotion(int flag) {
+        return flag >= PROMOTION_KNIGHT_FLAG && flag <= CAPTURE_PROMOTION_QUEEN_FLAG;
+    }
+
+    public static boolean isCapture(int flag) {
+        return 
+            flag == CAPTURE_FLAG ||
+            flag == EN_PASSANT_FLAG || (
+            flag >= CAPTURE_PROMOTION_KNIGHT_FLAG && flag <= CAPTURE_PROMOTION_QUEEN_FLAG
+        );
     }
 
     public static String toString(short move) {
