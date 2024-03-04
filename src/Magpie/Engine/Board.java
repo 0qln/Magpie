@@ -402,6 +402,10 @@ public class Board implements IBoard {
         return _stateStack.getFirst().getBlockers();
     }
 
+    public boolean isInCheck() {
+        return _stateStack.getFirst().getCheckers() != 0L;
+    }
+
     public boolean isNotInCheck() {
         return Utils.countBits(_stateStack.getFirst().getCheckers()) == 0;
     }
