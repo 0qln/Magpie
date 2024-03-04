@@ -6,7 +6,6 @@ public abstract class PositionCommand extends Command
 {
     // TODO: 
     // Only create new position if a new move was just appended
-    // (which will be the case often on for real applications)
     private static PositionCommand lastPosition;
 
     private String[] _moves;
