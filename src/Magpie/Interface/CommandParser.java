@@ -124,6 +124,9 @@ public class CommandParser {
                     case "castling":
                         logger.info("Parsing Castling Info command.");
                         return Optional.of(b -> new Interface.Custom.CastlingInfoCommand(b));
+                    case "eval":
+                        logger.info("Parsing Eval Info command.");
+                        return Optional.of(b -> new Interface.Custom.EvalInfoCommand(b));
                     default:
                         return Optional.empty();
                 }
