@@ -15,8 +15,7 @@ public class Pawn extends Piece {
 
         // Indexed by color
         private static final long[] STEP2 = new long[] { Masks.Ranks[1], Masks.Ranks[6] };
-
-        // TODO: promotions
+        private static final long[] PROMOTION_RANK = new long[] { 7, 0 };
 
         @Override
         int generate(short[] list, int index, Board board, int color) {
@@ -47,7 +46,12 @@ public class Pawn extends Piece {
             while (toBB[0] != 0) {
                 from = popLsb(fromBB);
                 to = popLsb(toBB);
-                list[index++] = Move.create(from, to, Move.QUIET_MOVE_FLAG);
+                if (rank(to) == PROMOTION_RANK[Color.White]) 
+                    // promotion
+                    for (int flag = Move.PROMOTION_KNIGHT_FLAG; flag <= Move.PROMOTION_QUEEN_FLAG; flag++) 
+                        list[index++] = Move.create(from, to, flag);    
+                else
+                    list[index++] = Move.create(from, to, Move.QUIET_MOVE_FLAG);
             }
 
             // Double step
@@ -67,7 +71,12 @@ public class Pawn extends Piece {
             while (toBB[0] != 0) {
                 from = popLsb(fromBB);
                 to = popLsb(toBB);
-                list[index++] = Move.create(from, to, Move.CAPTURE_FLAG);
+                if (rank(to) == PROMOTION_RANK[Color.White]) 
+                    // promotion
+                    for (int flag = Move.CAPTURE_PROMOTION_KNIGHT_FLAG; flag <= Move.CAPTURE_PROMOTION_QUEEN_FLAG; flag++) 
+                        list[index++] = Move.create(from, to, flag);    
+                else
+                    list[index++] = Move.create(from, to, Move.CAPTURE_FLAG);
             }
 
             // Capture east
@@ -76,7 +85,12 @@ public class Pawn extends Piece {
             while (toBB[0] != 0) {
                 from = popLsb(fromBB);
                 to = popLsb(toBB);
-                list[index++] = Move.create(from, to, Move.CAPTURE_FLAG);
+                if (rank(to) == PROMOTION_RANK[Color.White])
+                    // promotion
+                    for (int flag = Move.CAPTURE_PROMOTION_KNIGHT_FLAG; flag <= Move.CAPTURE_PROMOTION_QUEEN_FLAG; flag++) 
+                        list[index++] = Move.create(from, to, flag);
+                else
+                    list[index++] = Move.create(from, to, Move.CAPTURE_FLAG);
             }
 
             // En passant
@@ -108,7 +122,12 @@ public class Pawn extends Piece {
             while (toBB[0] != 0) {
                 from = popLsb(fromBB);
                 to = popLsb(toBB);
-                list[index++] = Move.create(from, to, Move.QUIET_MOVE_FLAG);
+                if (rank(to) == PROMOTION_RANK[Color.Black])
+                    // promotion
+                    for (int flag = Move.PROMOTION_KNIGHT_FLAG; flag <= Move.PROMOTION_QUEEN_FLAG; flag++) 
+                        list[index++] = Move.create(from, to, flag);    
+                else
+                    list[index++] = Move.create(from, to, Move.QUIET_MOVE_FLAG);
             }
 
             // Double step
@@ -128,7 +147,12 @@ public class Pawn extends Piece {
             while (toBB[0] != 0) {
                 from = popLsb(fromBB);
                 to = popLsb(toBB);
-                list[index++] = Move.create(from, to, Move.CAPTURE_FLAG);
+                if (rank(to) == PROMOTION_RANK[Color.Black])
+                    // promotion
+                    for (int flag = Move.CAPTURE_PROMOTION_KNIGHT_FLAG; flag <= Move.CAPTURE_PROMOTION_QUEEN_FLAG; flag++) 
+                        list[index++] = Move.create(from, to, flag);
+                else
+                    list[index++] = Move.create(from, to, Move.CAPTURE_FLAG);
             }
 
             // Capture east
@@ -137,7 +161,12 @@ public class Pawn extends Piece {
             while (toBB[0] != 0) {
                 from = popLsb(fromBB);
                 to = popLsb(toBB);
-                list[index++] = Move.create(from, to, Move.CAPTURE_FLAG);
+                if (rank(to) == PROMOTION_RANK[Color.Black])
+                    // promotion
+                    for (int flag = Move.CAPTURE_PROMOTION_KNIGHT_FLAG; flag <= Move.CAPTURE_PROMOTION_QUEEN_FLAG; flag++) 
+                        list[index++] = Move.create(from, to, flag);
+                else
+                    list[index++] = Move.create(from, to, Move.CAPTURE_FLAG);
             }
 
             // En passant
@@ -169,8 +198,16 @@ public class Pawn extends Piece {
             // Single step
             toBB[0] = shift(pawns, CompassRose.Nort) & mask;
             fromBB[0] = shift(toBB, CompassRose.Sout);
-            while (toBB[0] != 0)
-                list[index++] = Move.create(popLsb(fromBB), popLsb(toBB), Move.QUIET_MOVE_FLAG);
+            while (toBB[0] != 0) {
+                from = popLsb(fromBB);
+                to = popLsb(toBB);
+                if (rank(to) == PROMOTION_RANK[Color.White]) 
+                    // promotion
+                    for (int flag = Move.PROMOTION_KNIGHT_FLAG; flag <= Move.PROMOTION_QUEEN_FLAG; flag++) 
+                        list[index++] = Move.create(from, to, flag);    
+                else
+                    list[index++] = Move.create(from, to, Move.QUIET_MOVE_FLAG);
+            }
 
             // Double step
             toBB[0] = shift(pawns & STEP2[Color.White], 2 * CompassRose.Nort) & mask;
@@ -182,15 +219,31 @@ public class Pawn extends Piece {
             // Capture west
             toBB[0] = shift(pawns & Masks.West, CompassRose.NoWe) & checkerBB;
             fromBB[0] = shift(toBB, CompassRose.SoEa);
-            while (toBB[0] != 0)
-                list[index++] = Move.create(popLsb(fromBB), popLsb(toBB), Move.CAPTURE_FLAG);
+            while (toBB[0] != 0) {
+                from = popLsb(fromBB);
+                to = popLsb(toBB);
+                if (rank(to) == PROMOTION_RANK[Color.White]) 
+                    // promotion
+                    for (int flag = Move.CAPTURE_PROMOTION_KNIGHT_FLAG; flag <= Move.CAPTURE_PROMOTION_QUEEN_FLAG; flag++) 
+                        list[index++] = Move.create(from, to, flag);    
+                else
+                    list[index++] = Move.create(from, to, Move.CAPTURE_FLAG);
+            }
 
             // Capture east
             toBB[0] = shift(pawns & Masks.East, CompassRose.NoEa) & checkerBB;
             fromBB[0] = shift(toBB, CompassRose.SoWe);
-            while (toBB[0] != 0)
-                list[index++] = Move.create(popLsb(fromBB), popLsb(toBB), Move.CAPTURE_FLAG);
-
+            while (toBB[0] != 0) {
+                from = popLsb(fromBB);
+                to = popLsb(toBB);
+                if (rank(to) == PROMOTION_RANK[Color.White]) 
+                    // promotion
+                    for (int flag = Move.CAPTURE_PROMOTION_KNIGHT_FLAG; flag <= Move.CAPTURE_PROMOTION_QUEEN_FLAG; flag++) 
+                        list[index++] = Move.create(from, to, flag);    
+                else
+                    list[index++] = Move.create(from, to, Move.CAPTURE_FLAG);
+            }
+            
             // En passant
             toBB[0] = target(board.getEnPassantSquare());
             if (shift(toBB[0], CompassRose.Sout) == checkerBB) {
@@ -213,13 +266,22 @@ public class Pawn extends Piece {
             final int checker = lsb(checkerBB);
             final int king = lsb(board.getBitboard(PieceType.King, Color.Black));
             final long mask = Masks.squaresBetween(king, checker);
+            int from, to;
             long[] toBB = { 0 }, fromBB = { 0 };
 
             // Single step
             toBB[0] = shift(pawns, CompassRose.Sout) & mask;
             fromBB[0] = shift(toBB, CompassRose.Nort);
-            while (toBB[0] != 0)
-                list[index++] = Move.create(popLsb(fromBB), popLsb(toBB), Move.QUIET_MOVE_FLAG);
+            while (toBB[0] != 0) {
+                from = popLsb(fromBB);
+                to = popLsb(toBB);
+                if (rank(to) == PROMOTION_RANK[Color.Black])
+                    // promotion
+                    for (int flag = Move.PROMOTION_KNIGHT_FLAG; flag <= Move.PROMOTION_QUEEN_FLAG; flag++) 
+                        list[index++] = Move.create(from, to, flag);    
+                else
+                    list[index++] = Move.create(from, to, Move.QUIET_MOVE_FLAG);
+            }
 
             // Double step
             toBB[0] = shift(pawns & STEP2[Color.Black], 2 * CompassRose.Sout) & mask;
@@ -231,14 +293,30 @@ public class Pawn extends Piece {
             // Capture west
             toBB[0] = shift(pawns & Masks.West, CompassRose.SoWe) & checkerBB;
             fromBB[0] = shift(toBB, CompassRose.NoEa);
-            while (toBB[0] != 0)
-                list[index++] = Move.create(popLsb(fromBB), popLsb(toBB), Move.CAPTURE_FLAG);
+            while (toBB[0] != 0) {
+                from = popLsb(fromBB);
+                to = popLsb(toBB);
+                if (rank(to) == PROMOTION_RANK[Color.Black])
+                    // promotion
+                    for (int flag = Move.CAPTURE_PROMOTION_KNIGHT_FLAG; flag <= Move.CAPTURE_PROMOTION_QUEEN_FLAG; flag++) 
+                        list[index++] = Move.create(from, to, flag);
+                else
+                    list[index++] = Move.create(from, to, Move.CAPTURE_FLAG);
+            }
 
             // Capture east
             toBB[0] = shift(pawns & Masks.East, CompassRose.SoEa) & checkerBB;
             fromBB[0] = shift(toBB, CompassRose.NoWe);
-            while (toBB[0] != 0)
-                list[index++] = Move.create(popLsb(fromBB), popLsb(toBB), Move.CAPTURE_FLAG);
+            while (toBB[0] != 0) {
+                from = popLsb(fromBB);
+                to = popLsb(toBB);
+                if (rank(to) == PROMOTION_RANK[Color.Black])
+                    // promotion
+                    for (int flag = Move.CAPTURE_PROMOTION_KNIGHT_FLAG; flag <= Move.CAPTURE_PROMOTION_QUEEN_FLAG; flag++) 
+                        list[index++] = Move.create(from, to, flag);
+                else
+                    list[index++] = Move.create(from, to, Move.CAPTURE_FLAG);
+            }
 
             // En passant
             toBB[0] = target(board.getEnPassantSquare());
