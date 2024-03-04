@@ -71,16 +71,24 @@ public class Board implements IBoard {
         // Increment game counters
         _turn = Color.NOT(_turn);
         _ply++;
-
+        
         // Create new board state
         BoardState.Builder newState = new BoardState.Builder(this);
         newState
-                // .comesWithCheck(false) // TODO
-                .castling(_stateStack.getFirst().getCastling().toByteArray())
-                .ply(_ply)
-                .plys50(_ply);
+        // .comesWithCheck(false) // TODO
+        .castling(_stateStack.getFirst().getCastling())
+        .ply(_ply)
+        .plys50(_ply);
+        
+        // Update castling rights
+        // TODO: should be handled by state builder (?)
+        if (PieceUtil.getType(movingPiece) == PieceType.King) {
+            Castling.set(newState.getCastling(), us, false);
         }
         else if (PieceUtil.getType(movingPiece) == PieceType.Rook) {
+            final int fromRank = Utils.rank(from);
+            if ((us == Color.White ? 0 : 7) == fromRank) {
+                final int fromFile = Utils.file(from);
                 if (fromFile == Files.H) Castling.set(newState.getCastling(), Castling.KingSide, us, false);
                 if (fromFile == Files.A) Castling.set(newState.getCastling(), Castling.QueenSide, us, false);
             }
@@ -93,8 +101,6 @@ public class Board implements IBoard {
         } else if (flag == Move.QUEEN_CASTLE_FLAG) {
             movePiece(rNormF + Files.E, rNormF + Files.C);
             movePiece(rNormF + Files.A, rNormF + Files.D);
-            newState.getCastling().set((us << 1) | 0, false);
-            capturedPiece = PieceUtil.None[0];
         }
 
         // Handle captures
@@ -102,11 +108,14 @@ public class Board implements IBoard {
         else if (PieceUtil.getType(capturedPiece) != PieceType.None) {
             int captureSquare = to;
 
+            // Update castling if a rook has been captured
+            Castling.update(newState.getCastling(), captureSquare, nus);
+
             // Handle en passant captures
             if (flag == Move.EN_PASSANT_FLAG) {
                 captureSquare += (us * 2 - 1) * 8;
             }
-
+            
             // Remove destination piece for captures
             removePiece(captureSquare);
 
@@ -133,8 +142,7 @@ public class Board implements IBoard {
 
             // Handle promotions
             if (flag >= Move.PROMOTION_KNIGHT_FLAG && flag <= Move.CAPTURE_PROMOTION_QUEEN_FLAG) {
-                int flagHack = flag <= Move.PROMOTION_QUEEN_FLAG ? flag : flag - 4;
-                int newPiece = PieceUtil.create(flagHack, us);
+                int newPiece = PieceUtil.create(Move.getPromotion(move), us);
                 removePiece(to);
                 addPiece(to, newPiece);
             }
@@ -156,12 +164,12 @@ public class Board implements IBoard {
         // Get context
         int us = _turn;
         final int from = Move.getFrom(move);
-        final int fromRank = from / 8;
         final int to = Move.getTo(move);
         final int flag = Move.getFlag(move);
+        final int rNormF = from / 8 * 8;
 
         // Handle promotions
-        if (flag >= Move.PROMOTION_KNIGHT_FLAG && flag <= Move.CAPTURE_PROMOTION_QUEEN_FLAG) {
+        if (Move.isPromotion(flag)) {
             // Replace the promotion with a pawn, the pawn will be moved later.
             removePiece(to);
             addPiece(to, PieceUtil.create(PieceType.Pawn, us));
@@ -169,15 +177,11 @@ public class Board implements IBoard {
 
         // Handle castling
         if (flag == Move.KING_CASTLE_FLAG) {
-            removePiece(fromRank * 8 + Files.G);
-            addPiece(fromRank * 8 + Files.E, PieceUtil.create(PieceType.King, us));
-            removePiece(fromRank * 8 + Files.F);
-            addPiece(fromRank * 8 + Files.H, PieceUtil.create(PieceType.Rook, us));
+            movePiece(rNormF + Files.G, rNormF + Files.E);
+            movePiece(rNormF + Files.F, rNormF + Files.H);
         } else if (flag == Move.QUEEN_CASTLE_FLAG) {
-            removePiece(fromRank * 8 + Files.C);
-            addPiece(fromRank * 8 + Files.E, PieceUtil.create(PieceType.King, us));
-            removePiece(fromRank * 8 + Files.D);
             movePiece(rNormF + Files.C, rNormF + Files.E);
+            movePiece(rNormF + Files.D, rNormF + Files.A);
         }
 
         // Move the piece
@@ -187,6 +191,7 @@ public class Board implements IBoard {
             // Handle captures
             final int captured = _stateStack.getFirst().getCaptured();
             if (PieceUtil.getType(captured) != PieceType.None) {
+
                 int captureSquare = to;
 
                 // Handle en passant captures
