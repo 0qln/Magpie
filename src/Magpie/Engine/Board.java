@@ -449,7 +449,7 @@ public class Board implements IBoard {
                         ? Color.White
                         : Color.Black);
 
-                var stateBuilder = new BoardState.Builder(board1);
+                BoardState.Builder stateBuilder = new BoardState.Builder(board1);
                 stateBuilder
                         // castling
                         .castling(Castling.create(

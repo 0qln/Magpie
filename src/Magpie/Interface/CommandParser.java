@@ -156,7 +156,7 @@ public class CommandParser {
 
         // UCI:: If the engine or the GUI receives an unknown command or token it should
         // just ignore it and try to parse the rest of the string in this line.
-        while (processedInput.length > 1 && result.isEmpty()) {
+        while (processedInput.length > 1 && !result.isPresent()) {
             // Remove the first element of the array.
             processedInput = Arrays.copyOfRange(processedInput, 1, processedInput.length);
             result = parse(processedInput);

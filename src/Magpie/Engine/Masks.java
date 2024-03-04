@@ -87,7 +87,7 @@ public final class Masks {
 
     static {
         // Precompute all rays
-        var rays = new long[64][64];
+        long[][] rays = new long[64][64];
         for (int i = 0; i < 64; i++) {
             for (int j = 0; j < 64; j++) {
 
