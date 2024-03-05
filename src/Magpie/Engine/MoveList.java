@@ -164,6 +164,24 @@ public class MoveList {
         return list;
     }
 
+    public static MoveList legal(Board board, String[] searchMoves, IMoveDecoder decoder) {
+        MoveList legals = legal(board);
+        MoveList list = new MoveList();
+        short[] targets = new short[searchMoves.length];
+        for (int i = 0; i < targets.length; i++) {
+            targets[i] = decoder.decode(searchMoves[i]);
+        }
+        for (short legal : legals._moves) {
+            for (short target : targets) {
+                if (legal == target) {
+                    list._moves[list._moveCount++] = legal;
+                    break;
+                }
+            }
+        }
+        return list;
+    }
+
     public short[] getMoves() {
         // TODO? Remove overhead caused by copying
         return Arrays.copyOfRange(_moves, 0, _moveCount);
