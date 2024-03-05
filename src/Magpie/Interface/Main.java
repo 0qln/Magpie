@@ -8,6 +8,19 @@ import Misc.Ptr;
 
 public final class Main
 {
+    static {
+        // Fuck java
+        new UciCommand();
+        new IsreadyCommand();
+        new PositionCommand();
+        new GoCommand();
+        new InfoCommand();
+        new SetOptionCommand();
+        new PieceCommand();
+        new PrintCommand();
+        new QuitCommand();
+    }
+
     public static Scanner scanner = new Scanner(System.in);
     private static Logger logger = LoggerConfigurator.configureLogger(Main.class);
 
