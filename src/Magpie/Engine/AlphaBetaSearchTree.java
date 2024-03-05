@@ -1,12 +1,13 @@
 package Engine;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.function.Consumer;
 
 public class AlphaBetaSearchTree {
 
     // On each search result, iterate these and distribute the result of the search.
-    public ArrayList<Consumer<SearchResult>> Callbacks;
+    public List<Consumer<SearchResult>> Callbacks = new ArrayList<Consumer<SearchResult>>();
 
     private StaticEvaluator _staticEval;
     private final Board _board;
@@ -21,21 +22,20 @@ public class AlphaBetaSearchTree {
         this._rootScores = new int[_rootMoves.length()];
     }
 
-    public void begin(int targetDepth) {
+    public void begin(SearchLimit limit) {
 
         // iterative deepening loop
 
-        for (_rootDepth = 1; _rootDepth <= targetDepth; _rootDepth++) {
+        for (_rootDepth = 1; _rootDepth <= limit.depth; _rootDepth++) {
 
             rootNode(_rootDepth, -StaticEvaluator.Infinity, StaticEvaluator.Infinity);
 
             _rootMoves.sort(_rootScores);
 
             SearchResult sr = new SearchResult(
-               _rootScores[0], 
-               _rootDepth, 
-               _rootDepth
-            );
+                    _rootScores[0],
+                    _rootDepth,
+                    _rootDepth);
 
             for (Consumer<SearchResult> callback : Callbacks) {
                 callback.accept(sr);
@@ -49,7 +49,7 @@ public class AlphaBetaSearchTree {
         for (int i = 0; i < _rootMoves.length(); i++) {
             short move = _rootMoves.get(i);
             _board.makeMove(move);
-            _rootScores[i] = -search(depth, alpha, beta);
+            _rootScores[i] = -search(depth - 1, alpha, beta);
             _board.undoMove(move);
         }
 
@@ -69,7 +69,8 @@ public class AlphaBetaSearchTree {
         for (int i = 0; i < moves.length(); i++) {
             short move = moves.get(i);
             _board.makeMove(move);
-            int score = -search(depth-1, -beta, -alpha);
+            int score = -search(depth - 1, -beta, -alpha);
+            _board.undoMove(move);
 
             if (score >= beta) {
                 return score;
