@@ -4,7 +4,9 @@ import static Engine.Utils.countBits;
 
 public final class StaticEvaluator {
 
-    public static int[] PT_VALUES = {
+    public static final int Infinity = 40_000;
+
+    public static final int[] PT_VALUES = {
             0, 100, 300, 350, 500, 900, 10_000
     };
 

@@ -26,7 +26,9 @@ public final class Main
                     logger.info("Command builder: " + builder.getClass().getName());
                     ICommand command = builder.buildForBoard(board);
                     logger.info("Command : " + command.getClass().getName());
-                    command.run();
+                    if (command.canRun()) {
+                        command.run();
+                    }
                 }
             );
         }

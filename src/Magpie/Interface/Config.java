@@ -9,8 +9,8 @@ public final class Config {
     private static Logger logger = LoggerConfigurator.configureLogger(Config.class);
     public static boolean Debug = false;
     
-    public static final Interface.UCI.Option<?>[] UCI_Options = {
-        new Interface.UCI.Option<Opponent>("UCI_Opponent", OptionType.String, Opponent.getDefault(), Optional.empty(), Optional.empty(), Optional.empty(), 
+    public static final Interface.Option<?>[] UCI_Options = {
+        new Interface.Option<Opponent>("UCI_Opponent", OptionType.String, Opponent.getDefault(), Optional.empty(), Optional.empty(), Optional.empty(), 
             rawData -> {
                 // TODO: make this safe
                 if (rawData.length < 4) return Optional.empty();
@@ -24,11 +24,11 @@ public final class Config {
     };
  
     @SuppressWarnings("unchecked")
-    public static <T> Optional<Interface.UCI.Option<T>> getOption(String name) {
+    public static <T> Optional<Interface.Option<T>> getOption(String name) {
         logger.info("Name: " + name);
         return Arrays.stream(UCI_Options)
             .filter(opt -> name.equals(opt.getName()))
-            .map(opt -> (Interface.UCI.Option<T>) opt)
+            .map(opt -> (Interface.Option<T>) opt)
             .findFirst();
     }
 }

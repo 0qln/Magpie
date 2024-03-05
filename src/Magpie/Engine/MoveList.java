@@ -168,4 +168,21 @@ public class MoveList {
         // TODO? Remove overhead caused by copying
         return Arrays.copyOfRange(_moves, 0, _moveCount);
     }
+
+    public short get(int index) {
+        return _moves[index];
+    }
+
+    public int length() {
+        return _moveCount;
+    }
+
+    public void pushSort() {
+        // partially sort this to get the best move to the top
+    }
+
+    public void sort(int[] keys) {
+        // sort the whole list
+
+    }
 }

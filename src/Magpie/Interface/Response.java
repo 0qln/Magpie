@@ -4,7 +4,7 @@ import java.util.concurrent.locks.*;
 
 public abstract class Response implements IResponse
 {
-    private static Lock _lock = new ReentrantLock();
+    private static final Lock _lock = new ReentrantLock();
     
     public final void send() {
         _lock.lock();
