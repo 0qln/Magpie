@@ -18,11 +18,19 @@ public class LoggerConfigurator {
             }
             // Add handler to the log file
             FileHandler fileHandler = new FileHandler(logFileName, false);
-            fileHandler.setFormatter(new SimpleFormatter());
+            fileHandler.setFormatter(new CustomFormatter());
             logger.addHandler(fileHandler);
         } catch (IOException e) {
             e.printStackTrace();
         }
         return logger;
+    }
+
+    public static class CustomFormatter extends Formatter {
+        @Override
+        public String format(LogRecord record) {
+            // Extracting only the log message without timestamp and class name
+            return record.getMessage() + "\n";
+        }
     }
 }
