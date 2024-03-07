@@ -69,7 +69,7 @@ public class InfoResponse extends Response {
             return this;
         }
 
-        public Builder nps(int nps) {
+        public Builder nps(long nps) {
             _instance._result.append("nps ").append(nps).append(" ");
             return this;
         }

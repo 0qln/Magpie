@@ -60,9 +60,12 @@ public class AlphaBetaSearchTree extends ISearchTree {
 
             _logger.info("New root iteration (depth: " + _rootDepth + ")");
 
-            // Create the new level info
+            // Ensure info objs.
+            // Because of the quiescent search extension, it is possible that there are already anough info objs.
             if (_infoStack.size() < _rootDepth)
                 _infoStack.add(new DepthLevelInfo());
+
+            long beginTime = System.nanoTime();
 
             Ptr<Line> pv = new Ptr<Line>(null);
             Ptr<Line> rightline = new Ptr<Line>(null);
@@ -84,12 +87,15 @@ public class AlphaBetaSearchTree extends ISearchTree {
 
             _rootMoves.sort(_rootScores);
 
+            double elapsedSeconds = (System.nanoTime() - beginTime) / 1e9;
+
             SearchUpdate sr = new SearchUpdate(
                     _rootScores[0] * (_board.getTurn() * -2 + 1),
                     _rootDepth,
                     _rootSelDepth,
                     _nodesSearched,
-                    generatePv());
+                    generatePv(),
+                    (long)(_nodesSearched / elapsedSeconds));
 
             for (Consumer<SearchUpdate> callback : CallbacksOnIter) {
                 callback.accept(sr);
@@ -186,9 +192,13 @@ public class AlphaBetaSearchTree extends ISearchTree {
             return quiescent(alpha, beta, parentPV, currline, ply);
         }
 
+        // Initiate node vars
         int bestScore = -StaticEvaluator.Infinity, score = bestScore;
         MoveList moves = MoveList.legal(_board, false);
+        // The iterative deepening loop ensures there is one for the target depth.
+        DepthLevelInfo info = _infoStack.get(ply);
 
+        // Check for a game-over
         if (moves.length() == 0) {
             // Terminal node, Game over
             if (_board.isInCheck()) {
@@ -205,35 +215,43 @@ public class AlphaBetaSearchTree extends ISearchTree {
             return StaticEvaluator.Draw;
         }
 
-        DepthLevelInfo info = _infoStack.get(ply);
-
-        // Sort the moves
+        // Sort the moves for increased chance of cutoff
         sort(moves, info);
 
+        // Loop through all child nodes.
         for (int i = 0; i < moves.length(); i++) {
             short move = moves.get(i);
             Line line = new Line(move);
             Line cline = new Line(move);
             currline.update(cline);
 
+            // Make move
             _board.makeMove(move);
+
+            // Evaluate all nodes from the opponents perspective.
             score = -search(depth - 1, -beta, -alpha, line, cline, ply + 1);
+
+            // Undo move
             _board.undoMove(move);
 
+            // Simple beta cutoff (fail-hard)
             if (score >= beta) {
                 return beta;
             }
 
+            // Update alpha
             if (score > alpha) {
                 alpha = score;
             }
 
+            // Update best score
             if (score > bestScore) {
                 bestScore = score;
                 parentPV.update(line);
             }
         }
 
+        // Return the best score.
         return bestScore;
     }
 
@@ -248,46 +266,69 @@ public class AlphaBetaSearchTree extends ISearchTree {
             return 0;
         }
 
+        // Because of the Null Move Observation we can assume that doing nothing will
+        // always be worse than doing some capture.
+        // => Use the static evaluation as a lower bound for this node.
         int score = _staticEval.evaluate(_board.getTurn());
 
+        // If the static evaluation of this position is already better or equal to the
+        // last known best capture of a sibling node.
+        // => Prune this node early.
         if (score >= beta)
+            // Return beta (fail-hard)
             return beta;
 
+        // Raise the lower bound, alpha, to the static evaluation. We are only concerned
+        // about moves that will create a better position.
         if (alpha < score)
             alpha = score;
 
+        // Get all the possible captures from this position.
         MoveList moves = MoveList.legal(_board, true);
 
-        // Get info obj
-        while (ply >= _infoStack.size()) 
+        // Get info obj. Generate a new info obj if is none for this ply.
+        while (ply >= _infoStack.size())
             _infoStack.add(new DepthLevelInfo());
         DepthLevelInfo info = _infoStack.get(ply);
 
         // Sort moves
         sort(moves, info);
 
+        // Play out all captures. We want a quiet position to evaluate.
         for (int i = 0; i < moves.length(); i++) {
             short move = moves.get(i);
             Line line = new Line(move);
             Line cline = new Line(move);
             currline.update(cline);
 
+            // Make move
             _board.makeMove(move);
+
+            // Quiscent evaluation.
             score = -quiescent(-beta, -alpha, line, cline, ply + 1);
+
+            // Undo move
             _board.undoMove(move);
 
+            // Simple alpha-beta cutoff (fail-hard)
             if (score >= beta)
                 return beta;
 
+            // Raise alpha (and update PV?)
             if (score > alpha) {
                 alpha = score;
                 parentPV.update(line);
             }
         }
 
-        // => Update selective depth
-        _rootSelDepth = ply;
+        // => Raise the selective depth to the maximum depth.
+        _rootSelDepth = Math.max(ply, _rootSelDepth);
 
+        // We are interested in tactical moves that increase alpha, if the moves that
+        // lead resulted in either [ the static eval of this position | the tactical
+        // captures that are possible from this position ] are worse than alpha, we can
+        // thus simply return alpha, otherwise alpha will have been raised earlier in
+        // this function to the better evaluation.
         return alpha;
     }
 

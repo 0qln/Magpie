@@ -96,6 +96,7 @@ public class GoCommand extends Command {
                     .multipv(1) // TODO: add multipv
                     .score(sr.eval, ScoreType.CentiPawns) // TODO: handle other score types
                     .nodes(sr.nodes)
+                    .nps(sr.nps)
                     .pv(sr.pvline, board.getMoveEncoder())
                     .build()
                     .send(); 
