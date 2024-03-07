@@ -1,25 +1,38 @@
 package Engine;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.function.Consumer;
+import java.util.logging.Logger;
+
+import Misc.Ptr;
 
 public class AlphaBetaSearchTree {
 
     // On each search result, iterate these and distribute the result of the search.
-    public List<Consumer<SearchResult>> Callbacks = new ArrayList<Consumer<SearchResult>>();
+    public List<Consumer<SearchUpdate>> CallbacksOnIter = new ArrayList<Consumer<SearchUpdate>>();
+    public List<Consumer<SearchResult>> CallbacksOnStop = new ArrayList<Consumer<SearchResult>>();
 
     private StaticEvaluator _staticEval;
     private final Board _board;
     private final MoveList _rootMoves;
     private final int[] _rootScores;
-    private int _rootDepth;
+    // This needs to be indexed alot, so a linked list would be inefficient.
+    private final ArrayList<DepthLevelInfo> _infoStack;
+    private long _nodesSearched;
+    private int _rootDepth, _rootSelDepth;
+    private Logger _logger = Misc.LoggerConfigurator.configureLogger(AlphaBetaSearchTree.class);
+    private Line _pv;
 
     public AlphaBetaSearchTree(Board board) {
         this._board = board;
         this._staticEval = new StaticEvaluator(board);
         this._rootMoves = MoveList.legal(board);
         this._rootScores = new int[_rootMoves.length()];
+        Arrays.fill(_rootScores, -StaticEvaluator.Infinity);
+        this._nodesSearched = 0;
+        this._infoStack = new ArrayList<>();
     }
 
     public void begin(SearchLimit limit) {
@@ -28,64 +41,177 @@ public class AlphaBetaSearchTree {
 
         for (_rootDepth = 1; _rootDepth <= limit.depth; _rootDepth++) {
 
+            _logger.info("New root iteration (depth: " + _rootDepth + ")");
+
+            // Create the new level info
+            // TODO: handle unknown extension length of quies search
+            _infoStack.add(new DepthLevelInfo());
+
             rootNode(_rootDepth, -StaticEvaluator.Infinity, StaticEvaluator.Infinity);
 
             _rootMoves.sort(_rootScores);
 
-            SearchResult sr = new SearchResult(
-                    _rootScores[0],
+            SearchUpdate sr = new SearchUpdate(
+                    _rootScores[0] * (_board.getTurn() * -2 + 1),
                     _rootDepth,
-                    _rootDepth);
+                    _rootDepth,
+                    _nodesSearched,
+                    generatePv());
 
-            for (Consumer<SearchResult> callback : Callbacks) {
+            for (Consumer<SearchUpdate> callback : CallbacksOnIter) {
                 callback.accept(sr);
             }
         }
 
+        stop();
     }
 
-    private int rootNode(int depth, int alpha, int beta) {
+    private short[] generatePv() {
+        ArrayList<Short> list = new ArrayList<>();
+        list.add(_pv.getMove());
+        Line node = _pv;
+        while (node.hasNext()) {
+            node = node.getNext();
+            list.add(node.getMove());
+        }
+        short[] result = new short[list.size()];
+        for (int i = 0; i < result.length; i++) {
+            result[i] = list.get(i);
+        }
+        return result;
+    }
+
+    public void stop() {
+        short[] pv = generatePv();
+        for (Consumer<SearchResult> callback : CallbacksOnStop) {
+            callback.accept(new SearchResult(
+                    // The best move is the pv move at our depth
+                    pv[0],
+                    // Ponder on the best response of the enemy
+                    pv.length > 1 ? pv[1] : Move.None));
+        }
+    }
+
+    private void rootNode(int depth, int alpha, int beta) {
+        int bestScore = -StaticEvaluator.Infinity;
 
         for (int i = 0; i < _rootMoves.length(); i++) {
             short move = _rootMoves.get(i);
+            Line line = new Line(move);
             _board.makeMove(move);
-            _rootScores[i] = -search(depth - 1, alpha, beta);
+            _rootScores[i] = -search(depth - 1, alpha, beta, line);
             _board.undoMove(move);
-        }
 
-        // This would normally return the evaluation of the position, but we already
-        // store this in the `root` fields.
-        return 0;
+            if (_rootScores[i] >= beta) {
+                break;
+            }
+
+            if (_rootScores[i] > alpha) {
+                alpha = _rootScores[i];
+            }
+
+            if (_rootScores[i] >= bestScore) {
+                bestScore = _rootScores[i];
+                _pv = line;
+            }
+        }
     }
 
-    private int search(int depth, int alpha, int beta) {
+    private int search(int depth, int alpha, int beta, Line parentPV) {
+        _nodesSearched++;
+
         if (depth <= 0) {
+            // Return static eval relative to stm.
             return _staticEval.evaluate(_board.getTurn());
         }
 
-        int best = -StaticEvaluator.Infinity;
+        int bestScore = -StaticEvaluator.Infinity, score = bestScore;
         MoveList moves = MoveList.legal(_board);
+
+        if (moves.length() == 0) {
+            // Terminal node, Game over
+            if (_board.isInCheck()) {
+                // We have no more moves and are in check
+                // => We are checkmated
+                return -StaticEvaluator.Checkmate
+                        // To promote the earliest checkmate, add
+                        // a bonus for shallower mates.
+                        // - depth
+                        ;
+            }
+            // We have no more moves, but are not in check
+            // => Stalemate
+            return StaticEvaluator.Draw;
+        }
+
+        DepthLevelInfo info = _infoStack.get(_rootDepth - depth);
+
+        // Sort the moves
+        sort(moves, info);
 
         for (int i = 0; i < moves.length(); i++) {
             short move = moves.get(i);
+            Line line = new Line(move);
             _board.makeMove(move);
-            int score = -search(depth - 1, -beta, -alpha);
+            score = -search(depth - 1, -beta, -alpha, line);
             _board.undoMove(move);
 
             if (score >= beta) {
-                return score;
+                return beta;
             }
 
-            if (score > best) {
-                best = score;
+            if (score > alpha) {
+                alpha = score;
+            }
 
-                if (score > alpha) {
-                    alpha = score;
-                }
+            if (score > bestScore) {
+                bestScore = score;
+                parentPV.update(line);
             }
         }
 
-        return best;
+        return bestScore;
     }
 
+    private void sort(MoveList moves, DepthLevelInfo info) {
+        int[] scores = new int[moves.length()];
+
+        for (int i = 0; i < scores.length; i++) {
+            short move = moves.get(i);
+
+            // MVV-LVA
+            if (Move.isCapture(move)) {
+                int victimType = PieceUtil.getType(_board.getPieceID(Move.getTo(move)));
+                int agressorType = PieceUtil.getType(_board.getPieceID(Move.getFrom(move)));
+                scores[i] = 100 * victimType - agressorType;
+            }
+        }
+
+        moves.sort(scores);
+    }
+
+    private static class Line {
+        public short _move;
+        public Line _child = null;
+
+        public Line(short move) {
+            _move = move;
+        }
+
+        public void update(Line nextNode) {
+            _child = nextNode;
+        }
+
+        public boolean hasNext() {
+            return _child != null;
+        }
+
+        public Line getNext() {
+            return _child;
+        }
+
+        public short getMove() {
+            return _move;
+        }
+    }
 }
