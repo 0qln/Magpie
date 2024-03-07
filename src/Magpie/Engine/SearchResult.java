@@ -2,14 +2,11 @@ package Engine;
 
 public class SearchResult {
 
-    public final int eval;
-    public final int depth;
-    public final int seldepth;
-    // ...
-    
-    public SearchResult(int eval, int depth, int seldepth) {
-        this.eval = eval;
-        this.depth = depth;
-        this.seldepth = seldepth;
-    }
+    public final short bestMove, ponderMove;
+
+    public SearchResult(short bestMove, short ponderMove) {
+        this.bestMove = bestMove;
+        this.ponderMove = ponderMove;
+    } 
+
 }
