@@ -51,7 +51,7 @@ public abstract class Command extends ICommand {
 
     private static final Hashtable<String, Signature<?>> _commands = new Hashtable<String, Signature<?>>();
 
-    protected Ptr<Engine.IBoard> _board;
+    protected Misc.ProgramState _state;
     protected String[] _args;
     protected boolean _canRun;
 
@@ -98,7 +98,7 @@ public abstract class Command extends ICommand {
         @Required
         protected String[] _args;
         @Required
-        protected Ptr<Engine.IBoard> _board;
+        protected Misc.ProgramState _state;
 
         private final IInstanceGenerator<TCommand> _generator;
 
@@ -116,8 +116,8 @@ public abstract class Command extends ICommand {
             return this;
         }
 
-        public Builder<TCommand> board(Ptr<Engine.IBoard> board) {
-            _board = board;
+        public Builder<TCommand> state(Misc.ProgramState state) {
+            _state = state;
             return this;
         }
 
@@ -125,10 +125,10 @@ public abstract class Command extends ICommand {
         protected TCommand _buildT() {
             TCommand instance = _generator.fetch();
             instance._args = _args;
-            instance._board = _board;
+            instance._state = _state;
             instance._canRun = instance.parseArgs(_args);
             _args = null;
-            _board = null;
+            _state = null;
             return instance;
         }
 
@@ -157,4 +157,7 @@ public abstract class Command extends ICommand {
         }
     }
 
+    public final void runAsync() {
+        new Thread(this, "").start();
+    }
 }

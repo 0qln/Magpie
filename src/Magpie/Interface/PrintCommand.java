@@ -11,6 +11,6 @@ public class PrintCommand extends Command {
     }
 
     public void run() {
-        new TextResponse(_board.get().toString()).send();
+        new TextResponse(_state.board.get().toString()).send();
     }
 }

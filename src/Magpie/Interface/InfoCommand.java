@@ -24,7 +24,7 @@ public class InfoCommand extends Command {
 
     @Override
     public void run() {
-        Engine.Board board = _board.getAs();
+        Engine.Board board = _state.board.getAs();
         
         if (params_getB("eval")) {
             new TextResponse(new StaticEvaluator(board).evaluate(Engine.Color.White)).send();

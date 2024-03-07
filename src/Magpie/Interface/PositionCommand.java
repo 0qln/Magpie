@@ -28,7 +28,7 @@ public class PositionCommand extends Command
 
     public void run() {
         // Set up position
-        _board.set(_board.get()
+        _state.board.set(_state.board.get()
             .getBuilder()
             .fen(params_get("fen"))
             .build());
@@ -36,8 +36,8 @@ public class PositionCommand extends Command
         // Play moves
         String[] moves = params_get("moves");
         for (String moveStr : moves) {
-            short move = _board.get().getMoveDecoder().decode(moveStr);
-            _board.get().makeMove(move);
+            short move = _state.board.get().getMoveDecoder().decode(moveStr);
+            _state.board.get().makeMove(move);
         }
     }
 

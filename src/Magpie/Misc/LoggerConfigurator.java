@@ -29,8 +29,16 @@ public class LoggerConfigurator {
     public static class CustomFormatter extends Formatter {
         @Override
         public String format(LogRecord record) {
-            // Extracting only the log message without timestamp and class name
-            return record.getMessage() + "\n";
+            StringBuilder sb = new StringBuilder(record.getMessage());
+            if (record.getThrown() != null) {
+                sb.append(record.getThrown().getClass()).append('\n');
+                for (StackTraceElement element : record.getThrown().getStackTrace()) {
+                    sb.append('\t');
+                    sb.append(element.toString());
+                    sb.append('\n');
+                }
+            }
+            return sb.append('\n').toString();
         }
     }
 }

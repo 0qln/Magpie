@@ -10,6 +10,10 @@ public class Ptr <T> {
     public static <T> Ptr<T> to(T instance) {
         return new Ptr<T>(instance);
     }
+    
+    public static <T> Ptr<T> size(Class<T> clazz) {
+        return new Ptr<T>(null);
+    }
 
     public T get() {
         return _instance;
@@ -22,5 +26,9 @@ public class Ptr <T> {
 
     public void set(T instance) {
         this._instance = instance;
+    }
+    
+    public boolean isNull() {
+        return _instance == null;
     }
 }

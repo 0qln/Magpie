@@ -4,11 +4,12 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.function.Consumer;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import Misc.Ptr;
 
-public class AlphaBetaSearchTree {
+public class AlphaBetaSearchTree extends ISearchTree {
 
     // On each search result, iterate these and distribute the result of the search.
     public List<Consumer<SearchUpdate>> CallbacksOnIter = new ArrayList<Consumer<SearchUpdate>>();
@@ -24,6 +25,7 @@ public class AlphaBetaSearchTree {
     private int _rootDepth, _rootSelDepth;
     private Logger _logger = Misc.LoggerConfigurator.configureLogger(AlphaBetaSearchTree.class);
     private Line _pv;
+    private boolean _stopFlag;
 
     public AlphaBetaSearchTree(Board board) {
         this._board = board;
@@ -35,10 +37,14 @@ public class AlphaBetaSearchTree {
         this._infoStack = new ArrayList<>();
     }
 
+    @Override
     public void begin(SearchLimit limit) {
+        
+        _logger.info("Begin search.");
 
+        _stopFlag = false;
+        
         // iterative deepening loop
-
         for (_rootDepth = 1; _rootDepth <= limit.depth; _rootDepth++) {
 
             _logger.info("New root iteration (depth: " + _rootDepth + ")");
@@ -47,8 +53,24 @@ public class AlphaBetaSearchTree {
             // TODO: handle unknown extension length of quies search
             _infoStack.add(new DepthLevelInfo());
 
-            rootNode(_rootDepth, -StaticEvaluator.Infinity, StaticEvaluator.Infinity);
+            Ptr<Line> pv = new Ptr<Line>(null);
+            try {
+                rootNode(_rootDepth, -StaticEvaluator.Infinity, StaticEvaluator.Infinity, pv);
+            }
+            catch (Exception e) {
+                _logger.log(Level.SEVERE, "Exception during search: ", e);
+                _logger.severe("Root Depth: " + _rootDepth);
+                _logger.severe("Line: " + pv.get().toString());
+                stop();
+            }
 
+            // If the search didn't finish, it cannot be trusted and should be discarded.
+            if (_stopFlag) {
+                break;
+            }
+            
+            _pv = pv.get();
+            
             _rootMoves.sort(_rootScores);
 
             SearchUpdate sr = new SearchUpdate(
@@ -62,8 +84,10 @@ public class AlphaBetaSearchTree {
                 callback.accept(sr);
             }
         }
+        
+        _logger.info("Search finished.");
 
-        stop();
+        _stop();
     }
 
     private short[] generatePv() {
@@ -81,7 +105,17 @@ public class AlphaBetaSearchTree {
         return result;
     }
 
+    @Override
     public void stop() {
+        _logger.info("Stop requested.");
+        
+        _stopFlag = true;
+    }
+    
+    private void _stop() {
+        _logger.info("Stop search.");
+        
+        // Distribute results
         short[] pv = generatePv();
         for (Consumer<SearchResult> callback : CallbacksOnStop) {
             callback.accept(new SearchResult(
@@ -92,7 +126,7 @@ public class AlphaBetaSearchTree {
         }
     }
 
-    private void rootNode(int depth, int alpha, int beta) {
+    private void rootNode(int depth, int alpha, int beta, Ptr<Line> pv) {
         int bestScore = -StaticEvaluator.Infinity;
 
         for (int i = 0; i < _rootMoves.length(); i++) {
@@ -102,23 +136,27 @@ public class AlphaBetaSearchTree {
             _rootScores[i] = -search(depth - 1, alpha, beta, line);
             _board.undoMove(move);
 
-            if (_rootScores[i] >= beta) {
-                break;
-            }
+            // if (_rootScores[i] >= beta) {
+                // break;
+            // }
 
-            if (_rootScores[i] > alpha) {
-                alpha = _rootScores[i];
-            }
+            // if (_rootScores[i] > alpha) {
+                // alpha = _rootScores[i];
+            // }
 
             if (_rootScores[i] >= bestScore) {
                 bestScore = _rootScores[i];
-                _pv = line;
+                pv.set(line);
             }
         }
     }
 
     private int search(int depth, int alpha, int beta, Line parentPV) {
         _nodesSearched++;
+        
+        if (_stopFlag) {
+            return 0;
+        }
 
         if (depth <= 0) {
             // Return static eval relative to stm.
@@ -149,20 +187,20 @@ public class AlphaBetaSearchTree {
         // Sort the moves
         sort(moves, info);
 
-        for (int i = 0; i < moves.length(); i++) {
+        for (int i = 0; i < moves.length(); i++) {            
             short move = moves.get(i);
             Line line = new Line(move);
             _board.makeMove(move);
             score = -search(depth - 1, -beta, -alpha, line);
             _board.undoMove(move);
 
-            if (score >= beta) {
-                return beta;
-            }
+            // if (score >= beta) {
+                // return beta;
+            // }
 
-            if (score > alpha) {
-                alpha = score;
-            }
+            // if (score > alpha) {
+                // alpha = score;
+            // }
 
             if (score > bestScore) {
                 bestScore = score;
@@ -212,6 +250,17 @@ public class AlphaBetaSearchTree {
 
         public short getMove() {
             return _move;
+        }
+
+        @Override
+        public String toString() {
+            StringBuilder result = new StringBuilder(Move.toString(_move));
+            Line curr = this;
+            while (curr.hasNext()) {
+                curr = curr._child;
+                result.append(' ').append(Move.toString(curr._move));
+            }
+            return result.toString();
         }
     }
 }

@@ -20,7 +20,7 @@ public class GoCommand extends Command {
                 // Has to be last
                 case "searchmoves":
                     String[] moves = Arrays.copyOfRange(args, ++i, args.length);
-                    limit.searchmoves = Engine.MoveList.legal(_board.getAs(), moves, _board.get().getMoveDecoder());
+                    limit.searchmoves = Engine.MoveList.legal(_state.board.getAs(), moves, _state.board.get().getMoveDecoder());
                     params_put("searchmoves", moves);
                     break;
 
@@ -70,7 +70,7 @@ public class GoCommand extends Command {
 
     @Override
     public void run() {
-        Engine.Board board = _board.getAs();
+        Engine.Board board = _state.board.getAs();
         Engine.SearchLimit limit = params_get("limit");
         if (params_get("perft") != null) {
 
@@ -88,6 +88,7 @@ public class GoCommand extends Command {
 
             // execute search
             Engine.AlphaBetaSearchTree search = new Engine.AlphaBetaSearchTree(board);
+            _state.search.set(search);
             search.CallbacksOnIter.add(sr -> {
                 new InfoResponse.Builder()
                     .depth(sr.depth)

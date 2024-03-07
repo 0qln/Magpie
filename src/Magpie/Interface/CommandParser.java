@@ -186,14 +186,13 @@ public class CommandParser {
         logger.info("Parsing input: " + input);
 
         String[] processedInput = getTokens(input);
-        var uciCommands = Interface.Command.Signature.enumerate();
         Interface.Command.Signature<?> commandIter = null;
 
         // UCI:: If the engine or the GUI receives an unknown command or token it should
         // just ignore it and try to parse the rest of the string in this line.
         do {
             // Check if the first token is a valid command.
-            for (var uciCommand : uciCommands) {
+            for (Interface.Command.Signature uciCommand : Interface.Command.Signature.enumerate()) {
                 if (uciCommand.protocolName.equals(processedInput[0])) {
                     commandIter = uciCommand;
                     break;
@@ -215,9 +214,9 @@ public class CommandParser {
         final Interface.Command.Signature<?> command = commandIter;
         final String[] args = Arrays.copyOfRange(processedInput, 1, processedInput.length);
 
-        return Optional.of(board -> {
+        return Optional.of(state -> {
             return command.commandBuilder
-                    .board(board)
+                    .state(state)
                     .args(args)
                     .build(true);
         });
