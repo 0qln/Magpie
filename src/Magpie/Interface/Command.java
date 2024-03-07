@@ -1,13 +1,7 @@
 package Interface;
 
-import java.util.ArrayList;
-import java.util.Dictionary;
-import java.util.HashSet;
 import java.util.Hashtable;
-import java.util.List;
-import java.util.Set;
 
-import Engine.IBoard;
 import Misc.Ptr;
 
 // https://github.com/official-stockfish/Stockfish/wiki/UCI-&-Commands#standard-commands
@@ -16,7 +10,6 @@ public abstract class Command extends ICommand {
 
     // Java does not load the static init if the class is not explicitly mentioned.
     // >:(
-    
 
     public static class Signature<TCommand extends Command> {
         public final String protocolName;
@@ -74,6 +67,15 @@ public abstract class Command extends ICommand {
             return (T) _params.get(key);
         else
             return null;
+    }
+
+    protected boolean params_getB(String key) {
+        if (_params.containsKey(key))
+            if (_params.get(key) instanceof Boolean)
+                return (boolean) _params.get(key);
+            else
+                return _params.get(key) != null;
+        return false;
     }
 
     public boolean canRun() {
