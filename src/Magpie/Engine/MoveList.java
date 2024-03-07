@@ -199,8 +199,31 @@ public class MoveList {
         // partially sort this to get the best move to the top
     }
 
+    /**
+     * Sort the internal move array and `keys` parameter according to the keys.
+     * 
+     * @param keys The keys that represent the sort order.
+     */
     public void sort(int[] keys) {
-        // sort the whole list
+        assert(keys.length == _moveCount);
 
+        int i, j, key;
+        short value;
+        short[] values = _moves;
+
+		for (i = 1; i < keys.length; i++) {
+			key = keys[i];
+			value = values[i];
+			j = i - 1;
+
+			while (j >= 0 && keys[j] < key) {
+				keys[j + 1] = keys[j];
+				values[j + 1] = values[j];
+				--j;
+			}
+
+			keys[j + 1] = key;
+			values[j + 1] = value;
+		}
     }
 }
