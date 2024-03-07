@@ -9,7 +9,7 @@ import Engine.PieceUtil;
 
 public class CommandParser {
     public static final String EmptyCommand = "EmptyCommand";
-    private Logger logger = LoggerConfigurator.configureLogger(CommandParser.class);
+    private static Logger logger = LoggerConfigurator.configureLogger(CommandParser.class);
 
     // private Optional<ICommandBuilder> parse(String[] processedInput) {
     // String[] args = getArguments(processedInput);
@@ -182,7 +182,7 @@ public class CommandParser {
     // }
     // }
 
-    public Optional<ICommandBuilder> parse(String input) {
+    public static Optional<ICommandBuilder> parse(String input) {
         logger.info("Parsing input: " + input);
 
         String[] processedInput = getTokens(input);
@@ -223,7 +223,7 @@ public class CommandParser {
         });
     }
 
-    private String[] getTokens(String input) {
+    private static String[] getTokens(String input) {
         logger.info("Getting tokens from input: " + input);
         // UCI:: arbitrary white space between tokens is allowed
         // Example: "debug on\n" and " debug on \n" and "\t debug \t \t\ton\t \n"
