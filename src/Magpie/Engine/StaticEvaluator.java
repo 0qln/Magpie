@@ -4,7 +4,7 @@ import static Engine.Utils.countBits;
 
 public final class StaticEvaluator {
 
-    public static final int Infinity = 40_000;
+    public static final int Infinity = 40_000, Checkmate = 39_000, Draw = 0;
 
     public static final int[] PT_VALUES = {
             0, 100, 300, 350, 500, 900, 10_000
@@ -28,9 +28,10 @@ public final class StaticEvaluator {
         }
 
         // Tempo
-        result += 15;
+        // result += 15;
 
         return result;
     }
+
 
 }
