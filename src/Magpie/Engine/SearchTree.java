@@ -36,7 +36,7 @@ public class SearchTree {
     }
 
     // On each search result, iterate these and distribute the result of the search.
-    public ArrayList<Consumer<SearchResult>> Callbacks;
+    public ArrayList<Consumer<SearchUpdate>> Callbacks;
 
     private Board _board;
 
