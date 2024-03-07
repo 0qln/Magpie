@@ -6,10 +6,10 @@ public abstract class Piece {
 
     public static abstract class MoveGenerator {
         // Returns index of next empty list slot.
-        abstract int generate(short[] list, int index, Board board, int color);
+        abstract int generate(short[] list, int index, Board board, int color, boolean capturesOnly);
 
         // Returns index of next empty list slot.
-        abstract int resolves(short[] list, int index, Board board, int color);
+        abstract int resolves(short[] list, int index, Board board, int color, boolean capturesOnly);
 
         public abstract long attacks(int square, int color);
         public abstract long attacks(int square, long occupied, int color);

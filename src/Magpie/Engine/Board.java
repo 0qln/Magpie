@@ -33,7 +33,7 @@ public class Board implements IBoard {
         }
 
         long moveC = 0, c;
-        for (short move : MoveList.legal(this).getMoves()) {
+        for (short move : MoveList.legal(this, false).getMoves()) {
             makeMove(move);
             moveC += (c = perft(depth - 1));
             callback.accept(move, c);
@@ -49,7 +49,7 @@ public class Board implements IBoard {
         }
 
         long moveC = 0;
-        for (short move : MoveList.legal(this).getMoves()) {
+        for (short move : MoveList.legal(this, false).getMoves()) {
             makeMove(move);
             moveC += perft(depth - 1);
             undoMove(move);

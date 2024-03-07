@@ -15,17 +15,20 @@ public class King extends Piece {
     public static class MoveGenerator extends Piece.MoveGenerator {
 
         @Override
-        int generate(short[] list, int index, Board board, int color) {
-            index = generateCastling(list, index, board, color);
+        int generate(short[] list, int index, Board board, int color, boolean capturesOnly) {
             index = captures(list, index, board, color);
-            index = quiets(list, index, board, color);
+            if (!capturesOnly) {
+                index = generateCastling(list, index, board, color);
+                index = quiets(list, index, board, color);
+            }
             return index;
         }
 
         @Override
-        int resolves(short[] list, int index, Board board, int color) {
+        int resolves(short[] list, int index, Board board, int color, boolean capturesOnly) {
             index = captures(list, index, board, color);
-            index = quiets(list, index, board, color);
+            if (!capturesOnly)
+                index = quiets(list, index, board, color);
             return index;
         }
 

@@ -12,15 +12,15 @@ public class MoveList {
      * @param board
      * @return All pseudo legal moves.
      */
-    public static MoveList pseudoLegal(Board board) {
+    public static MoveList pseudoLegal(Board board, boolean capturesOnly) {
         MoveList list = new MoveList();
 
-        list._moveCount = Pawn.generator.generate(list._moves, list._moveCount, board, board.getTurn());
-        list._moveCount = Knight.generator.generate(list._moves, list._moveCount, board, board.getTurn());
-        list._moveCount = Rook.generator.generate(list._moves, list._moveCount, board, board.getTurn());
-        list._moveCount = Bishop.generator.generate(list._moves, list._moveCount, board, board.getTurn());
-        list._moveCount = Queen.generator.generate(list._moves, list._moveCount, board, board.getTurn());
-        list._moveCount = King.generator.generate(list._moves, list._moveCount, board, board.getTurn());
+        list._moveCount = Pawn.generator.generate(list._moves, list._moveCount, board, board.getTurn(), capturesOnly);
+        list._moveCount = Knight.generator.generate(list._moves, list._moveCount, board, board.getTurn(), capturesOnly);
+        list._moveCount = Rook.generator.generate(list._moves, list._moveCount, board, board.getTurn(), capturesOnly);
+        list._moveCount = Bishop.generator.generate(list._moves, list._moveCount, board, board.getTurn(), capturesOnly);
+        list._moveCount = Queen.generator.generate(list._moves, list._moveCount, board, board.getTurn(), capturesOnly);
+        list._moveCount = King.generator.generate(list._moves, list._moveCount, board, board.getTurn(), capturesOnly);
 
         return list;
     }
@@ -31,15 +31,15 @@ public class MoveList {
      * @return If the stm king is in check, all pseudo legal moves that will resolve
      *         that check.
      */
-    public static MoveList checkResolves(Board board) {
+    public static MoveList checkResolves(Board board, boolean capturesOnly) {
         MoveList list = new MoveList();
 
-        list._moveCount = Pawn.generator.resolves(list._moves, list._moveCount, board, board.getTurn());
-        list._moveCount = Knight.generator.resolves(list._moves, list._moveCount, board, board.getTurn());
-        list._moveCount = Rook.generator.resolves(list._moves, list._moveCount, board, board.getTurn());
-        list._moveCount = Bishop.generator.resolves(list._moves, list._moveCount, board, board.getTurn());
-        list._moveCount = Queen.generator.resolves(list._moves, list._moveCount, board, board.getTurn());
-        list._moveCount = King.generator.resolves(list._moves, list._moveCount, board, board.getTurn());
+        list._moveCount = Pawn.generator.resolves(list._moves, list._moveCount, board, board.getTurn(), capturesOnly);
+        list._moveCount = Knight.generator.resolves(list._moves, list._moveCount, board, board.getTurn(), capturesOnly);
+        list._moveCount = Rook.generator.resolves(list._moves, list._moveCount, board, board.getTurn(), capturesOnly);
+        list._moveCount = Bishop.generator.resolves(list._moves, list._moveCount, board, board.getTurn(), capturesOnly);
+        list._moveCount = Queen.generator.resolves(list._moves, list._moveCount, board, board.getTurn(), capturesOnly);
+        list._moveCount = King.generator.resolves(list._moves, list._moveCount, board, board.getTurn(), capturesOnly);
 
         return list;
     }
@@ -49,33 +49,30 @@ public class MoveList {
      * @return If the stm king is in double check, all pseudo legal moves that the
      *         king can do.
      */
-    public static MoveList checkResolvesByKing(Board board) {
+    public static MoveList checkResolvesByKing(Board board, boolean capturesOnly) {
         MoveList list = new MoveList();
 
-        list._moveCount = King.generator.resolves(list._moves, list._moveCount, board, board.getTurn());
+        list._moveCount = King.generator.resolves(list._moves, list._moveCount, board, board.getTurn(), capturesOnly);
 
         return list;
     }
 
-    public static MoveList legal(Board board) {
+    public static MoveList legal(Board board, boolean capturesOnly) {
         MoveList candidates, list = new MoveList();
 
         // 1. Generate pseudo legal moves.
 
-        // // temporary
-        // candidates = pseudoLegal(board);
-
         // 1.1 If in check, generate only pseudo legal moves that resolve the check
         if (board.isInSingleCheck()) {
-            candidates = checkResolves(board);
+            candidates = checkResolves(board, capturesOnly);
         }
         // 1.2 If in double check, generate only pseudo legal king moves
         else if (board.isInDoubleCheck()) {
-            candidates = checkResolvesByKing(board);
+            candidates = checkResolvesByKing(board, capturesOnly);
         }
         // 1.3 Generate all pseudo legal quiet moves and captures
         else {
-            candidates = pseudoLegal(board);
+            candidates = pseudoLegal(board, capturesOnly);
         }
 
         // 2. Filter out pseudo legal moves that are not legal.
@@ -165,7 +162,7 @@ public class MoveList {
     }
 
     public static MoveList legal(Board board, String[] searchMoves, IMoveDecoder decoder) {
-        MoveList legals = legal(board);
+        MoveList legals = legal(board, false);
         MoveList list = new MoveList();
         short[] targets = new short[searchMoves.length];
         for (int i = 0; i < targets.length; i++) {

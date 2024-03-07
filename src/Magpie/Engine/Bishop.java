@@ -19,26 +19,28 @@ public class Bishop extends SlidingPiece {
          */
 
         @Override
-        int generate(short[] list, int index, Board board, int color) {
+        int generate(short[] list, int index, Board board, int color, boolean capturesOnly) {
             index = captures(list, index, board, color);
-            index = quiets(list, index, board, color);
+            if (!capturesOnly)
+                index = quiets(list, index, board, color);
             return index;
         }
 
         @Override
-        int resolves(short[] list, int index, Board board, int color) {
+        int resolves(short[] list, int index, Board board, int color, boolean capturesOnly) {
             final long checkerBB = board.getCheckers();
             final int checker = lsb(checkerBB);
             final int king = lsb(board.getBitboard(PieceType.King, color));
             final long mask = Masks.squaresBetween(king, checker);
             // quiet
-            index = generate(
-                    list,
-                    index,
-                    ~board.getOccupancy() & mask,
-                    board.getOccupancy(),
-                    board.getBitboard(PieceType.Bishop, color),
-                    Move.QUIET_MOVE_FLAG);
+            if (!capturesOnly)
+                index = generate(
+                        list,
+                        index,
+                        ~board.getOccupancy() & mask,
+                        board.getOccupancy(),
+                        board.getBitboard(PieceType.Bishop, color),
+                        Move.QUIET_MOVE_FLAG);
             // captures
             return generate(
                     list,

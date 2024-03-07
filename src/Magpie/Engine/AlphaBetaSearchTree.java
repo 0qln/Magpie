@@ -32,7 +32,7 @@ public class AlphaBetaSearchTree extends ISearchTree {
     public AlphaBetaSearchTree(Board board) {
         this._board = board;
         this._staticEval = new StaticEvaluator(board);
-        this._rootMoves = MoveList.legal(board);
+        this._rootMoves = MoveList.legal(board, false);
         this._rootScores = new int[_rootMoves.length()];
         Arrays.fill(_rootScores, -StaticEvaluator.Infinity);
         this._nodesSearched = 0;
@@ -61,8 +61,8 @@ public class AlphaBetaSearchTree extends ISearchTree {
             _logger.info("New root iteration (depth: " + _rootDepth + ")");
 
             // Create the new level info
-            // TODO: handle unknown extension length of quies search
-            _infoStack.add(new DepthLevelInfo());
+            if (_infoStack.size() < _rootDepth)
+                _infoStack.add(new DepthLevelInfo());
 
             Ptr<Line> pv = new Ptr<Line>(null);
             Ptr<Line> rightline = new Ptr<Line>(null);
@@ -87,7 +87,7 @@ public class AlphaBetaSearchTree extends ISearchTree {
             SearchUpdate sr = new SearchUpdate(
                     _rootScores[0] * (_board.getTurn() * -2 + 1),
                     _rootDepth,
-                    _rootDepth,
+                    _rootSelDepth,
                     _nodesSearched,
                     generatePv());
 
@@ -161,7 +161,7 @@ public class AlphaBetaSearchTree extends ISearchTree {
             currline.set(cline);
 
             _board.makeMove(move);
-            _rootScores[i] = -search(depth - 1, alpha, beta, line, cline);
+            _rootScores[i] = -search(depth - 1, alpha, beta, line, cline, 1);
             _board.undoMove(move);
 
             if (_rootScores[i] >= bestScore) {
@@ -171,7 +171,7 @@ public class AlphaBetaSearchTree extends ISearchTree {
         }
     }
 
-    private int search(int depth, int alpha, int beta, Line parentPV, Line currline) {
+    private int search(int depth, int alpha, int beta, Line parentPV, Line currline, int ply) {
         _nodesSearched++;
 
         // Check limits
@@ -183,12 +183,11 @@ public class AlphaBetaSearchTree extends ISearchTree {
         }
 
         if (depth <= 0) {
-            // Return static eval relative to stm.
-            return _staticEval.evaluate(_board.getTurn());
+            return quiescent(alpha, beta, parentPV, currline, ply);
         }
 
         int bestScore = -StaticEvaluator.Infinity, score = bestScore;
-        MoveList moves = MoveList.legal(_board);
+        MoveList moves = MoveList.legal(_board, false);
 
         if (moves.length() == 0) {
             // Terminal node, Game over
@@ -206,7 +205,7 @@ public class AlphaBetaSearchTree extends ISearchTree {
             return StaticEvaluator.Draw;
         }
 
-        DepthLevelInfo info = _infoStack.get(_rootDepth - depth);
+        DepthLevelInfo info = _infoStack.get(ply);
 
         // Sort the moves
         sort(moves, info);
@@ -218,7 +217,7 @@ public class AlphaBetaSearchTree extends ISearchTree {
             currline.update(cline);
 
             _board.makeMove(move);
-            score = -search(depth - 1, -beta, -alpha, line, cline);
+            score = -search(depth - 1, -beta, -alpha, line, cline, ply + 1);
             _board.undoMove(move);
 
             if (score >= beta) {
@@ -236,6 +235,60 @@ public class AlphaBetaSearchTree extends ISearchTree {
         }
 
         return bestScore;
+    }
+
+    private int quiescent(int alpha, int beta, Line parentPV, Line currline, int ply) {
+        _nodesSearched++;
+
+        // Check limits
+        checkTime();
+        checkSearchSpace();
+
+        if (_stopFlag) {
+            return 0;
+        }
+
+        int score = _staticEval.evaluate(_board.getTurn());
+
+        if (score >= beta)
+            return beta;
+
+        if (alpha < score)
+            alpha = score;
+
+        MoveList moves = MoveList.legal(_board, true);
+
+        // Get info obj
+        while (ply >= _infoStack.size()) 
+            _infoStack.add(new DepthLevelInfo());
+        DepthLevelInfo info = _infoStack.get(ply);
+
+        // Sort moves
+        sort(moves, info);
+
+        for (int i = 0; i < moves.length(); i++) {
+            short move = moves.get(i);
+            Line line = new Line(move);
+            Line cline = new Line(move);
+            currline.update(cline);
+
+            _board.makeMove(move);
+            score = -quiescent(-beta, -alpha, line, cline, ply + 1);
+            _board.undoMove(move);
+
+            if (score >= beta)
+                return beta;
+
+            if (score > alpha) {
+                alpha = score;
+                parentPV.update(line);
+            }
+        }
+
+        // => Update selective depth
+        _rootSelDepth = ply;
+
+        return alpha;
     }
 
     private void sort(MoveList moves, DepthLevelInfo info) {

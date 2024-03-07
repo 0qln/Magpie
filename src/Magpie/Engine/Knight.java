@@ -14,39 +14,40 @@ public class Knight extends Piece {
     public static class MoveGenerator extends Piece.MoveGenerator {
 
         @Override
-        int generate(short[] list, int index, Board board, int color) {
+        int generate(short[] list, int index, Board board, int color, boolean capturesOnly) {
 
             long knights = board.getBitboard(PieceType.Knight, color);
 
-            index = addMoves(list, index, board, color, knights & Masks.NoEaEa, CompassRose.NoEaEa);
-            index = addMoves(list, index, board, color, knights & Masks.SoEaEa, CompassRose.SoEaEa);
-            index = addMoves(list, index, board, color, knights & Masks.SoWeWe, CompassRose.SoWeWe);
-            index = addMoves(list, index, board, color, knights & Masks.NoWeWe, CompassRose.NoWeWe);
-            index = addMoves(list, index, board, color, knights & Masks.NoNoEa, CompassRose.NoNoEa);
-            index = addMoves(list, index, board, color, knights & Masks.SoSoEa, CompassRose.SoSoEa);
-            index = addMoves(list, index, board, color, knights & Masks.SoSoWe, CompassRose.SoSoWe);
-            index = addMoves(list, index, board, color, knights & Masks.NoNoWe, CompassRose.NoNoWe);
+            index = addMoves(list, index, board, color, knights & Masks.NoEaEa, CompassRose.NoEaEa, capturesOnly);
+            index = addMoves(list, index, board, color, knights & Masks.SoEaEa, CompassRose.SoEaEa, capturesOnly);
+            index = addMoves(list, index, board, color, knights & Masks.SoWeWe, CompassRose.SoWeWe, capturesOnly);
+            index = addMoves(list, index, board, color, knights & Masks.NoWeWe, CompassRose.NoWeWe, capturesOnly);
+            index = addMoves(list, index, board, color, knights & Masks.NoNoEa, CompassRose.NoNoEa, capturesOnly);
+            index = addMoves(list, index, board, color, knights & Masks.SoSoEa, CompassRose.SoSoEa, capturesOnly);
+            index = addMoves(list, index, board, color, knights & Masks.SoSoWe, CompassRose.SoSoWe, capturesOnly);
+            index = addMoves(list, index, board, color, knights & Masks.NoNoWe, CompassRose.NoNoWe, capturesOnly);
 
             return index;
         }
 
         @Override
-        int resolves(short[] list, int index, Board board, int color) {
+        int resolves(short[] list, int index, Board board, int color, boolean capturesOnly) {
             long knights = board.getBitboard(PieceType.Knight, color);
 
-            index = addResolves(list, index, board, color, knights & Masks.NoEaEa, CompassRose.NoEaEa);
-            index = addResolves(list, index, board, color, knights & Masks.SoEaEa, CompassRose.SoEaEa);
-            index = addResolves(list, index, board, color, knights & Masks.SoWeWe, CompassRose.SoWeWe);
-            index = addResolves(list, index, board, color, knights & Masks.NoWeWe, CompassRose.NoWeWe);
-            index = addResolves(list, index, board, color, knights & Masks.NoNoEa, CompassRose.NoNoEa);
-            index = addResolves(list, index, board, color, knights & Masks.SoSoEa, CompassRose.SoSoEa);
-            index = addResolves(list, index, board, color, knights & Masks.SoSoWe, CompassRose.SoSoWe);
-            index = addResolves(list, index, board, color, knights & Masks.NoNoWe, CompassRose.NoNoWe);
+            index = addResolves(list, index, board, color, knights & Masks.NoEaEa, CompassRose.NoEaEa, capturesOnly);
+            index = addResolves(list, index, board, color, knights & Masks.SoEaEa, CompassRose.SoEaEa, capturesOnly);
+            index = addResolves(list, index, board, color, knights & Masks.SoWeWe, CompassRose.SoWeWe, capturesOnly);
+            index = addResolves(list, index, board, color, knights & Masks.NoWeWe, CompassRose.NoWeWe, capturesOnly);
+            index = addResolves(list, index, board, color, knights & Masks.NoNoEa, CompassRose.NoNoEa, capturesOnly);
+            index = addResolves(list, index, board, color, knights & Masks.SoSoEa, CompassRose.SoSoEa, capturesOnly);
+            index = addResolves(list, index, board, color, knights & Masks.SoSoWe, CompassRose.SoSoWe, capturesOnly);
+            index = addResolves(list, index, board, color, knights & Masks.NoNoWe, CompassRose.NoNoWe, capturesOnly);
 
             return index;
         }
 
-        private int addResolves(short[] list, int index, Board board, int color, long knights, int dir) {
+        private int addResolves(short[] list, int index, Board board, int color, long knights, int dir,
+                boolean capturesOnly) {
             // Remove all knights whose dest square is occupied by an ally.
             final long sao = shift(board.getCBitboard(color), -dir);
             final long[] fromBB = { knights & ~sao };
@@ -59,16 +60,18 @@ public class Knight extends Piece {
                 final int from = popLsb(fromBB);
                 final int to = from + dir;
                 if (checker == to
-                    || (target(to) & mask) != 0)
-                    list[index++] = Move.create(from, to, board.getPieceID(to) == PieceUtil.None[0]
-                            ? Move.QUIET_MOVE_FLAG
-                            : Move.CAPTURE_FLAG);
+                        || (target(to) & mask) != 0)
+                    if (board.getPieceID(to) == PieceUtil.None[0]) // is capture?
+                        list[index++] = Move.create(from, to, Move.CAPTURE_FLAG);
+                    else if (!capturesOnly)
+                        list[index++] = Move.create(from, to, Move.QUIET_MOVE_FLAG);
             }
 
             return index;
         }
 
-        private int addMoves(short[] list, int index, Board board, int color, long knights, int dir) {
+        private int addMoves(short[] list, int index, Board board, int color, long knights, int dir,
+                boolean capturesOnly) {
             // Remove all knights whose dest square is occupied by an ally.
             final long sao = Utils.shift(board.getCBitboard(color), -dir);
             final long[] fromBB = { knights & ~sao };
@@ -76,9 +79,10 @@ public class Knight extends Piece {
             while (fromBB[0] != 0) {
                 final int from = Utils.popLsb(fromBB);
                 final int to = from + dir;
-                list[index++] = Move.create(from, to, board.getPieceID(to) == PieceUtil.None[0]
-                        ? Move.QUIET_MOVE_FLAG
-                        : Move.CAPTURE_FLAG);
+                if (board.getPieceID(to) == PieceUtil.None[0]) // is capture?
+                    list[index++] = Move.create(from, to, Move.CAPTURE_FLAG);
+                else if (!capturesOnly)
+                    list[index++] = Move.create(from, to, Move.QUIET_MOVE_FLAG);
             }
 
             return index;
