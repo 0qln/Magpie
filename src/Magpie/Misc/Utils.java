@@ -12,6 +12,32 @@ public final class Utils
         }
         return -1;
     }
+        
+    public static <TSource, TResult> TResult[] select(TSource[] source, java.util.function.Function<TSource, TResult> func) {
+        @SuppressWarnings("unchecked")
+        TResult[] result = (TResult[]) new Object[source.length];
+        for (int i = 0; i < source.length; i++) {
+            result[i] = func.apply(source[i]);
+        }
+        return result;
+    }
+
+    public static void copyTo(int destoffset, short[] source, short[] desination) {
+        assert(source.length <= desination.length + destoffset);
+
+        for (int i = destoffset; i < source.length; i++) {
+            desination[i] = source[i-destoffset];
+        }
+    }
+
+
+    public static <T> void copyTo(int destoffset, T[] source, T[] desination) {
+        assert(source.length <= desination.length + destoffset);
+
+        for (int i = destoffset; i < source.length; i++) {
+            desination[i] = source[i-destoffset];
+        }
+    }
 
     public static String fromSquareIndex(int square) {
         char file = (char)((square % 8) + 'a');
