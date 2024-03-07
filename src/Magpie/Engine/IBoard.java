@@ -3,6 +3,7 @@ package Engine;
 public interface IBoard
 {
     public IMoveDecoder getMoveDecoder();
+    public IMoveEncoder getMoveEncoder();
 
     public void makeMove(short move);
     public void undoMove(short move);
