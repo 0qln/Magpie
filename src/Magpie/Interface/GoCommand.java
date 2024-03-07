@@ -2,6 +2,8 @@ package Interface;
 
 import java.util.Arrays;
 
+import Misc.Utils;
+
 public class GoCommand extends Command {
 
     static {
@@ -86,8 +88,22 @@ public class GoCommand extends Command {
 
             // execute search
             Engine.AlphaBetaSearchTree search = new Engine.AlphaBetaSearchTree(board);
-            search.Callbacks.add(sr -> {
-                new TextResponse(sr.depth).send();
+            search.CallbacksOnIter.add(sr -> {
+                new InfoResponse.Builder()
+                    .depth(sr.depth)
+                    .seldepth(sr.seldepth)
+                    .multipv(1) // TODO: add multipv
+                    .score(sr.eval, ScoreType.CentiPawns) // TODO: handle other score types
+                    .nodes(sr.nodes)
+                    .pv(sr.pvline, board.getMoveEncoder())
+                    .build()
+                    .send(); 
+            });
+            search.CallbacksOnStop.add(sr -> {
+                new BestMoveResponse(
+                    Engine.Move.toString(sr.bestMove), 
+                    sr.ponderMove == Engine.Move.None ? null : Engine.Move.toString(sr.ponderMove))
+                    .send();
             });
             search.begin(limit);
 
