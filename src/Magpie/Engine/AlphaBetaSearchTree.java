@@ -26,6 +26,8 @@ public class AlphaBetaSearchTree extends ISearchTree {
     private Logger _logger = Misc.LoggerConfigurator.configureLogger(AlphaBetaSearchTree.class);
     private Line _pv;
     private boolean _stopFlag;
+    private long _startTime, _timePerMove;
+    private long _maxNodes = -1;
 
     public AlphaBetaSearchTree(Board board) {
         this._board = board;
@@ -39,11 +41,20 @@ public class AlphaBetaSearchTree extends ISearchTree {
 
     @Override
     public void begin(SearchLimit limit) {
-        
         _logger.info("Begin search.");
-
         _stopFlag = false;
-        
+
+        // Initiate time limit
+        _startTime = System.nanoTime();
+        long inc = _board.getTurn() == Color.White ? limit.winc : limit.binc;
+        long time = _board.getTurn() == Color.White ? limit.wtime : limit.btime;
+        _timePerMove = limit.movetime != -1 ? limit.movetime * 100 : time != -1 ? (time / 40 + inc) * 1000000 : -1;
+
+        _logger.info("Time per move");
+
+        // Initiate search space limit
+        _maxNodes = limit.nodes;
+
         // iterative deepening loop
         for (_rootDepth = 1; _rootDepth <= limit.depth; _rootDepth++) {
 
@@ -57,8 +68,7 @@ public class AlphaBetaSearchTree extends ISearchTree {
             Ptr<Line> rightline = new Ptr<Line>(null);
             try {
                 rootNode(_rootDepth, -StaticEvaluator.Infinity, StaticEvaluator.Infinity, pv, rightline);
-            }
-            catch (Exception e) {
+            } catch (Exception e) {
                 _logger.log(Level.SEVERE, "Exception during search: ", e);
                 _logger.severe("Root Depth: " + _rootDepth);
                 _logger.severe("Line: " + rightline.get().toString());
@@ -69,9 +79,9 @@ public class AlphaBetaSearchTree extends ISearchTree {
             if (_stopFlag) {
                 break;
             }
-            
+
             _pv = pv.get();
-            
+
             _rootMoves.sort(_rootScores);
 
             SearchUpdate sr = new SearchUpdate(
@@ -85,10 +95,24 @@ public class AlphaBetaSearchTree extends ISearchTree {
                 callback.accept(sr);
             }
         }
-        
+
         _logger.info("Search finished.");
 
         _stop();
+    }
+
+    private void checkTime() {
+        long currentTime = System.nanoTime();
+        long elapsedTime = currentTime - _startTime;
+        if (_timePerMove != -1 && elapsedTime >= _timePerMove) {
+            stop();
+        }
+    }
+
+    private void checkSearchSpace() {
+        if (_maxNodes != -1 && _nodesSearched >= _maxNodes) {
+            stop();
+        }
     }
 
     private short[] generatePv() {
@@ -109,13 +133,13 @@ public class AlphaBetaSearchTree extends ISearchTree {
     @Override
     public void stop() {
         _logger.info("Stop requested.");
-        
+
         _stopFlag = true;
     }
-    
+
     private void _stop() {
         _logger.info("Stop search.");
-        
+
         // Distribute results
         short[] pv = generatePv();
         for (Consumer<SearchResult> callback : CallbacksOnStop) {
@@ -140,15 +164,6 @@ public class AlphaBetaSearchTree extends ISearchTree {
             _rootScores[i] = -search(depth - 1, alpha, beta, line, cline);
             _board.undoMove(move);
 
-
-            // if (_rootScores[i] >= beta) {
-                // break;
-            // }
-
-            // if (_rootScores[i] > alpha) {
-                // alpha = _rootScores[i];
-            // }
-
             if (_rootScores[i] >= bestScore) {
                 bestScore = _rootScores[i];
                 pv.set(line);
@@ -158,7 +173,11 @@ public class AlphaBetaSearchTree extends ISearchTree {
 
     private int search(int depth, int alpha, int beta, Line parentPV, Line currline) {
         _nodesSearched++;
-        
+
+        // Check limits
+        checkTime();
+        checkSearchSpace();
+
         if (_stopFlag) {
             return 0;
         }
@@ -177,10 +196,10 @@ public class AlphaBetaSearchTree extends ISearchTree {
                 // We have no more moves and are in check
                 // => We are checkmated
                 return -StaticEvaluator.Checkmate
-                        // To promote the earliest checkmate, add
-                        // a bonus for shallower mates.
-                        // - depth
-                        ;
+                // To promote the earliest checkmate, add
+                // a bonus for shallower mates.
+                // - depth
+                ;
             }
             // We have no more moves, but are not in check
             // => Stalemate
@@ -192,7 +211,7 @@ public class AlphaBetaSearchTree extends ISearchTree {
         // Sort the moves
         sort(moves, info);
 
-        for (int i = 0; i < moves.length(); i++) {            
+        for (int i = 0; i < moves.length(); i++) {
             short move = moves.get(i);
             Line line = new Line(move);
             Line cline = new Line(move);
@@ -202,13 +221,13 @@ public class AlphaBetaSearchTree extends ISearchTree {
             score = -search(depth - 1, -beta, -alpha, line, cline);
             _board.undoMove(move);
 
-            // if (score >= beta) {
-                // return beta;
-            // }
+            if (score >= beta) {
+                return beta;
+            }
 
-            // if (score > alpha) {
-                // alpha = score;
-            // }
+            if (score > alpha) {
+                alpha = score;
+            }
 
             if (score > bestScore) {
                 bestScore = score;

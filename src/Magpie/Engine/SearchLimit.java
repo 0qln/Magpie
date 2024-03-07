@@ -11,9 +11,9 @@ public class SearchLimit {
 
     public long 
     // game tree
-    nodes, 
+    nodes = -1, 
     // timing 
-    wtime, btime, winc, binc, movetime;
+    wtime = -1, btime = -1, winc = 0, binc = 0, movetime = -1;
     // game tree
     public MoveList searchmoves = null;
 }
