@@ -1,5 +1,6 @@
 package Interface;
 
+import Engine.PieceUtil;
 import Interface.Command.*;
 import Misc.Ptr;
 
@@ -14,12 +15,34 @@ public class PieceCommand extends Command {
 
     @Override
     public boolean parseArgs(String[] args) {
-        return false;
+        if (args.length < 2) {
+            return false;
+        }
+
+        switch (args[0]) {
+            case "add":
+                params_put("piece", PieceUtil.fromChar(args[2].charAt(0)));
+            case "remove":
+            case "get":
+                params_put(args[0], Misc.Utils.toSquareIndex(args[1]));
+                break;
+        }
+
+        return true;
     }
 
     @Override
     public void run() {
-
+        if (params_get("add") != null) {
+            _state.board.get().addPiece(params_get("add"), params_get("piece"));
+        }
+        if (params_get("remove") != null) {
+            _state.board.get().removePiece(params_get("remove"));
+        }
+        if (params_get("get") != null) {
+            int sq = params_get("get");
+            new SquareInfoResponse(sq, ""+PieceUtil.toChar(_state.board.get().getPieceID(sq))).send();
+        }
     }
 
 }
