@@ -1,7 +1,8 @@
 package Interface;
 
-import Engine.IBoard;
-import Misc.Ptr;
+import static Engine.Utils.*;
+
+import Engine.StaticEvaluator;
 
 public class InfoCommand extends Command {
 
@@ -15,27 +16,38 @@ public class InfoCommand extends Command {
             return false;
         }
 
-        switch (args[0]) {
-            case "check":
-                break;
-        
+        for (int i = 0; i < args.length; i++)
+            params_put(args[i], true);
 
-            default:
-                break;
-        }
-
-        return false;
+        return true;
     }
 
     @Override
     public void run() {
-                
-    }
+        Engine.Board board = _board.getAs();
+        
+        if (params_getB("eval")) {
+            new TextResponse(new StaticEvaluator(board).evaluate(Engine.Color.White)).send();
+        }
 
-    // @Override
-    // public void run() {
-    //     Engine.Board board = _board.getAs();
-    //     System.out.println(Engine.Castling.toString(board.getCastling()));
-    // }
+        if (params_getB("castling")) {
+            new TextResponse(Engine.Castling.toString(board.getCastling())).send();
+        }
+
+        if (params_getB("check")) {
+
+            new TextResponse("Checkers: ").send();
+            long[] checkers = { board.getCheckers() };
+            new BitboardResponse(checkers).send();
+            while (checkers[0] != 0)
+                new SquareInfoResponse(popLsb(checkers), "Checker").send();
+
+            new TextResponse("Not-side-to-move attacks: ").send();
+            new BitboardResponse(board.getNstmAttacks()).send();
+
+            new TextResponse("Check blockers: ").send();
+            new BitboardResponse(board.getBlockers()).send();
+        }
+    }
 
 }
