@@ -1,11 +1,13 @@
 package Engine;
 
 public class SearchLimit {
+    public static final int DEPTH = 200;
+
     public int 
     // timing
     movestogo, 
     // game tree
-    depth = 999, mate;
+    depth = DEPTH, mate;
 
     public long 
     // game tree
