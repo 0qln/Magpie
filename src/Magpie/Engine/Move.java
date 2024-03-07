@@ -4,6 +4,8 @@ import Misc.Utils;
 
 public final class Move {
 
+    public static final short None = 0;
+
     public static final int FROM_SHIFT = 0;
     public static final int TO_SHIFT = 6;
     public static final int FLAG_SHIFT = 12;
