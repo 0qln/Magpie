@@ -213,6 +213,11 @@ public class Board implements IBoard {
     }
 
     @Override
+    public IMoveEncoder getMoveEncoder() {
+        return move -> Move.toString(move);
+    }
+
+    @Override
     public IMoveDecoder getMoveDecoder() {
         return str -> {
 
