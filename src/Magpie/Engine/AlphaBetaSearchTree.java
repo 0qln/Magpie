@@ -12,8 +12,9 @@ import Misc.Ptr;
 public class AlphaBetaSearchTree extends ISearchTree {
 
     // On each search result, iterate these and distribute the result of the search.
-    public List<Consumer<SearchUpdate>> CallbacksOnIter = new ArrayList<Consumer<SearchUpdate>>();
-    public List<Consumer<SearchResult>> CallbacksOnStop = new ArrayList<Consumer<SearchResult>>();
+    public List<Consumer<SearchUpdate>> CallbacksOnIter = new ArrayList<>();
+    public List<Consumer<SearchResult>> CallbacksOnStop = new ArrayList<>();
+    public List<Consumer<SearchUpdate>> CallbackOnRootmove = new ArrayList<>();
 
     private StaticEvaluator _staticEval;
     private final Board _board;
@@ -61,7 +62,8 @@ public class AlphaBetaSearchTree extends ISearchTree {
             _logger.info("New root iteration (depth: " + _rootDepth + ")");
 
             // Ensure info objs.
-            // Because of the quiescent search extension, it is possible that there are already anough info objs.
+            // Because of the quiescent search extension, it is possible that there are
+            // already anough info objs.
             if (_infoStack.size() < _rootDepth)
                 _infoStack.add(new DepthLevelInfo());
 
@@ -89,16 +91,14 @@ public class AlphaBetaSearchTree extends ISearchTree {
 
             double elapsedSeconds = (System.nanoTime() - beginTime) / 1e9;
 
-            SearchUpdate sr = new SearchUpdate(
-                    _rootScores[0] * (_board.getTurn() * -2 + 1),
-                    _rootDepth,
-                    _rootSelDepth,
-                    _nodesSearched,
-                    generatePv(),
-                    (long)(_nodesSearched / elapsedSeconds));
-
             for (Consumer<SearchUpdate> callback : CallbacksOnIter) {
-                callback.accept(sr);
+                callback.accept(new SearchUpdate(
+                        _rootScores[0] * (_board.getTurn() * -2 + 1),
+                        _rootDepth,
+                        _rootSelDepth,
+                        _nodesSearched,
+                        generatePv(),
+                        (long) (_nodesSearched / elapsedSeconds)));
             }
         }
 
@@ -162,6 +162,15 @@ public class AlphaBetaSearchTree extends ISearchTree {
 
         for (int i = 0; i < _rootMoves.length(); i++) {
             short move = _rootMoves.get(i);
+
+            // Distribute updates
+            for (Consumer<SearchUpdate> callback : CallbackOnRootmove) {
+                callback.accept(new SearchUpdate(
+                        _rootDepth,
+                        move,
+                        i));
+            }
+
             Line line = new Line(move);
             Line cline = new Line(move);
             currline.set(cline);

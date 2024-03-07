@@ -89,15 +89,15 @@ public class GoCommand extends Command {
             // execute search
             Engine.AlphaBetaSearchTree search = new Engine.AlphaBetaSearchTree(board);
             _state.search.set(search);
-            search.CallbacksOnIter.add(sr -> {
+            search.CallbacksOnIter.add(su -> {
                 new InfoResponse.Builder()
-                    .depth(sr.depth)
-                    .seldepth(sr.seldepth)
+                    .depth(su.depth)
+                    .seldepth(su.seldepth)
                     .multipv(1) // TODO: add multipv
-                    .score(sr.eval, ScoreType.CentiPawns) // TODO: handle other score types
-                    .nodes(sr.nodes)
-                    .nps(sr.nps)
-                    .pv(sr.pvline, board.getMoveEncoder())
+                    .score(su.eval, ScoreType.CentiPawns) // TODO: handle other score types
+                    .nodes(su.nodes)
+                    .nps(su.nps)
+                    .pv(su.pvline, board.getMoveEncoder())
                     .build()
                     .send(); 
             });
@@ -105,6 +105,14 @@ public class GoCommand extends Command {
                 new BestMoveResponse(
                     Engine.Move.toString(sr.bestMove), 
                     sr.ponderMove == Engine.Move.None ? null : Engine.Move.toString(sr.ponderMove))
+                    .send();
+            });
+            search.CallbackOnRootmove.add(su -> {
+                new InfoResponse.Builder()
+                    .depth(su.depth)
+                    .currmove(su.currmove, board.getMoveEncoder())
+                    .currmovenumber(su.currmovenumber)
+                    .build()
                     .send();
             });
             search.begin(limit);

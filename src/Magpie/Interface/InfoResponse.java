@@ -54,8 +54,8 @@ public class InfoResponse extends Response {
             return this;
         }
 
-        public Builder currmove(String currmove) {
-            _instance._result.append("currmove ").append(currmove).append(" ");
+        public Builder currmove(short currmove, IMoveEncoder encoder) {
+            _instance._result.append("currmove ").append(encoder.encode(currmove)).append(" ");
             return this;
         }
 
