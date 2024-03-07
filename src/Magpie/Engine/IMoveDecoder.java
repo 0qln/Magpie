@@ -1,7 +1,6 @@
 package Engine;
 
 @FunctionalInterface
-public interface IMoveDecoder
-{
+public interface IMoveDecoder {
     short decode(String longAlgebraicNotation);
 }
