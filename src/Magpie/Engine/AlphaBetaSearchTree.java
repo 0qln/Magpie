@@ -54,13 +54,14 @@ public class AlphaBetaSearchTree extends ISearchTree {
             _infoStack.add(new DepthLevelInfo());
 
             Ptr<Line> pv = new Ptr<Line>(null);
+            Ptr<Line> rightline = new Ptr<Line>(null);
             try {
-                rootNode(_rootDepth, -StaticEvaluator.Infinity, StaticEvaluator.Infinity, pv);
+                rootNode(_rootDepth, -StaticEvaluator.Infinity, StaticEvaluator.Infinity, pv, rightline);
             }
             catch (Exception e) {
                 _logger.log(Level.SEVERE, "Exception during search: ", e);
                 _logger.severe("Root Depth: " + _rootDepth);
-                _logger.severe("Line: " + pv.get().toString());
+                _logger.severe("Line: " + rightline.get().toString());
                 stop();
             }
 
@@ -126,15 +127,19 @@ public class AlphaBetaSearchTree extends ISearchTree {
         }
     }
 
-    private void rootNode(int depth, int alpha, int beta, Ptr<Line> pv) {
+    private void rootNode(int depth, int alpha, int beta, Ptr<Line> pv, Ptr<Line> currline) {
         int bestScore = -StaticEvaluator.Infinity;
 
         for (int i = 0; i < _rootMoves.length(); i++) {
             short move = _rootMoves.get(i);
             Line line = new Line(move);
+            Line cline = new Line(move);
+            currline.set(cline);
+
             _board.makeMove(move);
-            _rootScores[i] = -search(depth - 1, alpha, beta, line);
+            _rootScores[i] = -search(depth - 1, alpha, beta, line, cline);
             _board.undoMove(move);
+
 
             // if (_rootScores[i] >= beta) {
                 // break;
@@ -151,7 +156,7 @@ public class AlphaBetaSearchTree extends ISearchTree {
         }
     }
 
-    private int search(int depth, int alpha, int beta, Line parentPV) {
+    private int search(int depth, int alpha, int beta, Line parentPV, Line currline) {
         _nodesSearched++;
         
         if (_stopFlag) {
@@ -190,8 +195,11 @@ public class AlphaBetaSearchTree extends ISearchTree {
         for (int i = 0; i < moves.length(); i++) {            
             short move = moves.get(i);
             Line line = new Line(move);
+            Line cline = new Line(move);
+            currline.update(cline);
+
             _board.makeMove(move);
-            score = -search(depth - 1, -beta, -alpha, line);
+            score = -search(depth - 1, -beta, -alpha, line, cline);
             _board.undoMove(move);
 
             // if (score >= beta) {

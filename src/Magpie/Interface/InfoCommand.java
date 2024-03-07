@@ -2,6 +2,7 @@ package Interface;
 
 import static Engine.Utils.*;
 
+import Engine.Color;
 import Engine.StaticEvaluator;
 
 public class InfoCommand extends Command {
@@ -47,6 +48,14 @@ public class InfoCommand extends Command {
 
             new TextResponse("Check blockers: ").send();
             new BitboardResponse(board.getBlockers()).send();
+        }
+
+        if (params_getB("bitboards")) {
+            new TextResponse("White pieces: ").send();
+            new BitboardResponse(board.getCBitboard(Color.White)).send();
+
+            new TextResponse("Black pieces: ").send();
+            new BitboardResponse(board.getCBitboard(Color.Black)).send();
         }
     }
 
