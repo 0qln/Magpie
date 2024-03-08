@@ -1,5 +1,6 @@
 package Misc;
 
+import java.util.ArrayList;
 import java.util.function.Predicate;
 
 public final class Utils
@@ -13,11 +14,10 @@ public final class Utils
         return -1;
     }
         
-    public static <TSource, TResult> TResult[] select(TSource[] source, java.util.function.Function<TSource, TResult> func) {
-        @SuppressWarnings("unchecked")
-        TResult[] result = (TResult[]) new Object[source.length];
+    public static <TSource, TResult> ArrayList<TResult> select(TSource[] source, java.util.function.Function<TSource, TResult> func) {
+        ArrayList<TResult> result = new ArrayList<>(source.length);
         for (int i = 0; i < source.length; i++) {
-            result[i] = func.apply(source[i]);
+            result.add(i, func.apply(source[i]));
         }
         return result;
     }
@@ -28,6 +28,10 @@ public final class Utils
         for (int i = destoffset; i < source.length; i++) {
             desination[i] = source[i-destoffset];
         }
+    }
+
+    public static int lerp(int v0, int v1, int t, int tMax) {
+        return (tMax - t) * v0 + t * v1;
     }
 
 
