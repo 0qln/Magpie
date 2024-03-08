@@ -59,12 +59,15 @@ public class Knight extends Piece {
             while (fromBB[0] != 0) {
                 final int from = popLsb(fromBB);
                 final int to = from + dir;
+                final int flag = board.getPieceID(to) == PieceUtil.None[0]
+                        ? Move.QUIET_MOVE_FLAG
+                        : Move.CAPTURE_FLAG;
                 if (checker == to
-                        || (target(to) & mask) != 0)
-                    if (board.getPieceID(to) == PieceUtil.None[0]) // is capture?
-                        list[index++] = Move.create(from, to, Move.CAPTURE_FLAG);
-                    else if (!capturesOnly)
-                        list[index++] = Move.create(from, to, Move.QUIET_MOVE_FLAG);
+                        || (target(to) & mask) != 0) {
+                    if (capturesOnly && flag == Move.QUIET_MOVE_FLAG)
+                        continue;
+                    list[index++] = Move.create(from, to, flag);
+                }
             }
 
             return index;
@@ -79,10 +82,12 @@ public class Knight extends Piece {
             while (fromBB[0] != 0) {
                 final int from = Utils.popLsb(fromBB);
                 final int to = from + dir;
-                if (board.getPieceID(to) == PieceUtil.None[0]) // is capture?
-                    list[index++] = Move.create(from, to, Move.CAPTURE_FLAG);
-                else if (!capturesOnly)
-                    list[index++] = Move.create(from, to, Move.QUIET_MOVE_FLAG);
+                final int flag = board.getPieceID(to) == PieceUtil.None[0]
+                        ? Move.QUIET_MOVE_FLAG
+                        : Move.CAPTURE_FLAG;
+                if (capturesOnly && flag == Move.QUIET_MOVE_FLAG)
+                    continue;
+                list[index++] = Move.create(from, to, flag);
             }
 
             return index;
