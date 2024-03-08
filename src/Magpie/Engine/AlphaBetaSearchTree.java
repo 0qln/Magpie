@@ -87,7 +87,8 @@ public class AlphaBetaSearchTree extends ISearchTree {
 
             _rootMoves.sort(_rootScores);
 
-            double elapsedSeconds = (System.nanoTime() - beginTime) / 1e9;
+            double elapsedMilliseconds = (System.nanoTime() - beginTime) / 1e6;
+            double elapsedSeconds =  elapsedMilliseconds / 1e3;
 
             for (Consumer<SearchUpdate> callback : CallbacksOnIter) {
                 callback.accept(new SearchUpdate(
@@ -96,7 +97,8 @@ public class AlphaBetaSearchTree extends ISearchTree {
                         _rootSelDepth,
                         _nodesSearched,
                         generatePv(),
-                        (long) (_nodesSearched / elapsedSeconds)));
+                        (long)(_nodesSearched / elapsedSeconds),
+                        (long)elapsedMilliseconds));
             }
         }
 
