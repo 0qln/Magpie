@@ -16,4 +16,6 @@ public class SearchLimit {
     wtime = -1, btime = -1, winc = 0, binc = 0, movetime = -1;
     // game tree
     public MoveList searchmoves = null;
+
+    public boolean capturesOnly;
 }
