@@ -1,11 +1,14 @@
 package Interface;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+
 import Engine.PieceUtil;
 import Interface.Command.*;
 import Misc.Ptr;
 
 /*
- * piece [get <square> | add <square> <piece> | remove <square> ]
+ * piece [get <square0> ... <squaren> | add <square> <piece> | remove <square0> ... <squaren>  ]
  */
 public class PieceCommand extends Command {
 
@@ -22,9 +25,13 @@ public class PieceCommand extends Command {
         switch (args[0]) {
             case "add":
                 params_put("piece", PieceUtil.fromChar(args[2].charAt(0)));
+                params_put(args[0], Misc.Utils.toSquareIndex(args[1]));
+                break;
             case "remove":
             case "get":
-                params_put(args[0], Misc.Utils.toSquareIndex(args[1]));
+                params_put(args[0], Misc.Utils.select(
+                        Arrays.copyOfRange(args, 1, args.length),
+                        square -> Misc.Utils.toSquareIndex(square)));
                 break;
         }
 
@@ -37,11 +44,14 @@ public class PieceCommand extends Command {
             _state.board.get().addPiece(params_get("add"), params_get("piece"));
         }
         if (params_get("remove") != null) {
-            _state.board.get().removePiece(params_get("remove"));
+            ArrayList<Integer> a = params_get("remove");
+            for (Integer square : a)
+                _state.board.get().removePiece(square);
         }
         if (params_get("get") != null) {
-            int sq = params_get("get");
-            new SquareInfoResponse(sq, ""+PieceUtil.toChar(_state.board.get().getPieceID(sq))).send();
+            ArrayList<Integer> a = params_get("remove");
+            for (Integer square : a)
+                new SquareInfoResponse(square, "" + PieceUtil.toChar(_state.board.get().getPieceID(square))).send();
         }
     }
 
