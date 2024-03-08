@@ -28,7 +28,7 @@ public class InfoCommand extends Command {
         Engine.Board board = _state.board.getAs();
         
         if (params_getB("eval")) {
-            new TextResponse(new StaticEvaluator(board).evaluate(Engine.Color.White)).send();
+            new TextResponse(StaticEvaluator.evaluate(board, Engine.Color.White)).send();
         }
 
         if (params_getB("castling")) {
@@ -50,7 +50,7 @@ public class InfoCommand extends Command {
         }
 
         if (params_getB("phase")) {
-            new TextResponse("Phase: " + StaticEvaluator.phase(board) + "/32").send();
+            new TextResponse("Phase: " + StaticEvaluator.phase(board) + "/" + StaticEvaluator.PHASE_MAX).send();
         }
 
         if (params_getB("bitboards")) {

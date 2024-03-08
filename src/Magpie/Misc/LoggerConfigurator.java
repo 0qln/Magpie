@@ -4,7 +4,36 @@ import java.io.IOException;
 import java.util.logging.*;
 
 public class LoggerConfigurator {
+
+    // TODO: singleton mechanism, such that this can only be set on program startup
+    public static boolean loggingEnabled = true; 
+
+    private static Logger nullLogger = Logger.getLogger(LoggerConfigurator.class.getName());
+
+    static {
+        nullLogger.setUseParentHandlers(false);
+        nullLogger.addHandler(new NullHandler());
+    }
+
+    private static class NullHandler extends Handler {
+        @Override
+        public void publish(LogRecord record) {
+        }
+
+        @Override
+        public void flush() {
+        }
+
+        @Override
+        public void close() throws SecurityException {
+        }
+    }
+
     public static Logger configureLogger(Class<?> clazz) {
+        if (!loggingEnabled) {
+            return nullLogger;
+        }
+
         String logFileName = clazz + "_log.txt";
         Logger logger = Logger.getLogger(clazz.getName());
         try {

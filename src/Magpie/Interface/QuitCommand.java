@@ -3,6 +3,10 @@ package Interface;
 
 public class QuitCommand extends Command
 {
+    public QuitCommand() {
+        _forceSync = true;
+    }
+
     static {
         Signature.register("quit", QuitCommand.class, new Builder<>(() -> new QuitCommand()));
     }
@@ -13,7 +17,6 @@ public class QuitCommand extends Command
     }
 
     public void run() {
-
-        System.exit(0);
+        Interface.Main.quit();
     }
 }

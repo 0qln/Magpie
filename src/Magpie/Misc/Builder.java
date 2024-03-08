@@ -8,6 +8,9 @@ import java.lang.reflect.Field;
 
 public abstract class Builder<T> {
 
+    // TODO: singleton mechanism, such that this can only be set on program startup
+    public static boolean unsafe = false;
+
     @Retention(RetentionPolicy.RUNTIME)
     @Target(ElementType.FIELD)
     protected static @interface NotRequired {
@@ -43,7 +46,7 @@ public abstract class Builder<T> {
     }
 
     public final T build() throws FieldNotSetException {
-        return build(true);
+        return build(unsafe);
     }
 
     /**

@@ -16,7 +16,6 @@ public class AlphaBetaSearchTree extends ISearchTree {
     public List<Consumer<SearchResult>> CallbacksOnStop = new ArrayList<>();
     public List<Consumer<SearchUpdate>> CallbackOnRootmove = new ArrayList<>();
 
-    private StaticEvaluator _staticEval;
     private final Board _board;
     private final MoveList _rootMoves;
     private final int[] _rootScores;
@@ -32,7 +31,6 @@ public class AlphaBetaSearchTree extends ISearchTree {
 
     public AlphaBetaSearchTree(Board board) {
         this._board = board;
-        this._staticEval = new StaticEvaluator(board);
         this._rootMoves = MoveList.legal(board, false);
         this._rootScores = new int[_rootMoves.length()];
         Arrays.fill(_rootScores, -StaticEvaluator.Infinity);
@@ -163,14 +161,6 @@ public class AlphaBetaSearchTree extends ISearchTree {
         for (int i = 0; i < _rootMoves.length(); i++) {
             short move = _rootMoves.get(i);
 
-            // Distribute updates
-            for (Consumer<SearchUpdate> callback : CallbackOnRootmove) {
-                callback.accept(new SearchUpdate(
-                        _rootDepth,
-                        move,
-                        i));
-            }
-
             Line line = new Line(move);
             Line cline = new Line(move);
             currline.set(cline);
@@ -178,6 +168,17 @@ public class AlphaBetaSearchTree extends ISearchTree {
             _board.makeMove(move);
             _rootScores[i] = -search(depth - 1, alpha, beta, line, cline, 1);
             _board.undoMove(move);
+
+            // Too much traffic for UCI on lower depths
+            // TODO: make this relative on the time the last iteration took
+            if (depth >= 6)
+                // Distribute updates
+                for (Consumer<SearchUpdate> callback : CallbackOnRootmove) {
+                    callback.accept(new SearchUpdate(
+                            _rootDepth,
+                            move,
+                            i));
+                }
 
             if (_rootScores[i] >= bestScore) {
                 bestScore = _rootScores[i];
@@ -278,7 +279,7 @@ public class AlphaBetaSearchTree extends ISearchTree {
         // Because of the Null Move Observation we can assume that doing nothing will
         // always be worse than doing some capture.
         // => Use the static evaluation as a lower bound for this node.
-        int score = _staticEval.evaluate(_board.getTurn());
+        int score = StaticEvaluator.evaluate(_board, _board.getTurn());
 
         // If the static evaluation of this position is already better or equal to the
         // last known best capture of a sibling node.

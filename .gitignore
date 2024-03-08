@@ -1,3 +1,9 @@
+# Releases
+*.exe
+
+# Benchmarks
+*.pgn
+
 # Compiled class file
 *.class
 

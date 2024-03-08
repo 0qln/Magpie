@@ -40,8 +40,6 @@ public class SearchTree {
 
     private Board _board;
 
-    private StaticEvaluator _staticEval;
-
     private AspirationWindow _rootWindow;
     private int _rootDepth;
     private MoveList _rootMoves;
@@ -49,7 +47,6 @@ public class SearchTree {
     public SearchTree(Board board) {
         this._board = board;
         this._rootMoves = MoveList.legal(board, false);
-        this._staticEval = new StaticEvaluator(board);
         this._rootWindow = new AspirationWindow(StaticEvaluator.Infinity);
     }
 

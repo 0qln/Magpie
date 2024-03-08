@@ -51,6 +51,7 @@ public abstract class Command extends ICommand {
 
     private static final Hashtable<String, Signature<?>> _commands = new Hashtable<String, Signature<?>>();
 
+    protected boolean _forceSync = false;
     protected Misc.ProgramState _state;
     protected String[] _args;
     protected boolean _canRun;
@@ -155,6 +156,10 @@ public abstract class Command extends ICommand {
         public <T> T as(int index) {
             return (T) values[index];
         }
+    }
+
+    public final boolean shouldSync() {
+        return _forceSync;
     }
 
     public final void runAsync() {

@@ -5,10 +5,14 @@ import java.util.logging.Logger;
 
 import Misc.LoggerConfigurator;
 
-
 public final class Main {
+
+    // MACRO
+    private static final boolean DEBUG = true;
+
     static {
-        // Fuck java
+        // java doesnt execute the static initializers without 
+        // the contructor being called atleast once...
         new UciCommand();
         new IsreadyCommand();
         new PositionCommand();
@@ -21,25 +25,33 @@ public final class Main {
         new StopCommand();
     }
 
+    private static boolean _quitFlag = false;
+    private static Scanner _scanner;
+    private static Logger _logger;
+
     public static void quit() {
         _quitFlag = true;
-        
+        _scanner.close();
     }
-    private static boolean _quitFlag = false;
-    private static Scanner scanner = new Scanner(System.in);
-    private static Logger logger = LoggerConfigurator.configureLogger(Main.class);
 
     public static void main(String[] args) throws Misc.Builder.FieldNotSetException {
-        scanner.useDelimiter("\n");
+        if (!DEBUG) {
+            LoggerConfigurator.loggingEnabled = false;
+            Misc.Builder.unsafe = true;
+        }
+
+        _logger = LoggerConfigurator.configureLogger(Main.class);
+        _scanner = new Scanner(System.in);
+        _scanner.useDelimiter("\n");
         Misc.ProgramState state = new Misc.ProgramState();
         state.board.set(new Engine.Board.Builder().build());
 
         // Set up startposition
         handleInput("position startpos", state);
 
-        while (true) {
-            String input = scanner.next();
-            logger.info("Input: " + input);
+        while (_quitFlag == false) {
+            String input = _scanner.next();
+            _logger.info("Input: " + input);
             handleInput(input, state);
         }
     }
@@ -49,11 +61,14 @@ public final class Main {
                 // UCI:: The engine must always be able to process input from stdin, even while
                 // thinking.
                 builder -> {
-                    logger.info("Command builder: " + builder.getClass().getName());
+                    _logger.info("Command builder: " + builder.getClass().getName());
                     ICommand command = builder.buildForBoard(state);
-                    logger.info("Command : " + command.getClass().getName());
+                    _logger.info("Command : " + command.getClass().getName());
                     if (command.canRun()) {
-                        command.runAsync();
+                        if (command.shouldSync())
+                            command.run();
+                        else
+                            command.runAsync();
                     }
                 });
     }

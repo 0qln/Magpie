@@ -10,17 +10,16 @@ public final class Config {
     public static boolean Debug = false;
     
     public static final Interface.Option<?>[] UCI_Options = {
-        new Interface.Option<Opponent>("UCI_Opponent", OptionType.String, Opponent.getDefault(), Optional.empty(), Optional.empty(), Optional.empty(), 
-            rawData -> {
-                // TODO: make this safe
-                if (rawData.length < 4) return Optional.empty();
-                return Optional.of(new Opponent(
-                    String.join(" ", Arrays.copyOfRange(rawData, 3, rawData.length)), 
-                    Title.parse(rawData[0]), 
-                    rawData[1].equals("none") ? Optional.empty() : Optional.of(Integer.parseInt(rawData[0])),
-                    EntityType.parse(rawData[2])
-                ));
-            })
+        // new Interface.Option<Opponent>("UCI_Opponent", OptionType.String, Opponent.getDefault(), Optional.empty(), Optional.empty(), Optional.empty(), 
+        //     rawData -> {
+        //         if (rawData.length < 4) return Optional.empty();
+        //         return Optional.of(new Opponent(
+        //             String.join(" ", Arrays.copyOfRange(rawData, 3, rawData.length)), 
+        //             Title.parse(rawData[0]), 
+        //             rawData[1].equals("none") ? Optional.empty() : Optional.of(Integer.parseInt(rawData[0])),
+        //             EntityType.parse(rawData[2])
+        //         ));
+        //     })
     };
  
     @SuppressWarnings("unchecked")
