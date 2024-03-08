@@ -36,7 +36,6 @@ public class InfoCommand extends Command {
         }
 
         if (params_getB("check")) {
-
             new TextResponse("Checkers: ").send();
             long[] checkers = { board.getCheckers() };
             new BitboardResponse(checkers).send();
@@ -48,6 +47,10 @@ public class InfoCommand extends Command {
 
             new TextResponse("Check blockers: ").send();
             new BitboardResponse(board.getBlockers()).send();
+        }
+
+        if (params_getB("phase")) {
+            new TextResponse("Phase: " + StaticEvaluator.phase(board) + "/32").send();
         }
 
         if (params_getB("bitboards")) {
