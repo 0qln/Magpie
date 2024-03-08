@@ -17,6 +17,11 @@ public class QuitCommand extends Command
     }
 
     public void run() {
+        if (_state.search.isNull()) {
+            return;
+        }
+        _state.search.get().stop();
+        _state.search.set(null);
         Interface.Main.quit();
     }
 }
