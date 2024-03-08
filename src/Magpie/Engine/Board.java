@@ -27,15 +27,15 @@ public class Board implements IBoard {
     // Game ply
     private int _ply;
 
-    public long perft(int depth, BiConsumer<Short, Long> callback) {
+    public long perft(int depth, BiConsumer<Short, Long> callback, SearchLimit limit) {
         if (depth == 0) {
             return 1;
         }
 
         long moveC = 0, c;
-        for (short move : MoveList.legal(this, false).getMoves()) {
+        for (short move : MoveList.legal(this, limit.capturesOnly).getMoves()) {
             makeMove(move);
-            moveC += (c = perft(depth - 1));
+            moveC += (c = perft(depth - 1, limit));
             callback.accept(move, c);
             undoMove(move);
         }
@@ -43,15 +43,15 @@ public class Board implements IBoard {
         return moveC;
     }
 
-    public long perft(int depth) {
+    public long perft(int depth, SearchLimit limit) {
         if (depth == 0) {
             return 1;
         }
 
         long moveC = 0;
-        for (short move : MoveList.legal(this, false).getMoves()) {
+        for (short move : MoveList.legal(this, limit.capturesOnly).getMoves()) {
             makeMove(move);
-            moveC += perft(depth - 1);
+            moveC += perft(depth - 1, limit);
             undoMove(move);
         }
 

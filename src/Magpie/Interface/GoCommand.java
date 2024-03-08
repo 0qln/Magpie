@@ -55,6 +55,8 @@ public class GoCommand extends Command {
 
                 case "perft":
                     limit.depth = Integer.parseInt(nextToken);
+                    if (i < args.length)
+                        limit.capturesOnly = Boolean.parseBoolean(args[i+1]);
                 case "infinite":
                 case "ponder":
                     params_put(currentToken, true);
@@ -77,7 +79,7 @@ public class GoCommand extends Command {
             // execute perft
             long c = board.perft(limit.depth, (move, count) -> {
                 new TextResponse(Engine.Move.toString(move) + ": " + count).send();
-            });
+            }, limit);
             new TextResponse("Nodes searched: " + c).send();
 
         } else if (!(params_get("ponder") == null)) {
@@ -98,6 +100,7 @@ public class GoCommand extends Command {
                     .nodes(su.nodes)
                     .nps(su.nps)
                     .pv(su.pvline, board.getMoveEncoder())
+                    .time(su.time)
                     .build()
                     .send(); 
             });
