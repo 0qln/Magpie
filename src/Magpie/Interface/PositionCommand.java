@@ -1,6 +1,5 @@
 package Interface;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 
 public class PositionCommand extends Command {
@@ -55,15 +54,11 @@ public class PositionCommand extends Command {
                     _lastPosition.moves.length == moves.length - 1
                 )) {
 
-            System.out.println("SETUP APPEND");
-
             // Only make the last moves that were added
             for (int i = _lastPosition.moves.length; i < moves.length; i++)
                 _state.board.get().makeMove(_state.board.get().getMoveDecoder().decode(moves[i]));
 
         } else {
-
-            System.out.println("SETUP NEW");
             
             // Set up position
             _state.board.set(_state.board.get()
