@@ -349,8 +349,10 @@ public class AlphaBetaSearchTree extends ISearchTree {
         for (int i = 0; i < scores.length; i++) {
             short move = moves.get(i);
 
+            // TODO: killer moves
+
             // MVV-LVA
-            if (Move.isCapture(move)) {
+            if (Move.isCapture(Move.getFlag(move))) {
                 int victimType = PieceUtil.getType(_board.getPieceID(Move.getTo(move)));
                 int agressorType = PieceUtil.getType(_board.getPieceID(Move.getFrom(move)));
                 scores[i] = 100 * victimType - agressorType;

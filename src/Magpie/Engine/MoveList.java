@@ -197,7 +197,7 @@ public class MoveList {
     }
 
     /**
-     * Sort the internal move array and `keys` parameter according to the keys.
+     * Sort the internal move array and `keys` parameter according to the keys in descending order.
      * 
      * @param keys The keys that represent the sort order.
      */
