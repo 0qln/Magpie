@@ -53,8 +53,7 @@ public class GoCommand extends Command {
 
                 case "perft":
                     limit.depth = Integer.parseInt(nextToken);
-                    if (i < args.length)
-                        limit.capturesOnly = Boolean.parseBoolean(args[i+1]);
+                    if (i >= args.length) limit.capturesOnly = Boolean.parseBoolean(args[i+1]);
                 case "infinite":
                 case "ponder":
                     params_put(currentToken, true);
