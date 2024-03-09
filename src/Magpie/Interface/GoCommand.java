@@ -91,6 +91,7 @@ public class GoCommand extends Command {
             // execute search
             Engine.AlphaBetaSearchTree search = new Engine.AlphaBetaSearchTree(board);
             _state.search.set(search);
+
             search.CallbacksOnIter.add(su -> {
                 new InfoResponse.Builder()
                     .depth(su.depth)
@@ -99,8 +100,8 @@ public class GoCommand extends Command {
                     .score(su.eval, ScoreType.CentiPawns) // TODO: handle other score types
                     .nodes(su.nodes)
                     .nps(su.nps)
-                    .pv(su.pvline, board.getMoveEncoder())
                     .time(su.time)
+                    .pv(su.pvline, board.getMoveEncoder())
                     .build()
                     .send(); 
             });
@@ -118,8 +119,8 @@ public class GoCommand extends Command {
                     .build()
                     .send();
             });
-            search.begin(limit);
 
+            search.begin(limit);
         }
     }
 

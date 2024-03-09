@@ -4,6 +4,10 @@ import Misc.Ptr;
 
 public class IsreadyCommand extends Command
 {
+    public IsreadyCommand() {
+        _forceSync = true;
+    }
+
     static {
         Signature.register("isready", IsreadyCommand.class, new Builder<>(() -> new IsreadyCommand()));
     }

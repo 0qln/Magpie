@@ -23,6 +23,7 @@ public final class Main {
         new PrintCommand();
         new QuitCommand();
         new StopCommand();
+        new UciNewGameCommand();
     }
 
     private static boolean _quitFlag = false;
@@ -35,19 +36,13 @@ public final class Main {
     }
 
     public static void main(String[] args) throws Misc.Builder.FieldNotSetException {
-        if (!DEBUG) {
-            LoggerConfigurator.loggingEnabled = false;
-            Misc.Builder.unsafe = true;
-        }
+        LoggerConfigurator.loggingEnabled = DEBUG;
+        Misc.Builder.unsafe = !DEBUG;
 
         _logger = LoggerConfigurator.configureLogger(Main.class);
         _scanner = new Scanner(System.in);
         _scanner.useDelimiter("\n");
         Misc.ProgramState state = new Misc.ProgramState();
-        state.board.set(new Engine.Board.Builder().build());
-
-        // Set up startposition
-        handleInput("position startpos", state);
 
         while (_quitFlag == false) {
             String input = _scanner.next();

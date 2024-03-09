@@ -6,7 +6,7 @@ import java.util.logging.*;
 public class LoggerConfigurator {
 
     // TODO: singleton mechanism, such that this can only be set on program startup
-    public static boolean loggingEnabled = true; 
+    public static boolean loggingEnabled = false; 
 
     private static Logger nullLogger = Logger.getLogger(LoggerConfigurator.class.getName());
 

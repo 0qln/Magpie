@@ -13,7 +13,7 @@ public class BestMoveResponse extends Response {
     protected void executeSend() {
         StringBuilder result = new StringBuilder();
         result.append("bestmove ").append(_move).append(' ');
-        if (_ponder != null) result.append(" ponder ").append(_ponder);
+        if (_ponder != null) result.append("ponder ").append(_ponder);
         System.out.println(result.toString());
     }
 

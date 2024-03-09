@@ -49,7 +49,7 @@ public class AlphaBetaSearchTree extends ISearchTree {
         long time = _board.getTurn() == Color.White ? limit.wtime : limit.btime;
         _timePerMove = limit.movetime != -1 ? limit.movetime * 100 : time != -1 ? (time / 40 + inc) * 1000000 : -1;
 
-        _logger.info("Time per move");
+        _logger.info("Time per move: " + _timePerMove);
 
         // Initiate search space limit
         _maxNodes = limit.nodes;
@@ -80,11 +80,15 @@ public class AlphaBetaSearchTree extends ISearchTree {
 
             // If the search didn't finish, it cannot be trusted and should be discarded.
             if (_stopFlag) {
+                // We have to ensure that there is atleast some pv move that can be returned
+                _pv = pv.get();
+                _rootMoves.sort(_rootScores);
+
+                // Stop the iterative deepening
                 break;
             }
 
             _pv = pv.get();
-
             _rootMoves.sort(_rootScores);
 
             double elapsedMilliseconds = (System.nanoTime() - beginTime) / 1e6;
@@ -173,7 +177,7 @@ public class AlphaBetaSearchTree extends ISearchTree {
 
             // Too much traffic for UCI on lower depths
             // TODO: make this relative on the time the last iteration took
-            if (depth >= 6)
+            if (_rootDepth >= 6)
                 // Distribute updates
                 for (Consumer<SearchUpdate> callback : CallbackOnRootmove) {
                     callback.accept(new SearchUpdate(
@@ -196,13 +200,12 @@ public class AlphaBetaSearchTree extends ISearchTree {
         checkTime();
         checkSearchSpace();
 
-        if (_stopFlag) {
+        if (_stopFlag) 
             return 0;
-        }
-
-        if (depth <= 0) {
-            return quiescent(alpha, beta, parentPV, currline, ply);
-        }
+        
+        if (depth <= 0) 
+            return quiescent(alpha, beta, ply);
+        
 
         // Initiate node vars
         int bestScore = -StaticEvaluator.Infinity, score = bestScore;
@@ -267,7 +270,7 @@ public class AlphaBetaSearchTree extends ISearchTree {
         return bestScore;
     }
 
-    private int quiescent(int alpha, int beta, Line parentPV, Line currline, int ply) {
+    private int quiescent(int alpha, int beta, int ply) {
         _nodesSearched++;
 
         // Check limits
@@ -309,15 +312,12 @@ public class AlphaBetaSearchTree extends ISearchTree {
         // Play out all captures. We want a quiet position to evaluate.
         for (int i = 0; i < moves.length(); i++) {
             short move = moves.get(i);
-            Line line = new Line(move);
-            Line cline = new Line(move);
-            currline.update(cline);
 
             // Make move
             _board.makeMove(move);
 
             // Quiscent evaluation.
-            score = -quiescent(-beta, -alpha, line, cline, ply + 1);
+            score = -quiescent(-beta, -alpha, ply + 1);
 
             // Undo move
             _board.undoMove(move);
@@ -329,7 +329,6 @@ public class AlphaBetaSearchTree extends ISearchTree {
             // Raise alpha (and update PV?)
             if (score > alpha) {
                 alpha = score;
-                parentPV.update(line);
             }
         }
 

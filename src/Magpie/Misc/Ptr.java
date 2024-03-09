@@ -1,7 +1,7 @@
 package Misc;
 
 public class Ptr <T> {
-    private T _instance;
+    private T _instance = null;
 
     public Ptr(T instance) {
         this._instance = instance;
