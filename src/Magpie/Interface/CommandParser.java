@@ -43,6 +43,8 @@ public class CommandParser {
         final Interface.Command.Signature<?> command = commandIter;
         final String[] args = getArguments(processedInput);
 
+        logger.info("Command: " + command.protocolName);
+
         return Optional.of(state -> {
             return command.commandBuilder
                     .state(state)
