@@ -2,8 +2,6 @@ package Interface;
 
 import java.util.Arrays;
 
-import Misc.Utils;
-
 public class GoCommand extends Command {
 
     static {
@@ -92,7 +90,7 @@ public class GoCommand extends Command {
             Engine.AlphaBetaSearchTree search = new Engine.AlphaBetaSearchTree(board);
             _state.search.set(search);
 
-            search.CallbacksOnIter.add(su -> {
+            search.onNewIDIteration.register(su -> {
                 new InfoResponse.Builder()
                     .depth(su.depth)
                     .seldepth(su.seldepth)
@@ -105,13 +103,13 @@ public class GoCommand extends Command {
                     .build()
                     .send(); 
             });
-            search.CallbacksOnStop.add(sr -> {
+            search.onSearchStopped.register(sr -> {
                 new BestMoveResponse(
                     Engine.Move.toString(sr.bestMove), 
                     sr.ponderMove == Engine.Move.None ? null : Engine.Move.toString(sr.ponderMove))
                     .send();
             });
-            search.CallbackOnRootmove.add(su -> {
+            search.onNewRootMoveSearch.register(su -> {
                 new InfoResponse.Builder()
                     .depth(su.depth)
                     .currmove(su.currmove, board.getMoveEncoder())

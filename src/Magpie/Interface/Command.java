@@ -2,14 +2,9 @@ package Interface;
 
 import java.util.Hashtable;
 
-import Misc.Ptr;
-
 // https://github.com/official-stockfish/Stockfish/wiki/UCI-&-Commands#standard-commands
 
 public abstract class Command extends ICommand {
-
-    // Java does not load the static init if the class is not explicitly mentioned.
-    // >:(
 
     public static class Signature<TCommand extends Command> {
         public final String protocolName;
@@ -79,10 +74,6 @@ public abstract class Command extends ICommand {
         return false;
     }
 
-    public boolean canRun() {
-        return _canRun;
-    }
-
     // // Technically this is unneccesary, but it forces each command to register
     // // itself, or else it is impossible to create such command. (Debugging)
     // protected Command(Signature<?> callerCommand) {
@@ -135,34 +126,24 @@ public abstract class Command extends ICommand {
 
     }
 
-    public static class Parameter {
-        public String name;
-        public Object[] values;
-
-        public Parameter(String name, Object value) {
-            this.name = name;
-            this.values = new Object[] { value };
-        }
-
-        public Parameter(String name, Object[] values) {
-            this.values = values;
-            this.name = name;
-        }
-
-        public <T> T as() {
-            return (T) values[0];
-        }
-
-        public <T> T as(int index) {
-            return (T) values[index];
-        }
-    }
-
+    @Override
     public final boolean shouldSync() {
         return _forceSync;
     }
 
+    @Override
     public final void runAsync() {
         new Thread(this, "").start();
     }
+
+    @Override
+    public final void runSync() {
+        run();
+    }
+
+    @Override
+    public boolean canRun() {
+        return _canRun;
+    }
+
 }

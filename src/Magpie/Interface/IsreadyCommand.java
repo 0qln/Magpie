@@ -1,7 +1,5 @@
 package Interface;
 
-import Misc.Ptr;
-
 public class IsreadyCommand extends Command
 {
     public IsreadyCommand() {

@@ -2,8 +2,6 @@ package Engine;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
-import java.util.function.Consumer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -11,10 +9,14 @@ import Misc.Ptr;
 
 public class AlphaBetaSearchTree extends ISearchTree {
 
-    // On each search result, iterate these and distribute the result of the search.
-    public List<Consumer<SearchUpdate>> CallbacksOnIter = new ArrayList<>();
-    public List<Consumer<SearchResult>> CallbacksOnStop = new ArrayList<>();
-    public List<Consumer<SearchUpdate>> CallbackOnRootmove = new ArrayList<>();
+    private final Event.Dispatcher<SearchUpdate> onNewRootMoveSearchDispatcher = new Event.Dispatcher<>();
+    public final Event<SearchUpdate> onNewRootMoveSearch = new Event<>(onNewRootMoveSearchDispatcher);
+
+    private final Event.Dispatcher<SearchResult> onSearchStoppedDispatcher = new Event.Dispatcher<>();
+    public final Event<SearchResult> onSearchStopped = new Event<>(onSearchStoppedDispatcher);
+
+    private final Event.Dispatcher<SearchUpdate> onNewIDIterationDispatcher = new Event.Dispatcher<>();
+    public final Event<SearchUpdate> onNewIDIteration = new Event<>(onNewIDIterationDispatcher);
 
     private final Board _board;
     private final MoveList _rootMoves;
@@ -80,30 +82,32 @@ public class AlphaBetaSearchTree extends ISearchTree {
 
             // If the search didn't finish, it cannot be trusted and should be discarded.
             if (_stopFlag) {
-                // We have to ensure that there is atleast some pv move that can be returned
-                _pv = pv.get();
-                _rootMoves.sort(_rootScores);
+                // We have to ensure that there is atleast some pv move that can be returned if
+                // the first search didn't finish.
+                if (_rootDepth == 1) {
+                    _pv = pv.get();
+                    _rootMoves.sort(_rootScores);
+                }
 
-                // Stop the iterative deepening
+                // Stop the iterative deepening search.
                 break;
             }
 
+            // Prepare for next iteration.
             _pv = pv.get();
             _rootMoves.sort(_rootScores);
 
-            double elapsedMilliseconds = (System.nanoTime() - beginTime) / 1e6;
-            double elapsedSeconds =  elapsedMilliseconds / 1e3;
-
-            for (Consumer<SearchUpdate> callback : CallbacksOnIter) {
-                callback.accept(new SearchUpdate(
-                        _rootScores[0] * (_board.getTurn() * -2 + 1),
-                        _rootDepth,
-                        _rootSelDepth,
-                        _nodesSearched,
-                        generatePv(),
-                        (long)(_nodesSearched / elapsedSeconds),
-                        (long)elapsedMilliseconds));
-            }
+            // Call each callback
+            final double elapsedMilliseconds = (System.nanoTime() - beginTime) / 1e6;
+            final double elapsedSeconds = elapsedMilliseconds / 1e3;
+            onNewIDIterationDispatcher.dispatch(() -> new SearchUpdate(
+                    _rootScores[0] * (_board.getTurn() * -2 + 1),
+                    _rootDepth,
+                    _rootSelDepth,
+                    _nodesSearched,
+                    generatePv(),
+                    (long) (_nodesSearched / elapsedSeconds),
+                    (long) elapsedMilliseconds));
         }
 
         _logger.info("Search finished.");
@@ -152,20 +156,18 @@ public class AlphaBetaSearchTree extends ISearchTree {
 
         // Distribute results
         short[] pv = generatePv();
-        for (Consumer<SearchResult> callback : CallbacksOnStop) {
-            callback.accept(new SearchResult(
-                    // The best move is the pv move at our depth
-                    pv[0],
-                    // Ponder on the best response of the enemy
-                    pv.length > 1 ? pv[1] : Move.None));
-        }
+        onSearchStoppedDispatcher.dispatch(() -> new SearchResult(
+                // The best move is the pv move at our depth
+                pv[0],
+                // Ponder on the best response of the enemy
+                pv.length > 1 ? pv[1] : Move.None));
     }
 
     private void rootNode(int depth, int alpha, int beta, Ptr<Line> pv, Ptr<Line> currline) {
         int bestScore = -StaticEvaluator.Infinity;
 
         for (int i = 0; i < _rootMoves.length(); i++) {
-            short move = _rootMoves.get(i);
+            final short move = _rootMoves.get(i);
 
             Line line = new Line(move);
             Line cline = new Line(move);
@@ -177,14 +179,12 @@ public class AlphaBetaSearchTree extends ISearchTree {
 
             // Too much traffic for UCI on lower depths
             // TODO: make this relative on the time the last iteration took
+            final int moveIndex = i;
             if (_rootDepth >= 6)
-                // Distribute updates
-                for (Consumer<SearchUpdate> callback : CallbackOnRootmove) {
-                    callback.accept(new SearchUpdate(
-                            _rootDepth,
-                            move,
-                            i));
-                }
+                onNewRootMoveSearchDispatcher.dispatch(() -> new SearchUpdate(
+                        _rootDepth,
+                        move,
+                        moveIndex));
 
             if (_rootScores[i] >= bestScore) {
                 bestScore = _rootScores[i];
@@ -200,12 +200,11 @@ public class AlphaBetaSearchTree extends ISearchTree {
         checkTime();
         checkSearchSpace();
 
-        if (_stopFlag) 
+        if (_stopFlag)
             return 0;
-        
-        if (depth <= 0) 
+
+        if (depth <= 0)
             return quiescent(alpha, beta, ply);
-        
 
         // Initiate node vars
         int bestScore = -StaticEvaluator.Infinity, score = bestScore;
@@ -220,10 +219,9 @@ public class AlphaBetaSearchTree extends ISearchTree {
                 // We have no more moves and are in check
                 // => We are checkmated
                 return -StaticEvaluator.Checkmate
-                // To promote the earliest checkmate, add
-                // a bonus for shallower mates.
-                - depth
-                ;
+                        // To promote the earliest checkmate, add
+                        // a bonus for shallower mates.
+                        - depth;
             }
             // We have no more moves, but are not in check
             // => Stalemate
