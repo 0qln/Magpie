@@ -31,7 +31,9 @@ public final class Utils
     }
 
     public static int lerp(int v0, int v1, int t, int tMax) {
-        return ((tMax - t) * v0 + t * v1) / tMax;
+        assert(t >= 0 && t <= tMax);
+        int ret = ((tMax - t) * v0 + t * v1) / tMax;
+        return ret;
     }
 
 

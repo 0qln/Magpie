@@ -220,7 +220,7 @@ public final class StaticEvaluator {
         int result = 0;
         for (int pt = PieceType.Knight; pt <= PieceType.Queen; pt++)
             result += PHASE_VALUES[pt] * countBits(board.getTBitboard(pt));
-        return result;
+        return PHASE_MAX - result;
     }
 
     public final static int taper(int phase, int mg, int eg) {

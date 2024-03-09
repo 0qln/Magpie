@@ -28,7 +28,10 @@ public class InfoCommand extends Command {
         Engine.Board board = _state.board.getAs();
         
         if (params_getB("eval")) {
-            new TextResponse(StaticEvaluator.evaluate(board, Engine.Color.White)).send();
+            new TextResponse("Tapered evaluation: "+ StaticEvaluator.evaluate(board, Engine.Color.White)).send();
+            new TextResponse("Middlegame evaluation: "+ StaticEvaluator.evaluate(board, Engine.Color.White, StaticEvaluator.PHASE_MG)).send();
+            new TextResponse("Endgame evaluation: "+ StaticEvaluator.evaluate(board, Engine.Color.White, StaticEvaluator.PHASE_EG)).send();
+            new TextResponse("Phase: "+ StaticEvaluator.phase(board)+"/"+StaticEvaluator.PHASE_MAX).send();
         }
 
         if (params_getB("castling")) {
