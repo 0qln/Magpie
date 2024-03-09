@@ -219,7 +219,7 @@ public class AlphaBetaSearchTree extends ISearchTree {
                 return -StaticEvaluator.Checkmate
                 // To promote the earliest checkmate, add
                 // a bonus for shallower mates.
-                // - depth
+                - depth
                 ;
             }
             // We have no more moves, but are not in check
