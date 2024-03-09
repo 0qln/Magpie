@@ -23,6 +23,7 @@ public final class Main {
         new QuitCommand();
         new StopCommand();
         new UciNewGameCommand();
+        new TestCommand();
     }
 
     private static boolean _quitFlag = false;
