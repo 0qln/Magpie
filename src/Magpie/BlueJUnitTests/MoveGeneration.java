@@ -57,7 +57,9 @@ public class MoveGeneration {
                 .fen(fen)
                 .build();
 
-        long perftResult = b.perft(5);
+        Engine.SearchLimit limit = new Engine.SearchLimit();
+        limit.capturesOnly = false;
+        long perftResult = b.perft(5, limit);
 
         assertEquals(excpected, perftResult);
     }
