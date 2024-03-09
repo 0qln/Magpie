@@ -194,6 +194,7 @@ public class AlphaBetaSearchTree extends ISearchTree {
     }
 
     private int search(int depth, int alpha, int beta, Line parentPV, Line currline, int ply) {
+        // Increment node counter.
         _nodesSearched++;
 
         // Check limits
@@ -269,7 +270,11 @@ public class AlphaBetaSearchTree extends ISearchTree {
     }
 
     private int quiescent(int alpha, int beta, int ply) {
+        // Increment node counter.
         _nodesSearched++;
+
+        // Raise the selective depth to the maximum depth.
+        _rootSelDepth = Math.max(ply, _rootSelDepth);
 
         // Check limits
         checkTime();
@@ -329,9 +334,6 @@ public class AlphaBetaSearchTree extends ISearchTree {
                 alpha = score;
             }
         }
-
-        // => Raise the selective depth to the maximum depth.
-        _rootSelDepth = Math.max(ply, _rootSelDepth);
 
         // We are interested in tactical moves that increase alpha, if the moves that
         // lead resulted in either [ the static eval of this position | the tactical
