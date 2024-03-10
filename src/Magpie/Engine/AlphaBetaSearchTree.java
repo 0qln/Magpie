@@ -52,6 +52,7 @@ public class AlphaBetaSearchTree extends ISearchTree {
         _timePerMove = limit.movetime != -1 ? limit.movetime * 100 : 
                 time != -1 
                         ? (time / 50 + inc) * 1000000 
+                        ? (time / 30 + inc) * 1000000 
                         : -1;
 
         _logger.info("Time per move: " + _timePerMove);
@@ -207,6 +208,10 @@ public class AlphaBetaSearchTree extends ISearchTree {
         if (_stopFlag)
             return 0;
 
+        // Three fold repitition
+        if (_board.hasThreeFoldRepitition())
+            return StaticEvaluator.Draw;
+        
         if (depth <= 0)
             return quiescent(alpha, beta, ply);
 
