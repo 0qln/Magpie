@@ -81,7 +81,7 @@ public class MoveList {
             final int from = Move.getFrom(move), to = Move.getTo(move), flag = Move.getFlag(move);
             final int movingP = board.getPieceID(from);
             final int us = board.getTurn(), nus = Color.NOT(us);
-            final long kingBB = board.getBitboard(PieceType.King, us);
+            final long kingBB = board.getBitboard(King.ID_Type, us);
             final long nstm = board.getNstmAttacks();
 
             // 1. En passant
@@ -94,11 +94,11 @@ public class MoveList {
 
                 // From perspective of the king, check if he is attacked
                 if (
-                    (Rook.generator.attacks(kingSquare, occupationAfterEpCapture) & (board.getBitboard(PieceType.Rook, nus) |
-                                                                                     board.getBitboard(PieceType.Queen, nus)))  != 0
+                    (Rook.generator.attacks(kingSquare, occupationAfterEpCapture) & (board.getBitboard(Rook.ID_Type, nus) |
+                                                                                     board.getBitboard(Queen.ID_Type, nus)))  != 0
                     ||
-                    (Bishop.generator.attacks(kingSquare, occupationAfterEpCapture) & (board.getBitboard(PieceType.Bishop, nus) | 
-                                                                                       board.getBitboard(PieceType.Queen, nus))) != 0
+                    (Bishop.generator.attacks(kingSquare, occupationAfterEpCapture) & (board.getBitboard(Bishop.ID_Type, nus) | 
+                                                                                       board.getBitboard(Queen.ID_Type, nus))) != 0
                 )
                 {
                     // King is exposed after en passant capture
@@ -119,7 +119,7 @@ public class MoveList {
             }
 
             // 3. King moving into a check is not legal
-            if (PieceUtil.getType(movingP) == PieceType.King) {
+            if (Piece.getType(movingP) == King.ID_Type) {
                 // When the king has moved and a sliding piece was a checker, the attacks of
                 // that sliding piece will have changed
                 final long occupationAfterKingMove = board.getOccupancy() ^ kingBB | target(to);
@@ -128,7 +128,7 @@ public class MoveList {
                 long[] checkers = { board.getCheckers() };
                 while (checkers[0] != 0) {
                     int square = popLsb(checkers);
-                    Piece.MoveGenerator gen = Piece.fromID(board.getPieceID(square)).getGenerator();
+                    PieceType.MoveGenerator gen = PieceType.fromID(board.getPieceID(square)).getGenerator();
                     if (gen instanceof SlidingPiece.MoveGenerator)
                         updatedNstm |= ((SlidingPiece.MoveGenerator)gen).attacks(square, occupationAfterKingMove);
                 }

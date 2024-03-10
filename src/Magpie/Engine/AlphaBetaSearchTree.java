@@ -356,8 +356,8 @@ public class AlphaBetaSearchTree extends ISearchTree {
 
             // MVV-LVA
             if (Move.isCapture(Move.getFlag(move))) {
-                int victimType = PieceUtil.getType(_board.getPieceID(Move.getTo(move)));
-                int agressorType = PieceUtil.getType(_board.getPieceID(Move.getFrom(move)));
+                int victimType = Piece.getType(_board.getPieceID(Move.getTo(move)));
+                int agressorType = Piece.getType(_board.getPieceID(Move.getFrom(move)));
                 scores[i] = 100 * victimType - agressorType;
             }
         }

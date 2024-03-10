@@ -199,7 +199,7 @@ public final class StaticEvaluator {
 
     public static final int psqt(Board board, int color, int phase) {
         int result = 0;
-        for (int pt = PieceType.Pawn; pt <= PieceType.King; pt++) {
+        for (int pt = Pawn.ID_Type; pt <= King.ID_Type; pt++) {
             long[] pieces = { board.getBitboard(pt, color) };
             while (pieces[0] != 0)
                 result += PSQT_VALUES[pt][phase][(color == Color.Black ? popLsb(pieces) : popLsb(pieces) ^ 56)];
@@ -208,19 +208,19 @@ public final class StaticEvaluator {
     }
 
     public static final int bishopPair(Board board, int color, int phase) {
-        return countBits(board.getBitboard(PieceType.Bishop, color)) >= 2 ? BISHOP_PAIR[phase] : 0;
+        return countBits(board.getBitboard(Bishop.ID_Type, color)) >= 2 ? BISHOP_PAIR[phase] : 0;
     }
 
     public static final int material(Board board, int color, int phase) {
         int result = 0;
-        for (int pt = PieceType.Pawn; pt <= PieceType.Queen; pt++)
+        for (int pt = Pawn.ID_Type; pt <= Queen.ID_Type; pt++)
             result += countBits(board.getBitboard(pt, color)) * PT_VALUES[phase][pt];
         return result;
     }
 
     public final static int phase(Board board) {
         int result = 0;
-        for (int pt = PieceType.Knight; pt <= PieceType.Queen; pt++)
+        for (int pt = Knight.ID_Type; pt <= Queen.ID_Type; pt++)
             result += PHASE_VALUES[pt] * countBits(board.getTBitboard(pt));
         return PHASE_MAX - result;
     }

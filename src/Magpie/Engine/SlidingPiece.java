@@ -2,9 +2,9 @@ package Engine;
 
 import static Engine.Utils.*;
 
-public abstract class SlidingPiece extends Piece {
+public abstract class SlidingPiece extends PieceType {
 
-    public static abstract class MoveGenerator extends Piece.MoveGenerator {
+    public static abstract class MoveGenerator extends PieceType.MoveGenerator {
 
         public abstract long attacks(int square);
 

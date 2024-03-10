@@ -3,16 +3,19 @@ package Engine;
 import static Engine.Utils.*;
 import Misc.Utils;
 
-public class King extends Piece {
+public class King extends PieceType {
 
     public static final MoveGenerator generator = new MoveGenerator();
+    public static final int ID_Type = 6;
+    public static final int ID_White = Piece.create(ID_Type, Color.White);
+    public static final int ID_Black = Piece.create(ID_Type, Color.Black);
 
     @Override
     public MoveGenerator getGenerator() {
         return generator;
     }
 
-    public static class MoveGenerator extends Piece.MoveGenerator {
+    public static class MoveGenerator extends PieceType.MoveGenerator {
 
         @Override
         int generate(short[] list, int index, Board board, int color, boolean capturesOnly) {
@@ -58,7 +61,7 @@ public class King extends Piece {
                     list,
                     index,
                     ~board.getOccupancy(),
-                    board.getBitboard(PieceType.King, color),
+                    board.getBitboard(King.ID_Type, color),
                     Move.QUIET_MOVE_FLAG);
         }
 
@@ -67,7 +70,7 @@ public class King extends Piece {
                     list,
                     index,
                     board.getCBitboard(Color.NOT(color)),
-                    board.getBitboard(PieceType.King, color),
+                    board.getBitboard(King.ID_Type, color),
                     Move.CAPTURE_FLAG);
         }
 

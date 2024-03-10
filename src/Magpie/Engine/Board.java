@@ -66,7 +66,7 @@ public class Board implements IBoard {
         final int flag = Move.getFlag(move);
         final int rNormF = from / 8 * 8;
         final int movingPiece = getPieceID(from);
-        final int capturedPiece = flag == Move.EN_PASSANT_FLAG ? PieceUtil.create(PieceType.Pawn, nus) : getPieceID(to);
+        final int capturedPiece = flag == Move.EN_PASSANT_FLAG ? Piece.create(Pawn.ID_Type, nus) : getPieceID(to);
 
         // Increment game counters
         _turn = Color.NOT(_turn);
@@ -82,10 +82,10 @@ public class Board implements IBoard {
         
         // Update castling rights
         // TODO: should be handled by state builder (?)
-        if (PieceUtil.getType(movingPiece) == PieceType.King) {
+        if (Piece.getType(movingPiece) == King.ID_Type) {
             Castling.set(newState.getCastling(), us, false);
         }
-        else if (PieceUtil.getType(movingPiece) == PieceType.Rook) {
+        else if (Piece.getType(movingPiece) == Rook.ID_Type) {
             final int fromRank = Utils.rank(from);
             if ((us == Color.White ? 0 : 7) == fromRank) {
                 final int fromFile = Utils.file(from);
@@ -105,7 +105,7 @@ public class Board implements IBoard {
 
         // Handle captures
         // Also get's activated on a promotion with capture, which is right.
-        else if (PieceUtil.getType(capturedPiece) != PieceType.None) {
+        else if (Piece.getType(capturedPiece) != None.ID_Type) {
             int captureSquare = to;
 
             // Update castling if a rook has been captured
@@ -135,14 +135,14 @@ public class Board implements IBoard {
         newState.captured(capturedPiece);
 
         // Pawns
-        if (PieceUtil.getType(movingPiece) == PieceType.Pawn) {
+        if (Piece.getType(movingPiece) == Pawn.ID_Type) {
             // Handle double pawn pushes
             if (flag == Move.DOUBLE_PAWN_PUSH_FLAG)
                 newState.epSquare(to + (us * 2 - 1) * 8);
 
             // Handle promotions
             if (flag >= Move.PROMOTION_KNIGHT_FLAG && flag <= Move.CAPTURE_PROMOTION_QUEEN_FLAG) {
-                int newPiece = PieceUtil.create(Move.getPromotion(move), us);
+                int newPiece = Piece.create(Move.getPromotion(move), us);
                 removePiece(to);
                 addPiece(to, newPiece);
             }
@@ -172,7 +172,7 @@ public class Board implements IBoard {
         if (Move.isPromotion(flag)) {
             // Replace the promotion with a pawn, the pawn will be moved later.
             removePiece(to);
-            addPiece(to, PieceUtil.create(PieceType.Pawn, us));
+            addPiece(to, Piece.create(Pawn.ID_Type, us));
         }
 
         // Handle castling
@@ -190,7 +190,7 @@ public class Board implements IBoard {
 
             // Handle captures
             final int captured = _stateStack.getFirst().getCaptured();
-            if (PieceUtil.getType(captured) != PieceType.None) {
+            if (Piece.getType(captured) != None.ID_Type) {
 
                 int captureSquare = to;
 
@@ -231,20 +231,20 @@ public class Board implements IBoard {
             int to = Misc.Utils.toSquareIndex(str.substring(2, 4));
 
             // Use board context to determine the flag [e.g. castling, capturing, promotion]
-            int movingPieceType = PieceUtil.getType(getPieceID(from));
-            int destPieceType = PieceUtil.getType(getPieceID(to));
+            int movingPieceType = Piece.getType(getPieceID(from));
+            int destPieceType = Piece.getType(getPieceID(to));
             int absDist = Math.abs(from - to);
-            boolean captures = destPieceType == PieceType.None;
+            boolean captures = destPieceType == None.ID_Type;
             int flag = captures ? Move.QUIET_MOVE_FLAG : Move.CAPTURE_FLAG;
 
             // Pawn extras
-            if (movingPieceType == PieceType.Pawn) {
+            if (movingPieceType == Pawn.ID_Type) {
                 // Double pawn push
                 if (absDist == 16) {
                     flag = Move.DOUBLE_PAWN_PUSH_FLAG;
                 }
                 // En passant capture
-                else if ((absDist == 7 || absDist == 9) && destPieceType == PieceType.None) {
+                else if ((absDist == 7 || absDist == 9) && destPieceType == None.ID_Type) {
                     flag = Move.EN_PASSANT_FLAG;
                 }
                 // Promotions
@@ -259,7 +259,7 @@ public class Board implements IBoard {
                 }
             }
             // Castling
-            else if (movingPieceType == PieceType.King && absDist == 2) {
+            else if (movingPieceType == King.ID_Type && absDist == 2) {
                 if (to % 8 == Files.G) {
                     flag = Move.KING_CASTLE_FLAG;
                 } else if (to % 8 == Files.C) {
@@ -289,10 +289,10 @@ public class Board implements IBoard {
         long bb = target(square);
 
         // add piece on type bitboard
-        _tBitboards[PieceUtil.getType(piece)] |= bb;
+        _tBitboards[Piece.getType(piece)] |= bb;
 
         // add piece on color bitboard
-        _cBitboards[PieceUtil.getColor(piece)] |= bb;
+        _cBitboards[Piece.getColor(piece)] |= bb;
 
         // pieces
         _pieces[square] = piece;
@@ -307,13 +307,13 @@ public class Board implements IBoard {
         long bb = target(square);
 
         // toggle piece on type bitboard
-        _tBitboards[PieceUtil.getType(piece)] ^= bb;
+        _tBitboards[Piece.getType(piece)] ^= bb;
 
         // toggle piece on color bitboard
-        _cBitboards[PieceUtil.getColor(piece)] ^= bb;
+        _cBitboards[Piece.getColor(piece)] ^= bb;
 
         // pieces
-        _pieces[square] = PieceUtil.None[0];
+        _pieces[square] = None.ID_White;
 
         // decrement piece count
         _pieceCount[piece]--;
@@ -327,9 +327,9 @@ public class Board implements IBoard {
     private void movePiece(int from, int to) {
         int piece = _pieces[from];
         long fromTo = target(from) | target(to);
-        _tBitboards[PieceUtil.getType(piece)] ^= fromTo;
-        _cBitboards[PieceUtil.getColor(piece)] ^= fromTo;
-        _pieces[from] = PieceUtil.None[0];
+        _tBitboards[Piece.getType(piece)] ^= fromTo;
+        _cBitboards[Piece.getColor(piece)] ^= fromTo;
+        _pieces[from] = None.ID_White;
         _pieces[to] = piece;
     }
 
@@ -345,7 +345,7 @@ public class Board implements IBoard {
             for (int file = 0; file <= 7; file++) {
                 int square = Misc.Utils.sqaureIndex0(rank, file);
                 int piece = getPieceID(square);
-                char c = PieceUtil.toChar(piece);
+                char c = Piece.toChar(piece);
                 result += c + " ";
             }
             result += "\n";
@@ -454,7 +454,7 @@ public class Board implements IBoard {
                     }
 
                     // get piece char as Piece Type
-                    int piece = PieceUtil.fromChar(_fen[0].charAt(i));
+                    int piece = Piece.fromChar(_fen[0].charAt(i));
 
                     // evaluate
                     board1.addPiece(squareIdx ^ 7, piece);

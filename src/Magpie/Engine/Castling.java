@@ -4,8 +4,8 @@ import java.util.BitSet;
 
 public final class Castling {
 
-    public static final int QueenSide = PieceType.Queen;
-    public static final int KingSide = PieceType.King;
+    public static final int QueenSide = Queen.ID_Type;
+    public static final int KingSide = King.ID_Type;
 
     public static final long[][] MoveMask = {
             new long[2],

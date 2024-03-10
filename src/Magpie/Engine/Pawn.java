@@ -4,16 +4,19 @@ import static Engine.CompassRose.*;
 import static Engine.Move.*;
 import static Engine.Utils.*;
 
-public class Pawn extends Piece {
+public class Pawn extends PieceType {
 
     public static final MoveGenerator generator = new MoveGenerator();
+    public static final int ID_Type = 1;
+    public static final int ID_White = Piece.create(ID_Type, Color.White);
+    public static final int ID_Black = Piece.create(ID_Type, Color.Black);
 
     @Override
-    public Engine.Piece.MoveGenerator getGenerator() {
+    public Engine.PieceType.MoveGenerator getGenerator() {
         return generator;
     }
 
-    public static class MoveGenerator extends Piece.MoveGenerator {
+    public static class MoveGenerator extends PieceType.MoveGenerator {
 
         // Indexed by color
         private static final long[] STEP2 = new long[] { Masks.Ranks[1], Masks.Ranks[6] };
@@ -34,7 +37,7 @@ public class Pawn extends Piece {
         }
 
         private int white(short[] list, int index, Board board, boolean capturesOnly) {
-            final long pawns = board.getBitboard(PieceType.Pawn, Color.White);
+            final long pawns = board.getBitboard(Pawn.ID_Type, Color.White);
             final long enemies = board.getCBitboard(Color.Black);
             final long pieces = enemies | board.getCBitboard(Color.White);
             long[] toBB = { 0 }, fromBB = { 0 };
@@ -94,7 +97,7 @@ public class Pawn extends Piece {
         }
 
         private int black(short[] list, int index, Board board, boolean capturesOnly) {
-            final long pawns = board.getBitboard(PieceType.Pawn, Color.Black);
+            final long pawns = board.getBitboard(Pawn.ID_Type, Color.Black);
             final long enemies = board.getCBitboard(Color.White);
             final long pieces = enemies | board.getCBitboard(Color.Black);
             long[] toBB = { 0 }, fromBB = { 0 };
@@ -145,11 +148,11 @@ public class Pawn extends Piece {
         }
 
         private int whiteResolves(short[] list, int index, Board board, boolean capturesOnly) {
-            final long pawns = board.getBitboard(PieceType.Pawn, Color.White);
+            final long pawns = board.getBitboard(Pawn.ID_Type, Color.White);
             final long pieces = board.getOccupancy();
             final long checkerBB = board.getCheckers();
             final int checker = lsb(checkerBB);
-            final int king = lsb(board.getBitboard(PieceType.King, Color.White));
+            final int king = lsb(board.getBitboard(King.ID_Type, Color.White));
             final long mask = Masks.squaresBetween(king, checker);
             long[] toBB = { 0 }, fromBB = { 0 };
 
@@ -197,11 +200,11 @@ public class Pawn extends Piece {
         }
 
         private int blackResolves(short[] list, int index, Board board, boolean capturesOnly) {
-            final long pawns = board.getBitboard(PieceType.Pawn, Color.Black);
+            final long pawns = board.getBitboard(Pawn.ID_Type, Color.Black);
             final long pieces = board.getOccupancy();
             final long checkerBB = board.getCheckers();
             final int checker = lsb(checkerBB);
-            final int king = lsb(board.getBitboard(PieceType.King, Color.Black));
+            final int king = lsb(board.getBitboard(King.ID_Type, Color.Black));
             final long mask = Masks.squaresBetween(king, checker);
             long[] toBB = { 0 }, fromBB = { 0 };
 

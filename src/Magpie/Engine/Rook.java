@@ -4,9 +4,11 @@ import static Engine.Utils.*;
 
 public class Rook extends SlidingPiece {
 
-    public static final int TypeID = 0;
-
     public static final MoveGenerator generator = new Rook.MoveGenerator();
+
+    public static final int ID_Type = 4;
+    public static final int ID_White = Piece.create(ID_Type, Color.White);
+    public static final int ID_Black = Piece.create(ID_Type, Color.Black);
 
     @Override
     public MoveGenerator getGenerator() {
@@ -31,7 +33,7 @@ public class Rook extends SlidingPiece {
         int resolves(short[] list, int index, Board board, int color, boolean capturesOnly) {
             final long checkerBB = board.getCheckers();
             final int checker = lsb(checkerBB);
-            final int king = lsb(board.getBitboard(PieceType.King, color));
+            final int king = lsb(board.getBitboard(King.ID_Type, color));
             final long mask = Masks.squaresBetween(king, checker);
             // quiet
             if (!capturesOnly)
@@ -40,7 +42,7 @@ public class Rook extends SlidingPiece {
                         index,
                         ~board.getOccupancy() & mask,
                         board.getOccupancy(),
-                        board.getBitboard(PieceType.Rook, color),
+                        board.getBitboard(Rook.ID_Type, color),
                         Move.QUIET_MOVE_FLAG);
             // captures
             return generate(
@@ -48,7 +50,7 @@ public class Rook extends SlidingPiece {
                     index,
                     checkerBB,
                     board.getOccupancy(),
-                    board.getBitboard(PieceType.Rook, color),
+                    board.getBitboard(Rook.ID_Type, color),
                     Move.CAPTURE_FLAG);
         }
 
@@ -66,7 +68,7 @@ public class Rook extends SlidingPiece {
                     // & (board.isInSingleCheck() ? board.getCheckBlockSqs() : ~0x0L)
                     ,
                     board.getOccupancy(),
-                    board.getBitboard(PieceType.Rook, color),
+                    board.getBitboard(Rook.ID_Type, color),
                     Move.QUIET_MOVE_FLAG);
         }
 
@@ -84,7 +86,7 @@ public class Rook extends SlidingPiece {
                     // & (board.isInSingleCheck() ? board.getCheckers() : ~0x0L)
                     ,
                     board.getOccupancy(),
-                    board.getBitboard(PieceType.Rook, color),
+                    board.getBitboard(Rook.ID_Type, color),
                     Move.CAPTURE_FLAG);
         }
 

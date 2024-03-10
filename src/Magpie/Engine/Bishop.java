@@ -5,6 +5,9 @@ import static Engine.Utils.*;
 public class Bishop extends SlidingPiece {
 
     public static final MoveGenerator generator = new Bishop.MoveGenerator();
+    public static final int ID_Type = 3;
+    public static final int ID_White = Piece.create(ID_Type, Color.White);
+    public static final int ID_Black = Piece.create(ID_Type, Color.Black);
 
     @Override
     public MoveGenerator getGenerator() {
@@ -30,7 +33,7 @@ public class Bishop extends SlidingPiece {
         int resolves(short[] list, int index, Board board, int color, boolean capturesOnly) {
             final long checkerBB = board.getCheckers();
             final int checker = lsb(checkerBB);
-            final int king = lsb(board.getBitboard(PieceType.King, color));
+            final int king = lsb(board.getBitboard(King.ID_Type, color));
             final long mask = Masks.squaresBetween(king, checker);
             // quiet
             if (!capturesOnly)
@@ -39,7 +42,7 @@ public class Bishop extends SlidingPiece {
                         index,
                         ~board.getOccupancy() & mask,
                         board.getOccupancy(),
-                        board.getBitboard(PieceType.Bishop, color),
+                        board.getBitboard(Bishop.ID_Type, color),
                         Move.QUIET_MOVE_FLAG);
             // captures
             return generate(
@@ -47,7 +50,7 @@ public class Bishop extends SlidingPiece {
                     index,
                     checkerBB,
                     board.getOccupancy(),
-                    board.getBitboard(PieceType.Bishop, color),
+                    board.getBitboard(Bishop.ID_Type, color),
                     Move.CAPTURE_FLAG);
         }
 
@@ -57,7 +60,7 @@ public class Bishop extends SlidingPiece {
                     index,
                     ~board.getOccupancy(),
                     board.getOccupancy(),
-                    board.getBitboard(PieceType.Bishop, color),
+                    board.getBitboard(Bishop.ID_Type, color),
                     Move.QUIET_MOVE_FLAG);
         }
 
@@ -67,7 +70,7 @@ public class Bishop extends SlidingPiece {
                     index,
                     board.getCBitboard(Color.NOT(color)),
                     board.getOccupancy(),
-                    board.getBitboard(PieceType.Bishop, color),
+                    board.getBitboard(Bishop.ID_Type, color),
                     Move.CAPTURE_FLAG);
         }
 

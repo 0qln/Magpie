@@ -3,7 +3,7 @@ package Interface;
 import java.util.ArrayList;
 import java.util.Arrays;
 
-import Engine.PieceUtil;
+import Engine.Piece;
 import Interface.Command.*;
 import Misc.Ptr;
 
@@ -24,7 +24,7 @@ public class PieceCommand extends Command {
 
         switch (args[0]) {
             case "add":
-                params_put("piece", PieceUtil.fromChar(args[2].charAt(0)));
+                params_put("piece", Piece.fromChar(args[2].charAt(0)));
                 params_put(args[0], Misc.Utils.toSquareIndex(args[1]));
                 break;
             case "remove":
@@ -51,7 +51,7 @@ public class PieceCommand extends Command {
         if (params_get("get") != null) {
             ArrayList<Integer> a = params_get("remove");
             for (Integer square : a)
-                new SquareInfoResponse(square, "" + PieceUtil.toChar(_state.board.get().getPieceID(square))).send();
+                new SquareInfoResponse(square, "" + Piece.toChar(_state.board.get().getPieceID(square))).send();
         }
     }
 

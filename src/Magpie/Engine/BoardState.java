@@ -23,7 +23,7 @@ public class BoardState {
     private BitSet _castling = new BitSet(4);
 
     // captured piece, the piece that was captured when this state was reached
-    private int _captured = PieceUtil.None[0];
+    private int _captured = None.ID_White;
 
     public BoardState(
             long _checkers,
@@ -100,7 +100,7 @@ public class BoardState {
         @Required
         private BitSet _castling;
         @NotRequired
-        private int _captured = PieceUtil.None[0];
+        private int _captured = None.ID_White;
         // Dynamically used for computation on build
         // @BuilderRequired
         // private boolean _comesWithCheck = false;
@@ -161,13 +161,13 @@ public class BoardState {
             final int us = _origin.getTurn(), nus = Color.NOT(us);
             final long enemiesBB = _origin.getCBitboard(nus);
             long[] enemies = { enemiesBB };
-            final long kingBB = _origin.getBitboard(PieceType.King, us);
+            final long kingBB = _origin.getBitboard(King.ID_Type, us);
             final int kingSq = lsb(kingBB);
             while (enemies[0] != 0) {
                 final int enemySquare = popLsb(enemies);
                 final long pieces = _origin.getOccupancy();
                 final int enemyID = _origin.getPieceID(enemySquare);
-                final long attacks = Piece
+                final long attacks = PieceType
                     .fromID(enemyID)
                     .getGenerator()
                     .attacks(enemySquare, pieces, nus);
@@ -183,8 +183,8 @@ public class BoardState {
 
             long[] xRayCheckers = { 
                 (
-                    Rook.generator.attacks(kingSq) & (_origin.getTBitboard(PieceType.Rook) | _origin.getTBitboard(PieceType.Queen)) |
-                    Bishop.generator.attacks(kingSq) & (_origin.getTBitboard(PieceType.Bishop) | _origin.getTBitboard(PieceType.Queen))
+                    Rook.generator.attacks(kingSq) & (_origin.getTBitboard(Rook.ID_Type) | _origin.getTBitboard(Queen.ID_Type)) |
+                    Bishop.generator.attacks(kingSq) & (_origin.getTBitboard(Bishop.ID_Type) | _origin.getTBitboard(Queen.ID_Type))
                 ) 
                 & _origin.getCBitboard(Color.NOT(us)) 
             };

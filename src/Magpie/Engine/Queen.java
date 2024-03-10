@@ -6,9 +6,12 @@ import static Engine.Utils.*;
 public class Queen extends SlidingPiece {
 
     public static final MoveGenerator generator = new MoveGenerator();
+    public static final int ID_Type = 5;
+    public static final int ID_White = Piece.create(ID_Type, Color.White);
+    public static final int ID_Black = Piece.create(ID_Type, Color.Black);
 
     @Override
-    public Engine.Piece.MoveGenerator getGenerator() {
+    public Engine.PieceType.MoveGenerator getGenerator() {
         return generator;
     }
 
@@ -46,7 +49,7 @@ public class Queen extends SlidingPiece {
         int resolves(short[] list, int index, Board board, int color, boolean capturesOnly) {
             final long checkerBB = board.getCheckers();
             final int checker = lsb(checkerBB);
-            final int king = lsb(board.getBitboard(PieceType.King, color));
+            final int king = lsb(board.getBitboard(King.ID_Type, color));
             final long mask = Masks.squaresBetween(king, checker);
             // quiet
             if (!capturesOnly)
@@ -55,7 +58,7 @@ public class Queen extends SlidingPiece {
                         index,
                         ~board.getOccupancy() & mask,
                         board.getOccupancy(),
-                        board.getBitboard(PieceType.Queen, color),
+                        board.getBitboard(Queen.ID_Type, color),
                         Move.QUIET_MOVE_FLAG);
             // captures
             return generate(
@@ -63,7 +66,7 @@ public class Queen extends SlidingPiece {
                     index,
                     checkerBB,
                     board.getOccupancy(),
-                    board.getBitboard(PieceType.Queen, color),
+                    board.getBitboard(Queen.ID_Type, color),
                     Move.CAPTURE_FLAG);
         }
 
@@ -73,7 +76,7 @@ public class Queen extends SlidingPiece {
                     index,
                     ~board.getOccupancy(),
                     board.getOccupancy(),
-                    board.getBitboard(PieceType.Queen, color),
+                    board.getBitboard(Queen.ID_Type, color),
                     Move.QUIET_MOVE_FLAG);
         }
 
@@ -83,7 +86,7 @@ public class Queen extends SlidingPiece {
                     index,
                     board.getCBitboard(Color.NOT(color)),
                     board.getOccupancy(),
-                    board.getBitboard(PieceType.Queen, color),
+                    board.getBitboard(Queen.ID_Type, color),
                     Move.CAPTURE_FLAG);
         }
     }

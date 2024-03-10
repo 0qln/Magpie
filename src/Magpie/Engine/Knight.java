@@ -2,21 +2,24 @@ package Engine;
 
 import static Engine.Utils.*;
 
-public class Knight extends Piece {
+public class Knight extends PieceType {
 
     public static final MoveGenerator generator = new MoveGenerator();
+    public static final int ID_Type = 2;
+    public static final int ID_White = Piece.create(ID_Type, Color.White);
+    public static final int ID_Black = Piece.create(ID_Type, Color.Black);
 
     @Override
-    public Engine.Piece.MoveGenerator getGenerator() {
+    public Engine.PieceType.MoveGenerator getGenerator() {
         return generator;
     }
 
-    public static class MoveGenerator extends Piece.MoveGenerator {
+    public static class MoveGenerator extends PieceType.MoveGenerator {
 
         @Override
         int generate(short[] list, int index, Board board, int color, boolean capturesOnly) {
 
-            long knights = board.getBitboard(PieceType.Knight, color);
+            long knights = board.getBitboard(Knight.ID_Type, color);
 
             index = addMoves(list, index, board, color, knights & Masks.NoEaEa, CompassRose.NoEaEa, capturesOnly);
             index = addMoves(list, index, board, color, knights & Masks.SoEaEa, CompassRose.SoEaEa, capturesOnly);
@@ -32,7 +35,7 @@ public class Knight extends Piece {
 
         @Override
         int resolves(short[] list, int index, Board board, int color, boolean capturesOnly) {
-            long knights = board.getBitboard(PieceType.Knight, color);
+            long knights = board.getBitboard(Knight.ID_Type, color);
 
             index = addResolves(list, index, board, color, knights & Masks.NoEaEa, CompassRose.NoEaEa, capturesOnly);
             index = addResolves(list, index, board, color, knights & Masks.SoEaEa, CompassRose.SoEaEa, capturesOnly);
@@ -52,13 +55,13 @@ public class Knight extends Piece {
             final long[] fromBB = { knights & ~sao };
 
             final int checker = lsb(board.getCheckers());
-            final int king = lsb(board.getBitboard(PieceType.King, color));
+            final int king = lsb(board.getBitboard(King.ID_Type, color));
             final long mask = Masks.squaresBetween(king, checker);
 
             while (fromBB[0] != 0) {
                 final int from = popLsb(fromBB);
                 final int to = from + dir;
-                final int flag = board.getPieceID(to) == PieceUtil.None[0]
+                final int flag = board.getPieceID(to) == None.ID_White
                         ? Move.QUIET_MOVE_FLAG
                         : Move.CAPTURE_FLAG;
                 if (capturesOnly && flag == Move.QUIET_MOVE_FLAG)
@@ -78,7 +81,7 @@ public class Knight extends Piece {
             while (fromBB[0] != 0) {
                 final int from = popLsb(fromBB);
                 final int to = from + dir;
-                final int flag = board.getPieceID(to) == PieceUtil.None[0]
+                final int flag = board.getPieceID(to) == None.ID_White
                         ? Move.QUIET_MOVE_FLAG
                         : Move.CAPTURE_FLAG;
                 if (capturesOnly && flag == Move.QUIET_MOVE_FLAG)
