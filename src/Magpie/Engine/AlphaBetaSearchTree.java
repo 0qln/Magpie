@@ -49,7 +49,10 @@ public class AlphaBetaSearchTree extends ISearchTree {
         _startTime = System.nanoTime();
         long inc = _board.getTurn() == Color.White ? limit.winc : limit.binc;
         long time = _board.getTurn() == Color.White ? limit.wtime : limit.btime;
-        _timePerMove = limit.movetime != -1 ? limit.movetime * 100 : time != -1 ? (time / 40 + inc) * 1000000 : -1;
+        _timePerMove = limit.movetime != -1 ? limit.movetime * 100 : 
+                time != -1 
+                        ? (time / 50 + inc) * 1000000 
+                        : -1;
 
         _logger.info("Time per move: " + _timePerMove);
 
