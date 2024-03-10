@@ -25,6 +25,10 @@ public class BoardState {
     // captured piece, the piece that was captured when this state was reached
     private int _captured = None.ID_White;
 
+    // Zobrist key for the position
+    private long _key;
+    private boolean _hasThreeFoldRepitition;
+
     public BoardState(
             long _checkers,
             long _blockers,
@@ -33,7 +37,9 @@ public class BoardState {
             int _epSquare,
             BitSet _castling,
             int _captured,
-            long _nstmAttacks) {
+            long _nstmAttacks,
+            long _key,
+            boolean _hasThreeFoldRepitition) {
         this._checkers = _checkers;
         this._blockers = _blockers;
         this._plys50 = _plys50;
@@ -42,6 +48,8 @@ public class BoardState {
         this._castling = _castling;
         this._captured = _captured;
         this._nstmAttacks = _nstmAttacks;
+        this._key = _key;
+        this._hasThreeFoldRepitition = _hasThreeFoldRepitition;
     }
 
     public long getCheckers() {
@@ -88,6 +96,14 @@ public class BoardState {
         return _blockers;
     }
 
+    public long getKey() {
+        return _key;
+    }
+
+    public boolean hasThreeFoldRepitition() {
+        return _hasThreeFoldRepitition;
+    }
+
     public static class Builder extends Misc.Builder<BoardState> {
 
         @Required
@@ -102,6 +118,10 @@ public class BoardState {
         private int _captured = None.ID_White;
         @Required
         private Board _origin;
+        @Required
+        private Long _key;
+        @Required
+        private Boolean _hasThreeFoldRepitition;
 
         public Builder(Board origin) {
             this._origin = origin;
@@ -122,6 +142,10 @@ public class BoardState {
             return this;
         }
 
+        public int getEpSquare() {
+            return this._epSquare;
+        }
+
         public Builder castling(byte[] set) {
             _castling = BitSet.valueOf(set);
             return this;
@@ -136,12 +160,32 @@ public class BoardState {
             return _castling;
         }
 
-        public void setCastlingRights(int kingside, int color, boolean value) {
+        public Builder setCastlingRights(int kingside, int color, boolean value) {
             _castling.set(color << 1 | kingside, value);
+            return this;
         }
 
         public Builder captured(int captured) {
             this._captured = captured;
+            return this;
+        }
+
+        public Builder initKey(long key) {
+            this._key = key;
+            return this;
+        }
+
+        public Builder updateKey(long update) {
+            this._key ^= update;
+            return this;
+        }
+
+        public long getKey() {
+            return this._key;
+        }
+
+        public Builder threeFoldRepitition(boolean value) {
+            this._hasThreeFoldRepitition = value;
             return this;
         }
 
@@ -195,7 +239,9 @@ public class BoardState {
                     this._epSquare,
                     this._castling,
                     this._captured,
-                    nstmAttacks);
+                    nstmAttacks,
+                    this._key,
+                    this._hasThreeFoldRepitition);
         }
     }
 }

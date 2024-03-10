@@ -30,6 +30,10 @@ public final class Utils
         }
     }
 
+    public static final int mb(int amount) {
+        return amount * 1024 * 1024;
+    }
+
     public static int lerp(int v0, int v1, int t, int tMax) {
         assert(t >= 0 && t <= tMax);
         int ret = ((tMax - t) * v0 + t * v1) / tMax;

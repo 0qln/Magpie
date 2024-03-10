@@ -44,6 +44,8 @@ public class TestCommand extends Command {
 
     private boolean testPosition(String fen, int depth, long excpected) {
         new TextResponse("Testing fen: " + fen).send();
+        long begin = System.nanoTime() / (long)1e6;
+
         Engine.Board b = new Engine.Board.Builder()
                 .fen(fen)
                 .build();
@@ -56,6 +58,10 @@ public class TestCommand extends Command {
             String smove = Engine.Move.toString(move);
             System.out.println(smove + " " + counter + " - " + count);
         }, limit);
+
+        long end = System.nanoTime() / (long)1e6;
+        new TextResponse("Finished test in " + (end - begin) + "ms").send();
+
         return perftResult == excpected;
     }
 

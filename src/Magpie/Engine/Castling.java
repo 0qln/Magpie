@@ -58,7 +58,7 @@ public final class Castling {
      */
 
     public static final BitSet empty() {
-        return BitSet.valueOf(new byte[4]);
+        return new BitSet(4);
     }
 
     public static final BitSet create(
@@ -85,6 +85,11 @@ public final class Castling {
 
     public static final boolean get(BitSet castling, int side, int color) {
         return castling.get(toIndex(side, color));
+    }
+
+    public static int Key(BitSet castling) {
+        byte[] key = castling.toByteArray();
+        return key.length == 0 ? 0 : key[0];
     }
 
     public static final boolean hasSpace(int side, int color, long boardOccupancy) {

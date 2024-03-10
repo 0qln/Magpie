@@ -1,11 +1,25 @@
 package Engine;
 
+import static Engine.Utils.file;
 import static Engine.Utils.target;
 
 import java.util.*;
 import java.util.function.BiConsumer;
 
 public class Board implements IBoard {
+
+    // Keep track of positions for three fold repitition.
+    byte[] _positions = new byte[Misc.Utils.mb(10)];
+    private void positionsDecr(long key) {
+        _positions[(int)Math.abs(key % _positions.length)]--;
+    }
+    private byte posOccurances(long key) {
+        return _positions[(int)Math.abs(key % _positions.length)];
+    }
+    private void positionsIncr(long key) {
+        _positions[(int)Math.abs(key % _positions.length)]++;
+    }
+
     // Bitboard array to store the color of the pieces
     private long[] _cBitboards = new long[2];
 
@@ -58,6 +72,7 @@ public class Board implements IBoard {
         return moveC;
     }
 
+    // Inlining the calls to BoardState.Builder.updateKey shows a non trivial gain in performance.
     public void makeMove(short move) {
         // Get context
         final int us = _turn, nus = Color.NOT(us);
@@ -67,40 +82,58 @@ public class Board implements IBoard {
         final int rNormF = from / 8 * 8;
         final int movingPiece = getPieceID(from);
         final int capturedPiece = flag == Move.EN_PASSANT_FLAG ? Piece.create(Pawn.ID_Type, nus) : getPieceID(to);
+        final BitSet oldCastling = getCastling();
+        long key = getKey() ^ Zobrist.stm;
 
         // Increment game counters
         _turn = Color.NOT(_turn);
         _ply++;
-        
+
         // Create new board state
         BoardState.Builder newState = new BoardState.Builder(this);
         newState
-        // .comesWithCheck(false) // TODO
-        .castling(_stateStack.getFirst().getCastling())
-        .ply(_ply)
-        .plys50(_ply);
-        
-        // Update castling rights
+                .castling(oldCastling)
+                .ply(_ply)
+                .plys50(_ply)
+                // .initKey(this.getKey())
+                // The xor operation is it's own inverse, thus we just apply the operation on
+                // every new move, regardless of the current stm, becuase it will inverse, the
+                // black color if the current stm is white.
+                // .updateKey(Zobrist.stm)
+                ;
+
+        // Handle castling rights
         // TODO: should be handled by state builder (?)
         if (Piece.getType(movingPiece) == King.ID_Type) {
             Castling.set(newState.getCastling(), us, false);
-        }
-        else if (Piece.getType(movingPiece) == Rook.ID_Type) {
+        } else if (Piece.getType(movingPiece) == Rook.ID_Type) {
             final int fromRank = Utils.rank(from);
             if ((us == Color.White ? 0 : 7) == fromRank) {
                 final int fromFile = Utils.file(from);
-                if (fromFile == Files.H) Castling.set(newState.getCastling(), Castling.KingSide, us, false);
-                if (fromFile == Files.A) Castling.set(newState.getCastling(), Castling.QueenSide, us, false);
+                if (fromFile == Files.H)
+                    Castling.set(newState.getCastling(), Castling.KingSide, us, false);
+                if (fromFile == Files.A)
+                    Castling.set(newState.getCastling(), Castling.QueenSide, us, false);
             }
-        } 
+        }
 
-        // Handle castling
+        // Handle castling => Also move rook, king will be moved later anyways
         if (flag == Move.KING_CASTLE_FLAG) {
-            movePiece(rNormF + Files.E, rNormF + Files.G);
-            movePiece(rNormF + Files.H, rNormF + Files.F);
+            final int rfrom = rNormF + Files.H, rto = rNormF + Files.F;
+            // (In the hash)
+            key ^=Zobrist.pieceSQ[_pieces[rfrom]][rfrom] ^Zobrist.pieceSQ[_pieces[rfrom]][rto];
+            // newState.updateKey(Zobrist.pieceSQ[getPieceID(rfrom)][rfrom])
+            //         .updateKey(Zobrist.pieceSQ[getPieceID(rfrom)][rto]);
+            // (On the board)
+            movePiece(rfrom, rto);
         } else if (flag == Move.QUEEN_CASTLE_FLAG) {
-            movePiece(rNormF + Files.E, rNormF + Files.C);
-            movePiece(rNormF + Files.A, rNormF + Files.D);
+            final int rfrom = rNormF + Files.A, rto = rNormF + Files.D;
+            // (In the hash)
+            key ^=Zobrist.pieceSQ[_pieces[rfrom]][rfrom] ^Zobrist.pieceSQ[_pieces[rfrom]][rto];
+            // newState.updateKey(Zobrist.pieceSQ[getPieceID(rfrom)][rfrom])
+            //         .updateKey(Zobrist.pieceSQ[getPieceID(rfrom)][rto]);
+            // (On the board)
+            movePiece(rfrom, rto);
         }
 
         // Handle captures
@@ -112,44 +145,85 @@ public class Board implements IBoard {
             Castling.update(newState.getCastling(), captureSquare, nus);
 
             // Handle en passant captures
-            if (flag == Move.EN_PASSANT_FLAG) {
+            if (flag == Move.EN_PASSANT_FLAG)
                 captureSquare += (us * 2 - 1) * 8;
-            }
-            
+
             // Remove destination piece for captures
             removePiece(captureSquare);
 
-            // Move the piece
-            movePiece(from, to);
-
             // If a piece get's captured, the 50 move rule counter needs to be reset
             newState.plys50(0);
+
+            // Update key
+            // newState.updateKey(Zobrist.pieceSQ[capturedPiece][captureSquare]);
+            key ^= Zobrist.pieceSQ[capturedPiece][captureSquare];
         }
 
         // Move The piece
-        else {
-            movePiece(from, to);
-        }
+        movePiece(from, to);
 
-        // Update state
-        newState.captured(capturedPiece);
+        newState
+                // Remember captured piece
+                .captured(capturedPiece)
+                // In hash, remove piece from old position
+                // .updateKey(Zobrist.pieceSQ[movingPiece][from])
+                // In hash, place piece at new position
+                // .updateKey(Zobrist.pieceSQ[movingPiece][to])
+                // In hash, reset en passant file
+                // .updateKey(getEnPassantSquare() != -1
+                //         ? Zobrist.enPassant[file(getEnPassantSquare())]
+                //         : 0)
+                        ;
+                    
+        key ^= Zobrist.pieceSQ[movingPiece][to] ^ Zobrist.pieceSQ[movingPiece][to];
+
+        if (getEnPassantSquare() != -1)
+            key ^= Zobrist.enPassant[file(getEnPassantSquare())];
 
         // Pawns
         if (Piece.getType(movingPiece) == Pawn.ID_Type) {
             // Handle double pawn pushes
-            if (flag == Move.DOUBLE_PAWN_PUSH_FLAG)
-                newState.epSquare(to + (us * 2 - 1) * 8);
+            if (flag == Move.DOUBLE_PAWN_PUSH_FLAG) {
+                newState.epSquare(to + (us * 2 - 1) * 8)
+                        // .updateKey(Zobrist.enPassant[file(to)])
+                        ;
+                key ^= Zobrist.enPassant[file(to)];
+            }
 
             // Handle promotions
             if (flag >= Move.PROMOTION_KNIGHT_FLAG && flag <= Move.CAPTURE_PROMOTION_QUEEN_FLAG) {
                 int newPiece = Piece.create(Move.getPromotion(move), us);
                 removePiece(to);
                 addPiece(to, newPiece);
+                // In hash, remove pawn
+                // newState.updateKey(Zobrist.pieceSQ[movingPiece][to])
+                //         // Add promotion
+                //         .updateKey(Zobrist.pieceSQ[newPiece][to]);
+                key ^= Zobrist.pieceSQ[movingPiece][to] ^ Zobrist.pieceSQ[newPiece][to];
             }
 
             // If a pawn get's moved, the 50 move rule counter needs to be reset
             newState.plys50(0);
         }
+
+        // In hash, update castling, if it has changed
+        if (!_stateStack.getFirst().getCastling().equals(newState.getCastling())) {
+            // Remove old castling rights
+            // newState.updateKey(Zobrist.castling[Castling.Key(oldCastling)])
+            //         // Add new castling rights
+            //         .updateKey(Zobrist.castling[Castling.Key(newState.getCastling())]);
+
+            key ^= Zobrist.castling[Castling.Key(oldCastling)] ^ Zobrist.castling[Castling.Key(newState.getCastling())];
+        }
+
+        // Remember new position
+        positionsIncr(key);
+
+        // Three fold repitition
+        newState.threeFoldRepitition(posOccurances(key) + 1 >= 3);
+
+        // Initiate key for new board state
+        newState.initKey(key);
 
         // Update board state
         _stateStack.push(newState.build());
@@ -157,6 +231,9 @@ public class Board implements IBoard {
 
     @Override
     public void undoMove(short move) {
+        // Forget latest position
+        positionsDecr(getKey());
+
         // Increment game counters
         _turn = Color.NOT(_turn);
         _ply--;
@@ -207,9 +284,8 @@ public class Board implements IBoard {
         _stateStack.pop();
     }
 
-    // TODO
     public boolean hasThreeFoldRepitition() {
-        return false;
+        return _stateStack.getFirst().hasThreeFoldRepitition();
     }
 
     @Override
@@ -360,7 +436,7 @@ public class Board implements IBoard {
     }
 
     public boolean canCastle(int side, int color) {
-        return Castling.hasSpace(side, color, getOccupancy()) 
+        return Castling.hasSpace(side, color, getOccupancy())
                 && Castling.get(getCastling(), side, color);
     }
 
@@ -428,6 +504,10 @@ public class Board implements IBoard {
         return new Builder();
     }
 
+    public long getKey() {
+        return _stateStack.getFirst().getKey();
+    }
+
     public static class Builder extends BoardBuilder<Board> {
 
         @NotRequired
@@ -435,9 +515,9 @@ public class Board implements IBoard {
 
         @Override
         protected Board _buildT() {
-            if (_fen != null) {
-                Board board1 = new Board();
+            Board board = new Board();
 
+            if (_fen != null) {
                 // Set up pieces
                 int squareIdx = 63;
                 for (int i = 0; i < _fen[0].length(); i++) {
@@ -456,17 +536,17 @@ public class Board implements IBoard {
                     int piece = Piece.fromChar(_fen[0].charAt(i));
 
                     // evaluate
-                    board1.addPiece(squareIdx ^ 7, piece);
+                    board.addPiece(squareIdx ^ 7, piece);
 
                     squareIdx--;
                 }
 
                 // turn
-                board1.setTurn(_fen[1].contains("w")
+                board.setTurn(_fen[1].contains("w")
                         ? Color.White
                         : Color.Black);
 
-                BoardState.Builder stateBuilder = new BoardState.Builder(board1);
+                BoardState.Builder stateBuilder = new BoardState.Builder(board);
                 stateBuilder
                         // castling
                         .castling(Castling.create(
@@ -482,23 +562,28 @@ public class Board implements IBoard {
 
                         // plys for 50 move rule
                         .plys50(_fen.length > 4 ? Integer.parseInt(_fen[4]) : 0)
-                        .ply(0);
+                        .ply(0)
 
-                board1._stateStack.push(stateBuilder.build());
+                        // zobrist key
+                        .initKey(Zobrist.initialKey(board, stateBuilder))
+                        
+                        // three fold repitition
+                        .threeFoldRepitition(false);
 
-                return board1;
+                board._stateStack.push(stateBuilder.build());
             } else {
-                Board board = new Board();
-
-                board._stateStack.push(
-                        new BoardState.Builder(board)
-                                .castling(Castling.empty())
-                                .ply(0)
-                                .plys50(0)
-                                .build());
-
-                return board;
+                BoardState.Builder stateBuilder = new BoardState.Builder(board)
+                        .castling(Castling.empty())
+                        .ply(0)
+                        .plys50(0)
+                        .threeFoldRepitition(false);
+                stateBuilder.initKey(Zobrist.initialKey(board, stateBuilder));
+                board._stateStack.push(stateBuilder.build());
             }
+
+            board.positionsIncr(board.getKey());
+
+            return board;
         }
 
         @Override

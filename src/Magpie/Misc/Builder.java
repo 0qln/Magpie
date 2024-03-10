@@ -46,7 +46,7 @@ public abstract class Builder<T> {
     }
 
     public final T build() throws FieldNotSetException {
-        return build(unsafe);
+        return build(!unsafe);
     }
 
     /**
