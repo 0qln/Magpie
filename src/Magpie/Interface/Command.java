@@ -77,10 +77,9 @@ public abstract class Command extends ICommand {
     // // Technically this is unneccesary, but it forces each command to register
     // // itself, or else it is impossible to create such command. (Debugging)
     // protected Command(Signature<?> callerCommand) {
-    // if (!_commands.contains(callerCommand)) {
-    // throw new ExceptionInInitializerError("An unregistered UCI command was
-    // created.");
-    // }
+    //     if (!_commands.contains(callerCommand)) {
+    //         throw new ExceptionInInitializerError("An unregistered UCI command was created.");
+    //     }
     // }
 
     public abstract boolean parseArgs(String[] args);

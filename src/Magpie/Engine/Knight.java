@@ -46,8 +46,7 @@ public class Knight extends Piece {
             return index;
         }
 
-        private int addResolves(short[] list, int index, Board board, int color, long knights, int dir,
-                boolean capturesOnly) {
+        private int addResolves(short[] list, int index, Board board, int color, long knights, int dir, boolean capturesOnly) {
             // Remove all knights whose dest square is occupied by an ally.
             final long sao = shift(board.getCBitboard(color), -dir);
             final long[] fromBB = { knights & ~sao };
@@ -62,25 +61,22 @@ public class Knight extends Piece {
                 final int flag = board.getPieceID(to) == PieceUtil.None[0]
                         ? Move.QUIET_MOVE_FLAG
                         : Move.CAPTURE_FLAG;
-                if (checker == to
-                        || (target(to) & mask) != 0) {
-                    if (capturesOnly && flag == Move.QUIET_MOVE_FLAG)
-                        continue;
+                if (capturesOnly && flag == Move.QUIET_MOVE_FLAG)
+                    continue;
+                if (checker == to || (target(to) & mask) != 0) 
                     list[index++] = Move.create(from, to, flag);
-                }
             }
 
             return index;
         }
 
-        private int addMoves(short[] list, int index, Board board, int color, long knights, int dir,
-                boolean capturesOnly) {
+        private int addMoves(short[] list, int index, Board board, int color, long knights, int dir, boolean capturesOnly) {
             // Remove all knights whose dest square is occupied by an ally.
-            final long sao = Utils.shift(board.getCBitboard(color), -dir);
+            final long sao = shift(board.getCBitboard(color), -dir);
             final long[] fromBB = { knights & ~sao };
 
             while (fromBB[0] != 0) {
-                final int from = Utils.popLsb(fromBB);
+                final int from = popLsb(fromBB);
                 final int to = from + dir;
                 final int flag = board.getPieceID(to) == PieceUtil.None[0]
                         ? Move.QUIET_MOVE_FLAG
