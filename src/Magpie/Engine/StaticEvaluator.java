@@ -5,7 +5,7 @@ import static Engine.Utils.popLsb;
 
 public final class StaticEvaluator {
 
-    public static final int Infinity = 40_000, Checkmate = 39_000, Draw = 0;
+    public static final int None = 40_001, Infinity = 40_000, Checkmate = 39_000, Draw = 0;
 
     public static final int PHASE_MG = 0, PHASE_EG = 1;
 
