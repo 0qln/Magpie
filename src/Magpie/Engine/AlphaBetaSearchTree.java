@@ -30,6 +30,7 @@ public class AlphaBetaSearchTree extends ISearchTree {
     private boolean _stopFlag;
     private long _startTime, _timePerMove;
     private long _maxNodes = -1;
+    private static TranspositionTable _tt = new TranspositionTable(Misc.Utils.mb(30) / TranspositionTable.Entry.SIZE_BYTES);
 
     public AlphaBetaSearchTree(Board board) {
         this._board = board;
@@ -211,14 +212,36 @@ public class AlphaBetaSearchTree extends ISearchTree {
         if (_board.hasThreeFoldRepitition())
             return StaticEvaluator.Draw;
         
+        long hash = _board.getKey();
+        TranspositionTable.Entry ttEntry = _tt.get(hash);
+
+        // TT cutoff
+        if (ttEntry != null && 
+            ttEntry.depth >= depth && (
+                // We have stored the exact evaluation for this position, so return it
+                (ttEntry.type == TranspositionTable.Entry.TYPE_PV) || 
+                // We have stored the upper bound of the eval for this position. If it's less than alpha then we don't need to
+                // search the moves in this position as they won't interest us; otherwise we will have to search to find the exact value
+                (ttEntry.type == TranspositionTable.Entry.TYPE_ALL && ttEntry.score <= alpha) ||
+                // We have stored the lower bound of the eval for this position. Only return if it causes a beta cut-off.
+                (ttEntry.type == TranspositionTable.Entry.TYPE_CUT && ttEntry.score >= beta)
+            )
+            ) {
+            parentPV.update(ttEntry.pv);
+            return ttEntry.score; 
+        }
+
+        // Exit condition
         if (depth <= 0)
             return quiescent(alpha, beta, ply);
 
         // Initiate node vars
-        int bestScore = -StaticEvaluator.Infinity, score = bestScore;
-        MoveList moves = MoveList.legal(_board, false);
         // The iterative deepening loop ensures there is one for the target depth.
         DepthLevelInfo info = _infoStack.get(ply);
+        int bestScore = -StaticEvaluator.Infinity, score = bestScore;
+        byte type = TranspositionTable.Entry.TYPE_ALL;
+        MoveList moves = MoveList.legal(_board, false);
+        Line pv = null;
 
         // Check for a game-over
         if (moves.length() == 0) {
@@ -242,7 +265,7 @@ public class AlphaBetaSearchTree extends ISearchTree {
         // Loop through all child nodes.
         for (int i = 0; i < moves.length(); i++) {
             short move = moves.get(i);
-            Line line = new Line(move);
+            pv = new Line(move);
             Line cline = new Line(move);
             currline.update(cline);
 
@@ -250,14 +273,16 @@ public class AlphaBetaSearchTree extends ISearchTree {
             _board.makeMove(move);
 
             // Evaluate all nodes from the opponents perspective.
-            score = -search(depth - 1, -beta, -alpha, line, cline, ply + 1);
+            score = -search(depth - 1, -beta, -alpha, pv, cline, ply + 1);
 
             // Undo move
             _board.undoMove(move);
 
             // Simple beta cutoff (fail-hard)
             if (score >= beta) {
-                return beta;
+                type = TranspositionTable.Entry.TYPE_CUT;
+                bestScore = beta;
+                break;
             }
 
             // Update alpha
@@ -268,9 +293,22 @@ public class AlphaBetaSearchTree extends ISearchTree {
             // Update best score
             if (score > bestScore) {
                 bestScore = score;
-                parentPV.update(line);
+                parentPV.update(pv);
+                type = TranspositionTable.Entry.TYPE_PV;
             }
         }
+
+        assert (pv != null);
+        parentPV.update(pv);
+
+        // Make transpostion table entry.
+        _tt.set(new TranspositionTable.Entry(
+            hash,
+            (byte)depth,
+            bestScore,
+            (byte)type,
+            pv
+        ));
 
         // Return the best score.
         return bestScore;

@@ -25,10 +25,10 @@ public class TranspositionTable {
         }
     }
 
-    public Entry get(long key, DepthLevelInfo info) {
+    public Entry get(long key) {
         Entry entry = _entries[(int) Math.abs(key % _size)];
-        if (entry.key != key) entry = null;
-        info.tt_entry = entry == null;
+        if (entry == null || entry.key != key)
+            return null;
         return entry;
     }
 
