@@ -423,7 +423,6 @@ public class Board implements IBoard {
         return Utils.countBits(_stateStack.getFirst().getCheckers()) == 2;
     }
 
-    @SuppressWarnings("unchecked")
     @Override
     public Builder getBuilder() {
         return new Builder();

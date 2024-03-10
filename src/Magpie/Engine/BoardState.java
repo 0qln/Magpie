@@ -90,7 +90,6 @@ public class BoardState {
 
     public static class Builder extends Misc.Builder<BoardState> {
 
-        // Cache the target values
         @Required
         private Integer _plys50;
         @Required
@@ -101,20 +100,12 @@ public class BoardState {
         private BitSet _castling;
         @NotRequired
         private int _captured = None.ID_White;
-        // Dynamically used for computation on build
-        // @BuilderRequired
-        // private boolean _comesWithCheck = false;
         @Required
         private Board _origin;
 
         public Builder(Board origin) {
             this._origin = origin;
         }
-
-        // public Builder comesWithCheck(boolean does) {
-        // _comesWithCheck = does;
-        // return this;
-        // }
 
         public Builder plys50(int plys50) {
             this._plys50 = plys50;
@@ -156,7 +147,7 @@ public class BoardState {
 
         @Override
         protected BoardState _buildT() {
-            long checkers = 0, blockers = 0, nstmAttacks = 0, pinners = 0;
+            long checkers = 0, blockers = 0, nstmAttacks = 0;
 
             final int us = _origin.getTurn(), nus = Color.NOT(us);
             final long enemiesBB = _origin.getCBitboard(nus);
@@ -179,8 +170,6 @@ public class BoardState {
                 nstmAttacks |= attacks;
             }
 
-            // System.out.println(_origin.toString());
-
             long[] xRayCheckers = { 
                 (
                     Rook.generator.attacks(kingSq) & (_origin.getTBitboard(Rook.ID_Type) | _origin.getTBitboard(Queen.ID_Type)) |
@@ -189,25 +178,14 @@ public class BoardState {
                 & _origin.getCBitboard(Color.NOT(us)) 
             };
 
-            // printBB(xRayCheckers);
-
             while (xRayCheckers[0] != 0) {
                 int xRayChecker = popLsb(xRayCheckers);
                 long betweenSquaresBB = Masks.squaresBetween(kingSq, xRayChecker);
                 long piecesBetweenSniperAndKingBB = _origin.getOccupancy() & betweenSquaresBB;
 
-                // printBB(betweenSquaresBB);
-
-                if (countBits(piecesBetweenSniperAndKingBB) == 1) {
+                if (countBits(piecesBetweenSniperAndKingBB) == 1) 
                     blockers |= piecesBetweenSniperAndKingBB;
-                    pinners |= target(xRayChecker);
-                }
             }
-
-            // printBB(pinners);
-            // printBB(blockers);
-            // printBB(checkers);
-            // printBB(nstmAttacks);
 
             return new BoardState(
                     checkers,
