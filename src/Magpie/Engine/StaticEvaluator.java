@@ -167,7 +167,7 @@ public final class StaticEvaluator {
     };
 
     // eye balled
-    public static final int[] BISHOP_PAIR = { 60, 100 };
+    public static final int[] BISHOP_PAIR = { 60, 80 };
 
     public static final int PHASE_MAX = 24;
     public static final int[] PHASE_VALUES = {
@@ -188,9 +188,11 @@ public final class StaticEvaluator {
 
         result += material(board, us, phase);
         result += psqt(board, us, phase);
+        // result += bishopPair(board, us, phase);
 
         result -= material(board, nus, phase);
         result -= psqt(board, nus, phase);
+        // result -= bishopPair(board, nus, phase);
 
         return result;
     }
