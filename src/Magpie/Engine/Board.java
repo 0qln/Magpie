@@ -175,7 +175,7 @@ public class Board implements IBoard {
                 //         : 0)
                         ;
                     
-        key ^= Zobrist.pieceSQ[movingPiece][to] ^ Zobrist.pieceSQ[movingPiece][to];
+        key ^= Zobrist.pieceSQ[movingPiece][to] ^ Zobrist.pieceSQ[movingPiece][from];
 
         if (getEnPassantSquare() != -1)
             key ^= Zobrist.enPassant[file(getEnPassantSquare())];
@@ -207,7 +207,7 @@ public class Board implements IBoard {
         }
 
         // In hash, update castling, if it has changed
-        if (!_stateStack.getFirst().getCastling().equals(newState.getCastling())) {
+        if (!oldCastling.equals(newState.getCastling())) {
             // Remove old castling rights
             // newState.updateKey(Zobrist.castling[Castling.Key(oldCastling)])
             //         // Add new castling rights
@@ -220,7 +220,7 @@ public class Board implements IBoard {
         positionsIncr(key);
 
         // Three fold repitition
-        newState.threeFoldRepitition(posOccurances(key) + 1 >= 3);
+        newState.threeFoldRepitition(posOccurances(key) >= 3);
 
         // Initiate key for new board state
         newState.initKey(key);
