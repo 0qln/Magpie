@@ -369,7 +369,7 @@ public class AlphaBetaSearchTree extends ISearchTree {
         moves.sort(scores);
     }
 
-    private static class Line {
+    public static class Line {
         public short _move;
         public Line _child = null;
 
