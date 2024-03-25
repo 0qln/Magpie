@@ -30,7 +30,7 @@ public class AlphaBetaSearchTree extends ISearchTree {
     private boolean _stopFlag;
     private long _startTime, _timePerMove;
     private long _maxNodes = -1;
-    private static TranspositionTable _tt = new TranspositionTable(Misc.Utils.mb(30) / TranspositionTable.Entry.SIZE_BYTES);
+    // private TranspositionTable _tt = new TranspositionTable(Misc.Utils.mb(30) / TranspositionTable.Entry.SIZE_BYTES);
 
     public AlphaBetaSearchTree(Board board) {
         this._board = board;
@@ -212,24 +212,24 @@ public class AlphaBetaSearchTree extends ISearchTree {
         if (_board.hasThreeFoldRepitition())
             return StaticEvaluator.Draw;
         
-        long hash = _board.getKey();
-        TranspositionTable.Entry ttEntry = _tt.get(hash);
+        // long hash = _board.getKey();
+        // TranspositionTable.Entry ttEntry = _tt.get(hash);
 
         // TT cutoff
-        if (ttEntry != null && 
-            ttEntry.depth >= depth && (
-                // We have stored the exact evaluation for this position, so return it
-                (ttEntry.type == TranspositionTable.Entry.TYPE_PV) || 
-                // We have stored the upper bound of the eval for this position. If it's less than alpha then we don't need to
-                // search the moves in this position as they won't interest us; otherwise we will have to search to find the exact value
-                (ttEntry.type == TranspositionTable.Entry.TYPE_ALL && ttEntry.score <= alpha) ||
-                // We have stored the lower bound of the eval for this position. Only return if it causes a beta cut-off.
-                (ttEntry.type == TranspositionTable.Entry.TYPE_CUT && ttEntry.score >= beta)
-            )
-            ) {
-            parentPV.update(ttEntry.pv);
-            return ttEntry.score; 
-        }
+        // if (ttEntry != null && 
+            // ttEntry.depth >= depth && (
+                // // We have stored the exact evaluation for this position, so return it
+                // (ttEntry.type == TranspositionTable.Entry.TYPE_PV) || 
+                // // We have stored the upper bound of the eval for this position. If it's less than alpha then we don't need to
+                // // search the moves in this position as they won't interest us; otherwise we will have to search to find the exact value
+                // (ttEntry.type == TranspositionTable.Entry.TYPE_ALL && ttEntry.score <= alpha) ||
+                // // We have stored the lower bound of the eval for this position. Only return if it causes a beta cut-off.
+                // (ttEntry.type == TranspositionTable.Entry.TYPE_CUT && ttEntry.score >= beta)
+            // )
+            // ) {
+            // parentPV.update(ttEntry.pv);
+            // return ttEntry.score; 
+        // }
 
         // Exit condition
         if (depth <= 0)
@@ -280,7 +280,7 @@ public class AlphaBetaSearchTree extends ISearchTree {
 
             // Simple beta cutoff (fail-hard)
             if (score >= beta) {
-                type = TranspositionTable.Entry.TYPE_CUT;
+                // type = TranspositionTable.Entry.TYPE_CUT;
                 bestScore = beta;
                 break;
             }
@@ -294,7 +294,7 @@ public class AlphaBetaSearchTree extends ISearchTree {
             if (score > bestScore) {
                 bestScore = score;
                 parentPV.update(pv);
-                type = TranspositionTable.Entry.TYPE_PV;
+                // type = TranspositionTable.Entry.TYPE_PV;
             }
         }
 
@@ -302,13 +302,13 @@ public class AlphaBetaSearchTree extends ISearchTree {
         parentPV.update(pv);
 
         // Make transpostion table entry.
-        _tt.set(new TranspositionTable.Entry(
-            hash,
-            (byte)depth,
-            bestScore,
-            (byte)type,
-            pv
-        ));
+        // _tt.set(new TranspositionTable.Entry(
+            // hash,
+            // (byte)depth,
+            // bestScore,
+            // (byte)type,
+            // pv
+        // ));
 
         // Return the best score.
         return bestScore;
@@ -397,9 +397,9 @@ public class AlphaBetaSearchTree extends ISearchTree {
             // TODO: killer moves
 
             // Try pv moves first
-            if (move == info.ttEntry.pv.getMove()) {
-                scores[i] = 10_000;
-            }
+            // if (move == info.ttEntry.pv.getMove()) {
+                // scores[i] = 10_000;
+            // }
 
             // MVV-LVA
             if (Move.isCapture(Move.getFlag(move))) {

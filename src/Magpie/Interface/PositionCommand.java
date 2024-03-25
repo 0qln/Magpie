@@ -46,7 +46,7 @@ public class PositionCommand extends Command {
                 _state.board.get() == _lastPosition.board &&
                 moves.length > 0 &&
                 Arrays.equals(_lastPosition.fen, fen) &&
-                Arrays.equals(
+                Misc.Utils.Arrays_equals(
                         _lastPosition.moves, 0, _lastPosition.moves.length,
                         moves, 0, _lastPosition.moves.length)
                 && (

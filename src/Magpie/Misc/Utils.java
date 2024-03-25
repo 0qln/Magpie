@@ -5,6 +5,20 @@ import java.util.function.Predicate;
 
 public final class Utils
 {
+    public static boolean Arrays_equals(
+        String[] array1, int lo1, int hi1,
+        String[] array2, int lo2, int hi2) {
+            
+        for (int i = lo1; i < hi1; i++) {
+            for (int j = lo2; j < hi2; j++) {
+                if (array1[i] == array2[j])
+                    return false;
+            }
+        }
+            
+        return true;
+    }
+    
     public static <T> int indexOf(T[] array, Predicate<T> predicate) {
         for (int i = 0; i < array.length; i++) {
             if (predicate.test(array[i])) {
