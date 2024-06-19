@@ -394,12 +394,10 @@ public class AlphaBetaSearchTree extends ISearchTree {
         for (int i = 0; i < scores.length; i++) {
             short move = moves.get(i);
 
-            // TODO: killer moves
-
             // Try pv moves first
-            if (move == info.ttEntry.pv.getMove()) {
-                scores[i] = 10_000;
-            }
+            // if (move == info.ttEntry.pv.getMove()) {
+            //     scores[i] = 10_000;
+            // }
 
             // MVV-LVA
             if (Move.isCapture(Move.getFlag(move))) {
