@@ -1,9 +1,6 @@
 package Interface;
 
 import java.util.Arrays;
-import java.util.Optional;
-
-import Misc.Ptr;
 
 public class SetOptionCommand extends Command {
     static {

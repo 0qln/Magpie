@@ -1,7 +1,5 @@
 package Interface;
 
-import Misc.Ptr;
-
 /*
 uci
     tell engine to use the uci (universal chess interface),

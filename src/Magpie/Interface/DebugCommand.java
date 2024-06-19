@@ -1,9 +1,5 @@
 package Interface;
 
-import java.util.*;
-
-import Misc.Ptr;
-
 /* UCI::
 debug [ on | off ]
     switch the debug mode of the engine on and off.

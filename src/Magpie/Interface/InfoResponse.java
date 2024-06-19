@@ -1,6 +1,5 @@
 package Interface;
 
-import Engine.IMoveDecoder;
 import Engine.IMoveEncoder;
 
 public class InfoResponse extends Response {

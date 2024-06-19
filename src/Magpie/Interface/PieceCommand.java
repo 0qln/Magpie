@@ -4,8 +4,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 
 import Engine.Piece;
-import Interface.Command.*;
-import Misc.Ptr;
 
 /*
  * piece [get <square0> ... <squaren> | add <square> <piece> | remove <square0> ... <squaren>  ]
