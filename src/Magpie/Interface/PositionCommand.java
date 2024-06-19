@@ -1,11 +1,12 @@
 package Interface;
 
 import java.util.Arrays;
+import Engine.TokenFormat;
 
 public class PositionCommand extends Command {
     private static class Position {
         public Engine.IBoard board;
-        public String[] fen;
+        public String[] tokens;
         public String[] moves;
     }
 
@@ -16,6 +17,7 @@ public class PositionCommand extends Command {
     }
 
     private static final String[] FEN_STARTPOS = new String[] { "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR", "w", "KQkq", "-", "0", "1" };
+    private static final String[] EPD_STARTPOS = new String[] { "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR", "w", "KQkq", "-", "hmvc", "0;", "fmvn", "1;" };
 
     static {
         Signature.register("position", PositionCommand.class, new Builder<>(() -> new PositionCommand()));
@@ -27,9 +29,12 @@ public class PositionCommand extends Command {
             return false;
         }
         final int movesidx = Misc.Utils.indexOf(args, e -> e.equals("moves"));
-        params_put("fen", args[0].equals("startpos")
+        params_put("tokens", args[0].equals("startpos")
                 ? FEN_STARTPOS
                 : Arrays.copyOfRange(args, 1, movesidx == -1 ? args.length : movesidx));
+        params_put("tokenFormat", args[0].equals("startpos") || args[0].equals("fen")
+                ? TokenFormat.FEN
+                : TokenFormat.EPD);
         params_put("moves", movesidx == -1
                 ? new String[0]
                 : Arrays.copyOfRange(args, movesidx + 1, args.length));
@@ -38,14 +43,15 @@ public class PositionCommand extends Command {
 
     public void run() {
         String[] moves = params_get("moves");
-        String[] fen = params_get("fen");
+        String[] tokens = params_get("tokens");
+        TokenFormat tokenFormat = params_get("tokenFormat");
 
         // For quick position set up during games
         if (!_state.board.isNull() &&
                 _lastPosition != null &&
                 _state.board.get() == _lastPosition.board &&
                 moves.length > 0 &&
-                Arrays.equals(_lastPosition.fen, fen) &&
+                Arrays.equals(_lastPosition.tokens, tokens) &&
                 Arrays.equals(
                         _lastPosition.moves, 0, _lastPosition.moves.length,
                         moves, 0, _lastPosition.moves.length)
@@ -63,7 +69,7 @@ public class PositionCommand extends Command {
             // Set up position
             _state.board.set(_state.board.get()
                     .getBuilder()
-                    .fen(fen)
+                    .tokens(tokens, tokenFormat)
                     .build());
 
             // Play moves
@@ -73,9 +79,10 @@ public class PositionCommand extends Command {
             }
         }
 
+        // Cache position
         _lastPosition = new Position();
         _lastPosition.board = _state.board.get();
-        _lastPosition.fen = fen;
+        _lastPosition.tokens = tokens;
         _lastPosition.moves = moves;
     }
 

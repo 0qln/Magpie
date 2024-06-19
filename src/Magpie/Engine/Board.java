@@ -511,29 +511,32 @@ public class Board implements IBoard {
     public static class Builder extends BoardBuilder<Board> {
 
         @NotRequired
-        private String[] _fen = null;
+        private String[] _tokens = null;
+
+        @NotRequired
+        private TokenFormat _tokenFormat = TokenFormat.None;
 
         @Override
         protected Board _buildT() {
             Board board = new Board();
 
-            if (_fen != null) {
+            if (_tokens != null && _tokenFormat == TokenFormat.FEN) {
                 // Set up pieces
                 int squareIdx = 63;
-                for (int i = 0; i < _fen[0].length(); i++) {
+                for (int i = 0; i < _tokens[0].length(); i++) {
                     // skip slashes
-                    if (_fen[0].charAt(i) == '/') {
+                    if (_tokens[0].charAt(i) == '/') {
                         continue;
                     }
 
                     // handle digit
-                    if (Character.isDigit(_fen[0].charAt(i))) {
-                        squareIdx -= _fen[0].charAt(i) - '0';
+                    if (Character.isDigit(_tokens[0].charAt(i))) {
+                        squareIdx -= _tokens[0].charAt(i) - '0';
                         continue;
                     }
 
                     // get piece char as Piece Type
-                    int piece = Piece.fromChar(_fen[0].charAt(i));
+                    int piece = Piece.fromChar(_tokens[0].charAt(i));
 
                     // evaluate
                     board.addPiece(squareIdx ^ 7, piece);
@@ -542,7 +545,7 @@ public class Board implements IBoard {
                 }
 
                 // turn
-                board.setTurn(_fen[1].contains("w")
+                board.setTurn(_tokens[1].contains("w")
                         ? Color.White
                         : Color.Black);
 
@@ -550,18 +553,18 @@ public class Board implements IBoard {
                 stateBuilder
                         // castling
                         .castling(Castling.create(
-                                _fen[2].contains("K"),
-                                _fen[2].contains("Q"),
-                                _fen[2].contains("k"),
-                                _fen[2].contains("q")))
+                                _tokens[2].contains("K"),
+                                _tokens[2].contains("Q"),
+                                _tokens[2].contains("k"),
+                                _tokens[2].contains("q")))
 
                         // en passant
-                        .epSquare(!_fen[3].contains("-")
-                                ? Misc.Utils.toSquareIndex(_fen[3])
+                        .epSquare(!_tokens[3].contains("-")
+                                ? Misc.Utils.toSquareIndex(_tokens[3])
                                 : -1)
 
                         // plys for 50 move rule
-                        .plys50(_fen.length > 4 ? Integer.parseInt(_fen[4]) : 0)
+                        .plys50(_tokens.length > 4 ? Integer.parseInt(_tokens[4]) : 0)
                         .ply(0)
 
                         // zobrist key
@@ -571,7 +574,13 @@ public class Board implements IBoard {
                         .threeFoldRepitition(false);
 
                 board._stateStack.push(stateBuilder.build());
-            } else {
+            } 
+
+            if (_tokens != null && _tokenFormat == TokenFormat.EPD) {
+                // TODO: decode epd
+            }
+
+            if (_tokenFormat == TokenFormat.None || _tokens == null) {
                 BoardState.Builder stateBuilder = new BoardState.Builder(board)
                         .castling(Castling.empty())
                         .ply(0)
@@ -587,14 +596,14 @@ public class Board implements IBoard {
         }
 
         @Override
-        public Builder fen(String[] fen) {
-            _fen = fen;
+        public Builder tokens(String[] tokens, TokenFormat format) {
+            _tokens = tokens;
+            _tokenFormat = format;
             return this;
         }
 
         public Builder fen(String fen) {
-            _fen = fen.split(" ");
-            return this;
+            return tokens(fen.split(" "), TokenFormat.FEN);
         }
     }
 }
