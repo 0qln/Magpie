@@ -4,15 +4,20 @@ import Engine.AlphaBetaSearchTree.Line;
 
 public class TranspositionTable {
     private final Entry[] _entries;
-    private final int _size;
+    private final int _elements;
 
-    public TranspositionTable(int size) {
-        _size = size;
-        _entries = new Entry[size];
+    public TranspositionTable(int elements) {
+        _elements = elements;
+        _entries = new Entry[elements];
+    }
+
+    // size in bytes
+    public static TranspositionTable ofSize(int size) {
+        return new TranspositionTable(size / Entry.SIZE_BYTES);
     }
 
     public void set(Entry entry) {
-        int index = (int) Math.abs(entry.key % _size);
+        int index = (int) Math.abs(entry.key % _elements);
         Entry oldEntry = _entries[index];
 
         if (oldEntry != null) {
@@ -26,7 +31,7 @@ public class TranspositionTable {
     }
 
     public Entry get(long key) {
-        Entry entry = _entries[(int) Math.abs(key % _size)];
+        Entry entry = _entries[(int) Math.abs(key % _elements)];
         if (entry == null || entry.key != key)
             return null;
         return entry;

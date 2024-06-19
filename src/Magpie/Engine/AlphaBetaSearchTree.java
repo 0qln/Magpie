@@ -30,7 +30,7 @@ public class AlphaBetaSearchTree extends ISearchTree {
     private boolean _stopFlag;
     private long _startTime, _timePerMove;
     private long _maxNodes = -1;
-    private static TranspositionTable _tt = new TranspositionTable(Misc.Utils.mb(30) / TranspositionTable.Entry.SIZE_BYTES);
+    private static TranspositionTable _tt = TranspositionTable.ofSize(Misc.Utils.mb(30));
 
     public AlphaBetaSearchTree(Board board) {
         this._board = board;
