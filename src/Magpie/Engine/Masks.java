@@ -14,6 +14,17 @@ public final class Masks {
             0x4040404040404040L,
             0x8080808080808080L,
     };
+    
+    public static final long[] Passants = {
+            0x0202020202020202L,
+            0x0505050505050505L,
+            0x0a0a0a0a0a0a0a0aL,
+            0x1414141414141414L,
+            0x2828282828282828L,
+            0x5050505050505050L,
+            0xa0a0a0a0a0a0a0a0L,
+            0x4040404040404040L,
+    };
 
     public static final long[] Ranks = {
             0x00000000000000FFL,

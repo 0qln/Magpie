@@ -571,7 +571,7 @@ public class Board implements IBoard {
                         .plys50(_tokens.length > 4 ? Integer.parseInt(_tokens[4]) : 0)
 
                         // fullmove counter
-                        .ply(2 * (_tokens.length > 5 ? Integer.parseInt(_tokens[5]) : 0))
+                        .ply(2 * (_tokens.length > 5 ? Integer.parseInt(_tokens[5]) - 1 : 0) + (board.getTurn() == Color.Black ? 1 : 0))
 
                         // zobrist key
                         .initKey(Zobrist.initialKey(board, stateBuilder))
@@ -580,7 +580,7 @@ public class Board implements IBoard {
                         .threeFoldRepitition(false);
 
                 board._stateStack.push(stateBuilder.build());
-                
+                board._ply = board._stateStack.getFirst().getPly();                
                 board.positionsIncr(board.getKey());
             } 
 
@@ -655,4 +655,66 @@ public class Board implements IBoard {
             return tokens(fen.split(" "), TokenFormat.FEN);
         }
     }
+
+
+    public String fen() {
+        StringBuilder sb = new StringBuilder();
+        for (int rank = 7; rank >= 0; rank--) {
+            int emptyCount = 0;
+            for (int file = 0; file <= 7; file++) {
+                int square = Misc.Utils.sqaureIndex0(rank, file);
+                int piece = getPieceID(square);
+                if (piece == None.ID_Type) {
+                    emptyCount++;
+                } else {
+                    if (emptyCount > 0) {
+                        sb.append(emptyCount);
+                        emptyCount = 0;
+                    }
+                    sb.append((char)Piece.toChar(piece));
+                }
+            }
+            if (emptyCount > 0) {
+                sb.append(emptyCount);
+            }
+            if (rank > 0) {
+                sb.append("/");
+            }
+        }
+        sb.append(" ");
+        sb.append(getTurn() == Color.White ? "w" : "b");
+        sb.append(" ");
+        BitSet castling = getCastling();
+        String castlingStr = "";
+        if (Castling.get(castling, Castling.KingSide, Color.White)) {
+            castlingStr += "K"; 
+        }
+        if (Castling.get(castling, Castling.QueenSide, Color.White)) {
+            castlingStr += "Q";
+        }
+        if (Castling.get(castling, Castling.KingSide, Color.Black)) {
+            castlingStr += "k";
+        }
+        if (Castling.get(castling, Castling.QueenSide, Color.Black)) {
+            castlingStr += "q";
+        }
+        if (castlingStr.equals("")) {
+            castlingStr = "-";
+        }
+        sb.append(castlingStr);
+        sb.append(" ");
+        int epSquare = getEnPassantSquare();
+        long epAttackers = getBitboard(Pawn.ID_Type, getTurn()); 
+        if (epSquare != -1) {
+            epAttackers &= Masks.Ranks[4 - getTurn()];
+            epAttackers &= Masks.Passants[Utils.file(epSquare)];
+        }
+        sb.append(epSquare == -1 || epAttackers == 0 ? "-" : Misc.Utils.fromSquareIndex(epSquare));
+        sb.append(" ");
+        sb.append(_stateStack.getFirst().getPlys50());
+        sb.append(" ");
+        sb.append(_stateStack.getFirst().getPly() / 2 + 1);
+        return sb.toString();
+    }
+
 }

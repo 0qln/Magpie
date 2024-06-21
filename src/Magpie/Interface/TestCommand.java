@@ -1,6 +1,10 @@
 package Interface;
 
 import java.util.Random;
+
+import Engine.Board;
+import Engine.IMoveDecoder;
+import Engine.MoveFormat;
 import Engine.Zobrist;
 
 public class TestCommand extends Command {
@@ -18,6 +22,76 @@ public class TestCommand extends Command {
 
     @Override
     public void run() {
+        if (params_getB("fen-encode")) {
+            // fen-decoding and LAN_UCI-decoding can be trusted.
+            
+            new TextResponse(
+                "FEN 1 success: " +
+                testFenEncoding(
+                    "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1", 
+                    new String[] {}, 
+                    MoveFormat.RawDec, 
+                    "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"))
+                .send();
+            
+            new TextResponse(
+                "FEN 2 success: " +
+                testFenEncoding(
+                    "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1", 
+                    new String[] { "e2e4" },
+                    MoveFormat.LongAlgebraicNotation_UCI, 
+                    "rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq - 0 1"))
+                .send();
+            
+            new TextResponse(
+                "FEN 3 success: " +
+                testFenEncoding(
+                    "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1", 
+                    new String[] { "e2e4", "c7c5", "e4e5", "d7d5" },
+                    MoveFormat.LongAlgebraicNotation_UCI, 
+                    "rnbqkbnr/pp2pppp/8/2ppP3/8/8/PPPP1PPP/RNBQKBNR w KQkq d6 0 3"))
+                .send();
+            
+            new TextResponse(
+                "FEN 4 success: " +
+                testFenEncoding(
+                    "r3k2r/8/8/8/8/8/8/R3K2R w KQkq - 0 1", 
+                    new String[] { "e1c1" },
+                    MoveFormat.LongAlgebraicNotation_UCI, 
+                    "r3k2r/8/8/8/8/8/8/2KR3R b kq - 1 1"))
+                .send();
+            
+            new TextResponse(
+                "FEN 5 success: " +
+                testFenEncoding(
+                    "r3k2r/8/8/8/8/8/8/R3K2R w KQkq - 0 1", 
+                    new String[] { "e1g1" },
+                    MoveFormat.LongAlgebraicNotation_UCI, 
+                    "r3k2r/8/8/8/8/8/8/R4RK1 b kq - 1 1"))
+                .send();
+            
+            new TextResponse(
+                "FEN 6 success: " +
+                testFenEncoding(
+                    "r3k2r/8/8/8/8/8/8/R4RK1 b kq - 1 1", 
+                    new String[] { "e8c8" },
+                    MoveFormat.LongAlgebraicNotation_UCI, 
+                    "2kr3r/8/8/8/8/8/8/R4RK1 w - - 2 2"))
+                .send();
+
+        }
+        if (params_getB("SAN-decode")) {
+
+            new TextResponse(
+                "SAN 1 success: " +
+                testMove(
+                    "e4", 
+                    MoveFormat.StandardAlgebraicNotation, 
+                    "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1", 
+                    "rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq - 0 1"))
+                .send();
+
+        }
         if (params_getB("zobrist")) {
             // find a random seed with minimal collisions
             var rng = new Random();
@@ -86,4 +160,26 @@ public class TestCommand extends Command {
         return perftResult == excpected;
     }
 
+    private boolean testFenEncoding(String fenOrigin, String[] moves, MoveFormat format, String expectedFEN) {
+        Engine.Board b = new Engine.Board.Builder()
+                .fen(fenOrigin)
+                .build();
+        
+        IMoveDecoder decoder = b.getMoveDecoder(format);
+        
+        for (String move : moves) {
+            b.makeMove(decoder.decode(move));
+        }
+        
+        boolean result = b.fen().equals(expectedFEN);
+        
+        if (!result) {
+            new TextResponse("\nFAIL").send();
+            new TextResponse(b.toString()).send();
+            new TextResponse("Result:   " + b.fen()).send();
+            new TextResponse("Expected: " + expectedFEN).send();
+        }
+
+        return result;
+    }
 }
