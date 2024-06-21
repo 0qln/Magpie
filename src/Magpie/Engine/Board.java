@@ -98,7 +98,7 @@ public class Board implements IBoard {
         newState
                 .castling(oldCastling)
                 .ply(_ply)
-                .plys50(_ply)
+                .plys50(_stateStack.getFirst().getPlys50() + 1)
                 // .initKey(this.getKey())
                 // The xor operation is it's own inverse, thus we just apply the operation on
                 // every new move, regardless of the current stm, becuase it will inverse, the
