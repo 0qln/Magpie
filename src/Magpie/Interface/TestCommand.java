@@ -26,7 +26,8 @@ public class TestCommand extends Command {
 
     @Override
     public void run() {
-        if (params_getB("fen-encode")) {
+        boolean all = params_getB("all");
+        if (all || params_getB("fen-encode")) {
             // fen-decoding and LAN_UCI-decoding can be trusted.
             
             new TextResponse(
@@ -84,7 +85,7 @@ public class TestCommand extends Command {
                 .send();
 
         }
-        if (params_getB("SAN-decode")) {
+        if (all || params_getB("SAN-decode")) {
 
             // test normal move
             new TextResponse(
@@ -172,10 +173,10 @@ public class TestCommand extends Command {
                 }
             }
         }
-        if (params_getB("eret")) {
+        if (all || params_getB("eret")) {
             //https://www.chessprogramming.org/Eigenmann_Rapid_Engine_Test
         }
-        if (params_getB("movegen")) {
+        if (all || params_getB("movegen")) {
             new TextResponse("Position 1 success: " +
                     testPosition("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1", 5, 4865609L))
                     .send();
