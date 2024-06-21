@@ -9,7 +9,11 @@ import java.util.function.BiConsumer;
 public class Board implements IBoard {
 
     // Keep track of positions for three fold repitition.
-    byte[] _positions = new byte[Misc.Utils.mb(10)];
+    byte[] _positions = new byte[Misc.Utils.mb(30)];
+    // When incrementing/decrementing, we should not need to check for overflows as 
+    // the search will abort if the position occured more than thrice (three fold repitition).
+    // In case that the search does not abort (ie. perft) we don't need to check 
+    // for overflows, as the occurance of the position should not be relevant for such searches.
     private void positionsDecr(long key) {
         _positions[(int)Math.abs(key % _positions.length)]--;
     }
@@ -565,7 +569,9 @@ public class Board implements IBoard {
 
                         // plys for 50 move rule
                         .plys50(_tokens.length > 4 ? Integer.parseInt(_tokens[4]) : 0)
-                        .ply(0)
+
+                        // fullmove counter
+                        .ply(2 * (_tokens.length > 5 ? Integer.parseInt(_tokens[5]) : 0))
 
                         // zobrist key
                         .initKey(Zobrist.initialKey(board, stateBuilder))
@@ -574,10 +580,53 @@ public class Board implements IBoard {
                         .threeFoldRepitition(false);
 
                 board._stateStack.push(stateBuilder.build());
+                
+                board.positionsIncr(board.getKey());
             } 
 
             if (_tokens != null && _tokenFormat == TokenFormat.EPD) {
-                // TODO: decode epd
+                // Set up pieces
+                int squareIdx = 63;
+                for (int i = 0; i < _tokens[0].length(); i++) {
+                    // skip slashes
+                    if (_tokens[0].charAt(i) == '/') {
+                        continue;
+                    }
+
+                    // handle digit
+                    if (Character.isDigit(_tokens[0].charAt(i))) {
+                        squareIdx -= _tokens[0].charAt(i) - '0';
+                        continue;
+                    }
+
+                    // get piece char as Piece Type
+                    int piece = Piece.fromChar(_tokens[0].charAt(i));
+
+                    // evaluate
+                    board.addPiece(squareIdx ^ 7, piece);
+
+                    squareIdx--;
+                }
+
+                // turn
+                board.setTurn(_tokens[1].contains("w")
+                        ? Color.White
+                        : Color.Black);
+
+                BoardState.Builder stateBuilder = new BoardState.Builder(board);
+                stateBuilder
+                        // castling
+                        .castling(Castling.create(
+                                _tokens[2].contains("K"),
+                                _tokens[2].contains("Q"),
+                                _tokens[2].contains("k"),
+                                _tokens[2].contains("q")))
+                        // en passant
+                        .epSquare(!_tokens[3].contains("-")
+                                ? Misc.Utils.toSquareIndex(_tokens[3])
+                                : -1);
+
+                EpdInfo epd = EpdInfo.ParseOperations(String.join(" ", Arrays.copyOfRange(_tokens, 4, _tokens.length)));
             }
 
             if (_tokenFormat == TokenFormat.None || _tokens == null) {
@@ -588,9 +637,9 @@ public class Board implements IBoard {
                         .threeFoldRepitition(false);
                 stateBuilder.initKey(Zobrist.initialKey(board, stateBuilder));
                 board._stateStack.push(stateBuilder.build());
-            }
 
-            board.positionsIncr(board.getKey());
+                board.positionsIncr(board.getKey());
+            }
 
             return board;
         }
