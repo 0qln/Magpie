@@ -12,10 +12,10 @@ public class Zobrist {
     // public static final long[] enPassant = new long[9]; // Index 0 is for EP_SQ == -1
     public static final long[] enPassant = new long[8];
     public static final long[] castling = new long[16];
-    public static final long stm;
+    public static long stm;
 
-    static {
-        Random rng = new Random(42069);
+    public static void init(long seed) {
+        Random rng = new Random(seed);
 
         for (int sq = 0; sq < 64; sq++) {
             for (int piece = 0; piece < 14; piece++) {

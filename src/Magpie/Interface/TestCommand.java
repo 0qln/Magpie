@@ -1,5 +1,8 @@
 package Interface;
 
+import java.util.Random;
+import Engine.Zobrist;
+
 public class TestCommand extends Command {
 
     static {
@@ -15,6 +18,24 @@ public class TestCommand extends Command {
 
     @Override
     public void run() {
+        if (params_getB("zobrist")) {
+            // find a random seed with minimal collisions
+            var rng = new Random();
+            var collisionsMin = Long.MAX_VALUE;
+            while (true) {
+                long seed = rng.nextLong();
+                Zobrist.init(seed);
+                // TODO: measure collisions
+                long collisions = 0;
+                if (collisions < collisionsMin) {
+                    collisionsMin = collisions;
+                    new TextResponse("New seed: " + seed + (" (" + collisions + " collisions)")).send();
+                }
+            }
+        }
+        if (params_getB("eret")) {
+            //https://www.chessprogramming.org/Eigenmann_Rapid_Engine_Test
+        }
         if (params_getB("movegen")) {
             new TextResponse("Position 1 success: " +
                     testPosition("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1", 5, 4865609L))

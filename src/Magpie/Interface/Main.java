@@ -4,10 +4,11 @@ import java.util.*;
 import java.util.logging.Logger;
 
 import Misc.LoggerConfigurator;
+import Engine.Zobrist;
 
 public final class Main {
 
-    private static final boolean DEBUG = true;
+    public static final boolean DEBUG = true;
 
     static {
         // java doesnt execute the static initializers without
@@ -24,6 +25,8 @@ public final class Main {
         new StopCommand();
         new UciNewGameCommand();
         new TestCommand();
+
+        Zobrist.init(69);
     }
 
     private static boolean _quitFlag = false;
