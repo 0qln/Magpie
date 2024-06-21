@@ -1,10 +1,12 @@
 package Engine;
 
 import Engine.AlphaBetaSearchTree.Line;
+import Interface.Main;
 
 public class TranspositionTable {
     private final Entry[] _entries;
     private final int _elements;
+    private int _collisions = 0;
 
     public TranspositionTable(int elements) {
         _elements = elements;
@@ -21,6 +23,7 @@ public class TranspositionTable {
         Entry oldEntry = _entries[index];
 
         if (oldEntry != null) {
+            if (Main.DEBUG) _collisions++;
             if (entry.type < oldEntry.type || entry.depth >= oldEntry.depth) {
                 _entries[index] = entry;
             }
