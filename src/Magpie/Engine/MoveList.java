@@ -4,9 +4,19 @@ import static Engine.Utils.*;
 
 import java.util.Arrays;
 
+import Engine.PieceType.MoveGenerator;
+
 public class MoveList {
     private final short[] _moves = new short[256];
     private int _moveCount = 0;
+    
+    public static MoveList pseudoLegal(Board board, boolean capturesOnly, MoveGenerator generator) {
+        MoveList list = new MoveList();
+        
+        list._moveCount = generator.generate(list._moves, list._moveCount, board, board.getTurn(), capturesOnly);
+        
+        return list;
+    }
 
     /**
      * @param board
@@ -22,6 +32,14 @@ public class MoveList {
         list._moveCount = Queen.generator.generate(list._moves, list._moveCount, board, board.getTurn(), capturesOnly);
         list._moveCount = King.generator.generate(list._moves, list._moveCount, board, board.getTurn(), capturesOnly);
 
+        return list;
+    }
+    
+    public static MoveList checkResolves(Board board, boolean capturesOnly, MoveGenerator generator) {
+        MoveList list = new MoveList();
+
+        list._moveCount = generator.resolves(list._moves, list._moveCount, board, board.getTurn(), capturesOnly);
+        
         return list;
     }
 
@@ -56,26 +74,10 @@ public class MoveList {
 
         return list;
     }
+    
+    public static MoveList filterLegal(Board board, MoveList candidates) {
+        MoveList list = new MoveList();
 
-    public static MoveList legal(Board board, boolean capturesOnly) {
-        MoveList candidates, list = new MoveList();
-
-        // 1. Generate pseudo legal moves.
-
-        // 1.1 If in check, generate only pseudo legal moves that resolve the check
-        if (board.isInSingleCheck()) {
-            candidates = checkResolves(board, capturesOnly);
-        }
-        // 1.2 If in double check, generate only pseudo legal king moves
-        else if (board.isInDoubleCheck()) {
-            candidates = checkResolvesByKing(board, capturesOnly);
-        }
-        // 1.3 Generate all pseudo legal quiet moves and captures
-        else {
-            candidates = pseudoLegal(board, capturesOnly);
-        }
-
-        // 2. Filter out pseudo legal moves that are not legal.
         for (int i = 0; i < candidates._moveCount; i++) {
             final short move = candidates._moves[i];
             final int from = Move.getFrom(move), to = Move.getTo(move), flag = Move.getFlag(move);
@@ -128,7 +130,7 @@ public class MoveList {
                 long[] checkers = { board.getCheckers() };
                 while (checkers[0] != 0) {
                     int square = popLsb(checkers);
-                    PieceType.MoveGenerator gen = PieceType.fromID(board.getPieceID(square)).getGenerator();
+                    PieceType.MoveGenerator gen = PieceType.fromPieceID(board.getPieceID(square)).getGenerator();
                     if (gen instanceof SlidingPiece.MoveGenerator)
                         updatedNstm |= ((SlidingPiece.MoveGenerator)gen).attacks(square, occupationAfterKingMove);
                 }
@@ -159,6 +161,56 @@ public class MoveList {
         }
 
         return list;
+    }
+    
+    public static MoveList legal(Board board, boolean capturesOnly, MoveGenerator generator) {
+        MoveList candidates;
+
+        // 1. Generate pseudo legal moves.
+
+        // 1.1 If in check, generate only pseudo legal moves that resolve the check
+        if (board.isInSingleCheck()) {
+            candidates = checkResolves(board, capturesOnly, generator);
+        }
+        // 1.2 If in double check, generate only pseudo legal king moves
+        else if (board.isInDoubleCheck()) {
+            if (generator instanceof King.MoveGenerator) {
+                candidates = checkResolvesByKing(board, capturesOnly);
+            }
+            else {
+                // Only king can dodge double check; Return empty list.
+                candidates = new MoveList();
+            }
+        }
+        // 1.3 Generate all pseudo legal quiet moves and captures
+        else {
+            candidates = pseudoLegal(board, capturesOnly, generator);
+        }
+
+        // 2. Filter out pseudo legal moves that are not legal.
+        return filterLegal(board, candidates);
+    }
+
+    public static MoveList legal(Board board, boolean capturesOnly) {
+        MoveList candidates;
+
+        // 1. Generate pseudo legal moves.
+
+        // 1.1 If in check, generate only pseudo legal moves that resolve the check
+        if (board.isInSingleCheck()) {
+            candidates = checkResolves(board, capturesOnly);
+        }
+        // 1.2 If in double check, generate only pseudo legal king moves
+        else if (board.isInDoubleCheck()) {
+            candidates = checkResolvesByKing(board, capturesOnly);
+        }
+        // 1.3 Generate all pseudo legal quiet moves and captures
+        else {
+            candidates = pseudoLegal(board, capturesOnly);
+        }
+
+        // 2. Filter out pseudo legal moves that are not legal.
+        return filterLegal(board, candidates);
     }
 
     public static MoveList legal(Board board, String[] searchMoves, IMoveDecoder decoder) {

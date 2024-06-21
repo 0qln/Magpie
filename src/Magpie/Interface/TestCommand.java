@@ -12,6 +12,10 @@ public class TestCommand extends Command {
     static {
         Signature.register("test", TestCommand.class, new Builder<>(() -> new TestCommand()));
     }
+    
+    public TestCommand() {
+        // _forceSync = true;
+    }
 
     @Override
     public boolean parseArgs(String[] args) {
@@ -82,6 +86,7 @@ public class TestCommand extends Command {
         }
         if (params_getB("SAN-decode")) {
 
+            // test normal move
             new TextResponse(
                 "SAN 1 success: " +
                 testMove(
@@ -89,6 +94,66 @@ public class TestCommand extends Command {
                     MoveFormat.StandardAlgebraicNotation, 
                     "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1", 
                     "rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq - 0 1"))
+                .send();
+
+            // test en passant
+            new TextResponse(
+                "SAN 2 success: " +
+                testMoves(
+                    new String[] { "e4", "c5", "e5", "d5", "exd6" }, 
+                    MoveFormat.StandardAlgebraicNotation, 
+                    "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1", 
+                    "rnbqkbnr/pp2pppp/3P4/2p5/8/8/PPPP1PPP/RNBQKBNR b KQkq - 0 3"))
+                .send();
+
+            // test file ambuguity
+            new TextResponse(
+                "SAN 3 success: " +
+                testMoves(
+                    new String[] { "e4", "h6", "Nc3", "c6", "Nge2" }, 
+                    MoveFormat.StandardAlgebraicNotation, 
+                    "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1", 
+                    "rnbqkbnr/pp1pppp1/2p4p/8/4P3/2N5/PPPPNPPP/R1BQKB1R b KQkq - 1 3"))
+                .send();
+
+            // test rank ambuguity
+            new TextResponse(
+                "SAN 4 success: " +
+                testMoves(
+                    new String[] { "b3", "b6", "Bb2", "Bb7", "Nc3", "e6", "e3" ,"f6", "Nge2", "Nh6", "Nc1", "Nc6", "N3e2" }, 
+                    MoveFormat.StandardAlgebraicNotation, 
+                    "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1", 
+                    "r2qkb1r/pbpp2pp/1pn1pp1n/8/8/1P2P3/PBPPNPPP/R1NQKB1R b KQkq - 5 7"))
+                .send();
+
+            // test square ambuguity
+            new TextResponse(
+                "SAN 5 success: " +
+                testMoves(
+                    new String[]  { "Be7", "Nc3e2" }, 
+                    MoveFormat.StandardAlgebraicNotation, 
+                    "r2qkb1r/pbpp2pp/1pn1pp1n/8/8/1PN1P1N1/PBPP1PPP/R1NQKB1R b KQkq - 5 7", 
+                    "r2qk2r/pbppb1pp/1pn1pp1n/8/8/1P2P1N1/PBPPNPPP/R1NQKB1R b KQkq - 7 8"))
+                .send();
+
+            // test castling and captures
+            new TextResponse(
+                "SAN 6 success: " +
+                testMoves(
+                    new String[] { "e4", "e5", "Nf3", "Nc6", "Bb5", "Qe7", "O-O", "d6", "Nxe5", "Be6", "Nf3", "O-O-O" }, 
+                    MoveFormat.StandardAlgebraicNotation, 
+                    "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1", 
+                    "2kr1bnr/ppp1qppp/2npb3/1B6/4P3/5N2/PPPP1PPP/RNBQ1RK1 w - - 3 7"))
+                .send();
+
+            // test pawn promotions
+            new TextResponse(
+                "SAN 7 success: " +
+                testMoves(
+                    new String[] { "h8=Q", "bxa1=N" }, 
+                    MoveFormat.StandardAlgebraicNotation, 
+                    "r1k2rn1/ppp1qp1P/2npb3/1B6/8/5N2/PpPP1PPP/RNBQ1RK1 w - - 3 7", 
+                    "r1k2rnQ/ppp1qp2/2npb3/1B6/8/5N2/P1PP1PPP/nNBQ1RK1 w - - 0 8"))
                 .send();
 
         }
@@ -160,6 +225,55 @@ public class TestCommand extends Command {
         return perftResult == excpected;
     }
 
+    
+    private boolean testMove(String move, MoveFormat format, String fenOrigin, String fenResult) {
+        Engine.Board b = new Engine.Board.Builder()
+                .fen(fenOrigin)
+                .build();
+        
+        IMoveDecoder decoder = b.getMoveDecoder(format);
+        
+        b.makeMove(decoder.decode(move));
+        
+        String fen = b.fen();
+        boolean result = fen.equals(fenResult);
+        
+        if (!result) {
+            new TextResponse("\nFAIL").send();
+            new TextResponse("Move:     " + move).send();
+            new TextResponse("FEN:      " + fenOrigin).send();
+            new TextResponse("Result:   " + fen).send();
+            new TextResponse("Expected: " + fenResult).send();
+        }
+        
+        return result;
+    }
+    
+    private boolean testMoves(String[] moves, MoveFormat format, String fenOrigin, String fenResult) {
+        Engine.Board b = new Engine.Board.Builder()
+                .fen(fenOrigin)
+                .build();
+        
+        IMoveDecoder decoder = b.getMoveDecoder(format);
+        
+        for (String move : moves) {
+            b.makeMove(decoder.decode(move));
+        }
+        
+        String fen = b.fen();
+        boolean result = fen.equals(fenResult);
+        
+        if (!result) {
+            new TextResponse("\nFAIL").send();
+            new TextResponse("Moves:    " + String.join(" ", moves)).send();
+            new TextResponse("FEN:      " + fenOrigin).send();
+            new TextResponse("Result:   " + fen).send();
+            new TextResponse("Expected: " + fenResult).send();
+        }
+        
+        return result;
+    }
+    
     private boolean testFenEncoding(String fenOrigin, String[] moves, MoveFormat format, String expectedFEN) {
         Engine.Board b = new Engine.Board.Builder()
                 .fen(fenOrigin)

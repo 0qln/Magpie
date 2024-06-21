@@ -203,7 +203,7 @@ public class BoardState {
                 final long pieces = _origin.getOccupancy();
                 final int enemyID = _origin.getPieceID(enemySquare);
                 final long attacks = PieceType
-                    .fromID(enemyID)
+                    .fromPieceID(enemyID)
                     .getGenerator()
                     .attacks(enemySquare, pieces, nus);
 

@@ -2,6 +2,8 @@ package Interface;
 
 import java.util.Arrays;
 
+import Engine.MoveFormat;
+
 public class GoCommand extends Command {
 
     static {
@@ -18,7 +20,9 @@ public class GoCommand extends Command {
                 // Has to be last
                 case "searchmoves":
                     String[] moves = Arrays.copyOfRange(args, ++i, args.length);
-                    limit.searchmoves = Engine.MoveList.legal(_state.board.getAs(), moves, _state.board.get().getMoveDecoder());
+                    limit.searchmoves = Engine.MoveList.legal(
+                        _state.board.getAs(), 
+                        moves, _state.board.get().getMoveDecoder(MoveFormat.LongAlgebraicNotation_UCI));
                     params_put("searchmoves", moves);
                     break;
 

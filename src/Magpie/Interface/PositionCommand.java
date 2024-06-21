@@ -1,6 +1,8 @@
 package Interface;
 
 import java.util.Arrays;
+
+import Engine.MoveFormat;
 import Engine.TokenFormat;
 
 public class PositionCommand extends Command {
@@ -62,7 +64,7 @@ public class PositionCommand extends Command {
 
             // Only make the last moves that were added
             for (int i = _lastPosition.moves.length; i < moves.length; i++)
-                _state.board.get().makeMove(_state.board.get().getMoveDecoder().decode(moves[i]));
+                _state.board.get().makeMove(_state.board.get().getMoveDecoder(MoveFormat.LongAlgebraicNotation_UCI).decode(moves[i]));
 
         } else {
             
@@ -74,7 +76,7 @@ public class PositionCommand extends Command {
 
             // Play moves
             for (String moveStr : moves) {
-                short move = _state.board.get().getMoveDecoder().decode(moveStr);
+                short move = _state.board.get().getMoveDecoder(MoveFormat.LongAlgebraicNotation_UCI).decode(moveStr);
                 _state.board.get().makeMove(move);
             }
         }

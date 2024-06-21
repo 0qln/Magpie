@@ -40,8 +40,21 @@ public abstract class PieceType {
         public abstract long attacks(int square, long occupied, int color);
     }
 
-    public static PieceType fromID(int id) {
+    public static PieceType fromPieceID(int id) {
         switch (Piece.getType(id)) {
+            case Pawn.ID_Type: return new Pawn();
+            case Knight.ID_Type: return new Knight();
+            case Bishop.ID_Type: return new Bishop();
+            case Rook.ID_Type: return new Rook();
+            case Queen.ID_Type: return new Queen();
+            case King.ID_Type: return new King();
+            default: return null;
+        }
+    }
+    
+    public static PieceType fromTypeID(int id) {
+        switch (id) {
+            case None.ID_Type: return new None();
             case Pawn.ID_Type: return new Pawn();
             case Knight.ID_Type: return new Knight();
             case Bishop.ID_Type: return new Bishop();

@@ -35,4 +35,11 @@ public enum MoveFormat {
      * eg. Bc4
      */
     StandardAlgebraicNotation,
+    
+    /**
+     * Raw decimal.
+     * 
+     * eg. @-14297
+     */
+    RawDec,
 }

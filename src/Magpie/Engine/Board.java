@@ -1,12 +1,18 @@
 package Engine;
 
+import static Engine.Utils.countBits;
+import static Engine.Utils.deactivateBit;
 import static Engine.Utils.file;
+import static Engine.Utils.lsb;
+import static Engine.Utils.popLsb;
 import static Engine.Utils.target;
 
 import java.util.*;
 import java.util.function.BiConsumer;
 
 public class Board implements IBoard {
+    
+    private Board board = this;
 
     // Keep track of positions for three fold repitition.
     byte[] _positions = new byte[Misc.Utils.mb(30)];
@@ -296,19 +302,64 @@ public class Board implements IBoard {
     public IMoveEncoder getMoveEncoder() {
         return move -> Move.toString(move);
     }
+    
+    // UNTESTED
+    class MoveDecoder_LongAlgebraicNotation implements IMoveDecoder {
+        @Override
+        public short decode(String move) {
+            // TODO: 
+            boolean isPieceMove = move.length() == 6;
+            int indexShift = isPieceMove ? 1 : 0; // pawns are not included in long algebraic notation
+            int from = Misc.Utils.toSquareIndex(move.substring(0 + indexShift, 2 + indexShift));
+            int to = Misc.Utils.toSquareIndex(move.substring(3 + indexShift, 4 + indexShift));
 
-    @Override
-    public IMoveDecoder getMoveDecoder() {
-        return str -> {
+            // Use board context to determine the flag [e.g. castling, capturing, promotion]
+            int movingPieceType = Piece.getType(getPieceID(from)); // TODO: we can get the moving piece type from the move notation
+            int destPieceType = Piece.getType(getPieceID(to));
+            int absDist = Math.abs(from - to);
+            boolean captures = destPieceType == None.ID_Type;
+            int flag = captures ? Move.QUIET_MOVE_FLAG : Move.CAPTURE_FLAG;
 
-            // For raw input moves
-            if (str.charAt(0) == '@') {
-                // e.g. @-14297
-                return Short.parseShort(str.substring(1, str.length()));
+            // Pawn extras
+            if (movingPieceType == Pawn.ID_Type) {
+                // Double pawn push
+                if (absDist == 16) {
+                    flag = Move.DOUBLE_PAWN_PUSH_FLAG;
+                }
+                // En passant capture
+                else if ((absDist == 7 || absDist == 9) && destPieceType == None.ID_Type) {
+                    flag = Move.EN_PASSANT_FLAG;
+                }
+                // Promotions
+                else if (move.length() == 5) { // Is a promotion piece type specified?
+                    int promotionType = PieceType.CMap.get(move.charAt(4));
+                    flag = promotionType;
+
+                    // Promotion captures
+                    if (captures) {
+                        flag += 4;
+                    }
+                }
+            }
+            // Castling
+            else if (movingPieceType == King.ID_Type && absDist == 2) {
+                if (to % 8 == Files.G) {
+                    flag = Move.KING_CASTLE_FLAG;
+                }
+                else if (to % 8 == Files.C) {
+                    flag = Move.QUEEN_CASTLE_FLAG;
+                }
             }
 
-            int from = Misc.Utils.toSquareIndex(str.substring(0, 2));
-            int to = Misc.Utils.toSquareIndex(str.substring(2, 4));
+            return Move.create(from, to, flag);
+        }
+    }
+    
+    class MoveDecoder_LongAlgebraicNotation_UCI implements IMoveDecoder {
+        @Override
+        public short decode(String move) {
+            int from = Misc.Utils.toSquareIndex(move.substring(0, 2));
+            int to = Misc.Utils.toSquareIndex(move.substring(2, 4));
 
             // Use board context to determine the flag [e.g. castling, capturing, promotion]
             int movingPieceType = Piece.getType(getPieceID(from));
@@ -328,8 +379,8 @@ public class Board implements IBoard {
                     flag = Move.EN_PASSANT_FLAG;
                 }
                 // Promotions
-                else if (str.length() == 5) { // Is a promotion piece type specified?
-                    int promotionType = PieceType.CMap.get(str.charAt(4));
+                else if (move.length() == 5) { // Is a promotion piece type specified?
+                    int promotionType = PieceType.CMap.get(move.charAt(4));
                     flag = promotionType;
 
                     // Promotion captures
@@ -342,13 +393,164 @@ public class Board implements IBoard {
             else if (movingPieceType == King.ID_Type && absDist == 2) {
                 if (to % 8 == Files.G) {
                     flag = Move.KING_CASTLE_FLAG;
-                } else if (to % 8 == Files.C) {
+                }
+                else if (to % 8 == Files.C) {
                     flag = Move.QUEEN_CASTLE_FLAG;
                 }
             }
 
             return Move.create(from, to, flag);
-        };
+        }
+    }
+    
+    class MoveDecoder_StandardAlgebraicNotation implements IMoveDecoder {
+        @Override
+        public short decode(String move) {
+            
+            // '0' is FIDE standard and 'O' is PGN standard.
+            if (move.equals("O-O-O") || move.equals("0-0-0")) {
+                if (getTurn() == Color.White) {
+                    return Move.create(
+                        Misc.Utils.sqaureIndex0(0, Files.E), 
+                        Misc.Utils.sqaureIndex0(0, Files.C), 
+                        Move.QUEEN_CASTLE_FLAG);
+                }
+                else {
+                    return Move.create(
+                        Misc.Utils.sqaureIndex0(7, Files.E), 
+                        Misc.Utils.sqaureIndex0(7, Files.C), 
+                        Move.QUEEN_CASTLE_FLAG);
+                }
+            }
+            else if (move.equals("O-O") || move.equals("0-0")) {
+                if (getTurn() == Color.White) {
+                    return Move.create(
+                        Misc.Utils.sqaureIndex0(0, Files.E), 
+                        Misc.Utils.sqaureIndex0(0, Files.G), 
+                        Move.KING_CASTLE_FLAG);
+                }
+                else {
+                    return Move.create(
+                        Misc.Utils.sqaureIndex0(7, Files.E), 
+                        Misc.Utils.sqaureIndex0(7, Files.G), 
+                        Move.KING_CASTLE_FLAG);
+                }
+            }
+            
+            // Check / CheckMate hints can be ignored.
+            move = move.replace("#", "");
+            move = move.replace("+", "");
+
+            int from, to, flag = Move.QUIET_MOVE_FLAG;
+            boolean captures = false, promotes = false;
+            
+            promotes = move.charAt(move.length() - 2) == '=';
+
+            int endOff = promotes ? 2 : 0;
+
+            if (move.length() >= (3 + endOff))
+                captures = move.charAt(move.length() - (3 + endOff)) == 'x';
+            
+            if (captures) 
+                flag = Move.CAPTURE_FLAG;
+
+            to = Misc.Utils.toSquareIndex(move.substring(
+                move.length() - (2 + endOff), 
+                move.length() - endOff)); 
+
+            int destPieceID = getPieceID(to);
+            int movingPieceTypeID = Character.isLowerCase(move.charAt(0)) 
+                ? Pawn.ID_Type 
+                : PieceType.CMap.get(Character.toLowerCase(move.charAt(0)));
+            int bgnOff = movingPieceTypeID == Pawn.ID_Type ? 0 : 1;
+            PieceType.MoveGenerator generator = PieceType.fromTypeID(movingPieceTypeID).getGenerator();
+
+            // Filter out illegal moves. After this step, possibleOriginSquares contains only squares that can
+            // be legal origin squares for a piece of type movingPieceTypeID that can reach the to square.
+            long originSquares = 0;
+            long[] possibleOriginSquares = { getBitboard(movingPieceTypeID, getTurn()) };
+            while (possibleOriginSquares[0] != 0) {
+                int possibleOriginSquareIdx = popLsb(possibleOriginSquares);
+                long possibleOriginSquare = target(possibleOriginSquareIdx);
+                // Illegal moves are not considered in amgiuous moves
+                MoveList legalMovesFromOrigin = MoveList.legal(board, captures, generator);
+                for (short m : legalMovesFromOrigin.getMoves()) {
+                    if (Move.getFrom(m) != possibleOriginSquareIdx)
+                        continue;
+                    if (Move.getTo(m) == to) {
+                        originSquares ^= possibleOriginSquare;
+                        break;
+                    }
+                }
+            }
+            
+            // Read and interpret the file/rank disambiguation.
+            int originSquareCount = countBits(originSquares);
+            if (originSquareCount <= 1) {
+                from = lsb(originSquares);
+            }
+            else {
+                // Use disambiguation to determine the origin square.
+                char fromHint1 = move.charAt(bgnOff);
+                if (Character.isAlphabetic(fromHint1)) {
+                    // hint 1 is file
+                    originSquares &= Masks.Files[fromHint1 - 'a'];
+                    if (Character.isDigit(move.charAt(bgnOff + 1))) {
+                        char fromHint2 = move.charAt(bgnOff + 1);
+                        // hint 2 is rank ( => square )
+                        originSquares &= Masks.Ranks[fromHint2 - '1'];
+                    }
+                }
+                else {
+                    // hint 1 is rank
+                    originSquares &= Masks.Ranks[fromHint1 - '1'];
+                }
+                
+                from = lsb(originSquares);
+            }
+
+            int absDist = Math.abs(from - to);
+            
+            // Pawn extras
+            if (movingPieceTypeID == Pawn.ID_Type) {
+                // Double pawn push
+                if (absDist == 16) {
+                    flag = Move.DOUBLE_PAWN_PUSH_FLAG;
+                }
+                // En passant capture
+                else if ((absDist == 7 || absDist == 9) && Piece.getType(destPieceID) == None.ID_Type) {
+                    flag = Move.EN_PASSANT_FLAG;
+                }
+                // Promotions
+                else if (promotes) {
+                    char promotion = Character.toLowerCase(move.charAt(move.length() - 1));
+                    int promotionPieceType = PieceType.CMap.get(promotion);
+                    flag = promotionPieceType;
+
+                    if (captures)
+                        flag += 4;
+                }
+            }
+            
+            return Move.create(from, to, flag);
+        }
+    }
+    
+    
+    @Override
+    public IMoveDecoder getMoveDecoder(MoveFormat format) {
+        switch (format) {
+            case RawDec:
+                return new MoveDecoder_Raw();
+            case LongAlgebraicNotation_UCI:
+                return new MoveDecoder_LongAlgebraicNotation_UCI();
+            case LongAlgebraicNotation:
+                return new MoveDecoder_LongAlgebraicNotation();
+            case StandardAlgebraicNotation:
+                return new MoveDecoder_StandardAlgebraicNotation();
+            case ICCF: case Smith: default:
+                throw new UnsupportedOperationException();
+        }
     }
 
     public int getCastlingCardinality() {
