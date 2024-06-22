@@ -1,12 +1,15 @@
 package Engine;
 
 import Engine.AlphaBetaSearchTree.Line;
-import Interface.Main;
 
 public class TranspositionTable {
     private final Entry[] _entries;
     private final int _elements;
     private int _collisions = 0;
+    
+    public int getCollisions() {
+        return _collisions;
+    }
 
     public TranspositionTable(int elements) {
         _elements = elements;
@@ -17,13 +20,17 @@ public class TranspositionTable {
     public static TranspositionTable ofSize(int size) {
         return new TranspositionTable(size / Entry.SIZE_BYTES);
     }
+    
+    public static TranspositionTable ofOrder(int order) {
+        return new TranspositionTable((int)Math.pow(2, order));
+    }
 
     public void set(Entry entry) {
         int index = (int) Math.abs(entry.key % _elements);
         Entry oldEntry = _entries[index];
 
         if (oldEntry != null) {
-            if (Main.DEBUG) _collisions++;
+            _collisions++;
             if (entry.type < oldEntry.type || entry.depth >= oldEntry.depth) {
                 _entries[index] = entry;
             }
