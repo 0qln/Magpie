@@ -829,6 +829,21 @@ public class Board implements IBoard {
                                 : -1);
 
                 EpdInfo epd = EpdInfo.ParseOperations(String.join(" ", Arrays.copyOfRange(_tokens, 4, _tokens.length)));
+                
+                stateBuilder
+                        // full move number
+                        .ply(2 * (epd.fmvn - 1) + (board.getTurn() == Color.Black ? 1 : 0))
+
+                        // plys for 50 move rule
+                        .plys50(epd.hmvc);
+
+                board._stateStack.push(stateBuilder.build());
+                board._ply = board._stateStack.getFirst().getPly();                
+                board.positionsIncr(board.getKey());
+                
+                // Play the supplied move.
+                IMoveDecoder decoder = board.getMoveDecoder(MoveFormat.StandardAlgebraicNotation);
+                board.makeMove(decoder.decode(epd.sm));                
             }
 
             if (_tokenFormat == TokenFormat.None || _tokens == null) {

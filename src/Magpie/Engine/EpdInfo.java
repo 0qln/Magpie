@@ -15,8 +15,8 @@ public class EpdInfo {
     public int acd = -1; 
     public int acn = -1;
     public int acs = -1;
-    public short[] am = null;
-    public short[] bm = null;
+    public String[] am = null;
+    public String[] bm = null;
     public String[] c = new String[10]; // c0-c9 comments
     public int ce = 32767; 
     public int dm = -1;
@@ -29,11 +29,11 @@ public class EpdInfo {
     public int hmvc = 0;
     public String id = null;
     public String nic = null;
-    public short pm = Move.None;
-    public short[] pv = null;
+    public String pm = null;
+    public String[] pv = null;
     public int rc = 1;
     public boolean resign = false;
-    public short sm = Move.None;
+    public String sm = null;
     public String[] v = new String[10]; // v0-v9 varation names
     public int tcgs = 0;
     public String[] tcri = new String[2];
@@ -109,16 +109,18 @@ public class EpdInfo {
                     break;
 
                 case "am":
-                    epd.am = new short[operands.size()];
-                    for (String SANmove : operands) {
-                        // parse SAN move
-                    }
+                    // epd.am = new short[operands.size()];
+                    // for (String SANmove : operands) {
+                    //     // parse SAN move
+                    // }
+                    epd.am = (String[])operands.toArray();
                     break;
                 case "bm":
-                    epd.bm = new short[operands.size()];
-                    for (String SANmove : operands) {
-                        // parse SAN move
-                    }
+                    // epd.bm = new short[operands.size()];
+                    // for (String SANmove : operands) {
+                    //     // parse SAN move
+                    // }
+                    epd.bm = (String[])operands.toArray();
                     break;
                     
                 case "ce":
@@ -158,13 +160,15 @@ public class EpdInfo {
                     
                 case "pm":
                     // parse exactly one SAN move
+                    epd.pm = operands.get(0);
                     break;
                 
                 case "pv":
-                    epd.pv = new short[operands.size()];
-                    for (String SANmove : operands) {
-                        // parse SAN move
-                    }
+                    // epd.pv = new short[operands.size()];
+                    // for (String SANmove : operands) {
+                    //     // parse SAN move
+                    // }
+                    epd.pv = (String[])operands.toArray();
                     break;
                     
                 case "rc":
@@ -177,6 +181,7 @@ public class EpdInfo {
                     
                 case "sm":
                     // prase exactly one SAN move
+                    epd.sm = operands.get(0);
                     break;
                     
                 case "tcgs":
