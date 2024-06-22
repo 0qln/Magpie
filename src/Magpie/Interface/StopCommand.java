@@ -13,10 +13,13 @@ public class StopCommand extends Command
     
     @Override
     public void run() {
-        if (_state.search.isNull()) {
-            return;
+        if (!_state.search.isNull()) {
+            _state.search.get().stop();
+            _state.search.set(null);
         }
-        _state.search.get().stop();
-        _state.search.set(null);
+        
+        for (TestCommand test : _state.runningTests) {
+            test.stop();
+        }
     }
 }
