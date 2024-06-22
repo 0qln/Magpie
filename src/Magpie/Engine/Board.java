@@ -1,7 +1,6 @@
 package Engine;
 
 import static Engine.Utils.countBits;
-import static Engine.Utils.deactivateBit;
 import static Engine.Utils.file;
 import static Engine.Utils.lsb;
 import static Engine.Utils.popLsb;
