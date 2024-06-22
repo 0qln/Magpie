@@ -240,7 +240,7 @@ public class TestCommand extends Command {
                         }
                     });
                     Engine.SearchLimit limit = new SearchLimit();
-                    // search.begin(limit);
+                    search.begin(limit);
                 });
             }
             catch (IOException e) {
