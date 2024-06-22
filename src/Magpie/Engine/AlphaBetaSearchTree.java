@@ -25,7 +25,7 @@ public class AlphaBetaSearchTree extends ISearchTree {
     private final ArrayList<DepthLevelInfo> _infoStack;
     private long _nodesSearched;
     private int _rootDepth, _rootSelDepth;
-    private Logger _logger = Misc.LoggerConfigurator.configureLogger(AlphaBetaSearchTree.class);
+    private static final Logger _logger = Misc.LoggerConfigurator.configureLogger(AlphaBetaSearchTree.class);
     private Line _pv;
     private boolean _stopFlag;
     private long _startTime, _timePerMove;

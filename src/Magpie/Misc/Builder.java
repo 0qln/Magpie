@@ -26,6 +26,9 @@ public abstract class Builder<T> {
     }
 
     public static class FieldNotSetException extends RuntimeException {
+        public FieldNotSetException(String fieldName) {
+            super("Field not set: " + fieldName);
+        }
     }
 
     // Check if required fields are set
@@ -38,10 +41,26 @@ public abstract class Builder<T> {
                     return false;
             }
             return true;
-        } catch (IllegalAccessException e) {
+        } 
+        catch (IllegalAccessException e) {
             // This shouldn't happen, as we have forced the field to be accesible.
             System.out.println("Parent builder failed to access field of child.");
             return false;
+        }
+    }
+    
+    protected <TChild extends Builder<?>> void checkFields(TChild childInstance) {
+        try {
+            for (Field field : childInstance.getClass().getDeclaredFields()) {
+                field.setAccessible(true);
+                if (field.isAnnotationPresent(Required.class)
+                        && field.get(childInstance) == null)
+                    throw new FieldNotSetException(field.getName());
+            }       
+        } 
+        catch (IllegalAccessException e) {
+            // This shouldn't happen, as we have forced the field to be accesible.
+            System.out.println("Parent builder failed to access field of child.");
         }
     }
 
@@ -57,8 +76,7 @@ public abstract class Builder<T> {
         if (!checkFields)
             return _buildT();
 
-        if (!ok(this)) 
-            throw new FieldNotSetException();
+        checkFields(this);
 
         return _buildT();
     }

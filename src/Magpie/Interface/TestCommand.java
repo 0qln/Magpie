@@ -1,13 +1,25 @@
 package Interface;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.Random;
+import java.util.logging.Logger;
+import java.util.stream.Stream;
 
-import Engine.Board;
+import org.apache.commons.lang3.ArrayUtils;
+
+import Engine.AlphaBetaSearchTree;
+import Engine.EpdInfo;
 import Engine.IMoveDecoder;
 import Engine.MoveFormat;
+import Engine.SearchLimit;
 import Engine.Zobrist;
+import Misc.LoggerConfigurator;
 
 public class TestCommand extends Command {
+           
+    private static final Logger logger = LoggerConfigurator.configureLogger(TestCommand.class);
     
     private int _fails = 0;
     
@@ -177,7 +189,64 @@ public class TestCommand extends Command {
             }
         }
         if (all || params_getB("eret")) {
+            // Eigenmann Rapid Engine Test
             //https://www.chessprogramming.org/Eigenmann_Rapid_Engine_Test
+            
+            // TODO: execute benchmarked.
+            try (Stream<String> stream = Files.lines(Paths.get("Tests/ERET.txt"))) {
+                stream.forEach(epd -> {
+                    new TextResponse("EPD: " + epd).send();
+                    Misc.ProgramState program = new Misc.ProgramState();
+                    Engine.Board.Builder builder = new Engine.Board.Builder();
+                    Engine.Board board = builder.epd(epd).build();
+                    program.board.set(board);
+                    EpdInfo info = builder.epdInfoResult;
+                    new TextResponse("ID: " + info.id).send();
+                    if (info.bm != null) new TextResponse("Best Moves: " + Misc.Utils.arrStr(info.bm)).send();
+                    if (info.am != null) new TextResponse("Avoid Moves: " + Misc.Utils.arrStr(info.am)).send();
+                    Engine.AlphaBetaSearchTree search = new AlphaBetaSearchTree(board);
+                    Engine.IMoveDecoder SANdecoder = board.getMoveDecoder(MoveFormat.StandardAlgebraicNotation);
+                    // TODO: does the ERET include best move(s) or only best move?
+                    int bestMovesCnt = info.bm == null ? 0 : info.bm.length;
+                    short[] bestMoves = new short[bestMovesCnt];
+                    for (int i = 0; i < bestMovesCnt; i++) {
+                        bestMoves[i] = SANdecoder.decode(info.bm[i]);
+                    }
+                    int avoidMovesCnt = info.am == null ? 0 : info.am.length;
+                    short[] avoidMoves = new short[avoidMovesCnt];
+                    for (int i = 0; i < avoidMovesCnt; i++) {
+                        avoidMoves[i] = SANdecoder.decode(info.am[i]);
+                    }
+                    program.search.set(search);
+                    search.onNewIDIteration.register(su -> {
+                        new InfoResponse.Builder()
+                            .depth(su.depth)
+                            .seldepth(su.seldepth)
+                            .multipv(1) // TODO: add multipv
+                            .score(su.eval, ScoreType.CentiPawns) // TODO: handle other score types
+                            .nodes(su.nodes)
+                            .nps(su.nps)
+                            .time(su.time)
+                            .pv(su.pvline, board.getMoveEncoder())
+                            .build()
+                            .send(); 
+                        
+                        short pv = su.pvline[0];
+                        boolean isBest = bestMovesCnt == 0 || ArrayUtils.contains(bestMoves, pv);
+                        boolean isWorst = ArrayUtils.contains(avoidMoves, pv);
+                        if (isBest && !isWorst) {
+                            new TextResponse("EPD solved.").send();
+                            search.stop();
+                        }
+                    });
+                    Engine.SearchLimit limit = new SearchLimit();
+                    // search.begin(limit);
+                });
+            }
+            catch (IOException e) {
+                logger.severe("Error: " + e.getMessage());
+            }
+            
         }
         if (all || params_getB("movegen")) {
             new TextResponse("Position 1 success: " +
@@ -302,4 +371,8 @@ public class TestCommand extends Command {
 
         return result;
     }
+    
+    // private boolean testEPD() {
+    //     
+    // }
 }

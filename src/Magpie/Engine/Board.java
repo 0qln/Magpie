@@ -721,6 +721,8 @@ public class Board implements IBoard {
 
         @NotRequired
         private TokenFormat _tokenFormat = TokenFormat.None;
+        
+        public EpdInfo epdInfoResult = null;
 
         @Override
         protected Board _buildT() {
@@ -835,15 +837,25 @@ public class Board implements IBoard {
                         .ply(2 * (epd.fmvn - 1) + (board.getTurn() == Color.Black ? 1 : 0))
 
                         // plys for 50 move rule
-                        .plys50(epd.hmvc);
+                        .plys50(epd.hmvc)
+
+                        // zobrist key
+                        .initKey(Zobrist.initialKey(board, stateBuilder))
+                        
+                        // three fold repitition
+                        .threeFoldRepitition(false);
 
                 board._stateStack.push(stateBuilder.build());
                 board._ply = board._stateStack.getFirst().getPly();                
                 board.positionsIncr(board.getKey());
                 
                 // Play the supplied move.
-                IMoveDecoder decoder = board.getMoveDecoder(MoveFormat.StandardAlgebraicNotation);
-                board.makeMove(decoder.decode(epd.sm));                
+                if (epd.sm != null) {
+                    IMoveDecoder decoder = board.getMoveDecoder(MoveFormat.StandardAlgebraicNotation);
+                    board.makeMove(decoder.decode(epd.sm));                
+                }
+                
+                epdInfoResult = epd;
             }
 
             if (_tokenFormat == TokenFormat.None || _tokens == null) {
@@ -870,6 +882,10 @@ public class Board implements IBoard {
 
         public Builder fen(String fen) {
             return tokens(fen.split(" "), TokenFormat.FEN);
+        }
+        
+        public Builder epd(String epd) {
+            return tokens(epd.split(" "), TokenFormat.EPD);
         }
     }
 

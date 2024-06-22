@@ -21,6 +21,15 @@ public final class Utils
         }
         return result;
     }
+    
+    public static <T> String arrStr(T[] arr) {
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < arr.length; i++) {
+            sb.append(arr[i]);
+            sb.append(' ');
+        }
+        return sb.toString();
+    }
 
     public static void copyTo(int destoffset, short[] source, short[] desination) {
         assert(source.length <= desination.length + destoffset);

@@ -50,7 +50,7 @@ public class EpdInfo {
         for (int i = 0; i < operations.length; i++) {
             char[] operation = operations[i].toCharArray();
             int j = 0;
-            while (operation[j] == ' ') j++;
+            while (operation[j] == ' ' || operation[j] == '-') j++;
             int opcodeBegin = j;
             while (operation[j] != ' ') j++;
             int opcodeLength = j - opcodeBegin;
@@ -80,6 +80,10 @@ public class EpdInfo {
                         operandBegin = j;
                         while (j < operation.length && operation[j] != ' ') j++;
                         operandLength = j - operandBegin;
+                        // Not specified in the EPD standard, but sometimes, a ", " is used to seperate 
+                        // operands instead of ' '.
+                        if (operation[operandBegin + operandLength - 1] == ',')
+                            operandLength -= 1; // don't inlcude the ','.
                         break;
                 }
                 String operand = new String(
@@ -113,14 +117,16 @@ public class EpdInfo {
                     // for (String SANmove : operands) {
                     //     // parse SAN move
                     // }
-                    epd.am = (String[])operands.toArray();
+                    epd.am = new String[operands.size()];
+                    operands.toArray(epd.am);
                     break;
                 case "bm":
                     // epd.bm = new short[operands.size()];
                     // for (String SANmove : operands) {
                     //     // parse SAN move
                     // }
-                    epd.bm = (String[])operands.toArray();
+                    epd.bm = new String[operands.size()];
+                    operands.toArray(epd.bm);
                     break;
                     
                 case "ce":
@@ -168,7 +174,8 @@ public class EpdInfo {
                     // for (String SANmove : operands) {
                     //     // parse SAN move
                     // }
-                    epd.pv = (String[])operands.toArray();
+                    epd.pv = new String[operands.size()];
+                    operands.toArray(epd.pv);
                     break;
                     
                 case "rc":
