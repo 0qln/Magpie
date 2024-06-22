@@ -3,10 +3,11 @@ package Misc;
 import java.io.IOException;
 import java.util.logging.*;
 
+import Interface.Main;
+
 public class LoggerConfigurator {
 
-    // TODO: singleton mechanism, such that this can only be set on program startup
-    public static boolean loggingEnabled = false; 
+    public static boolean loggingEnabled = Main.DEBUG; 
 
     private static Logger nullLogger = Logger.getLogger(LoggerConfigurator.class.getName());
 
@@ -35,7 +36,7 @@ public class LoggerConfigurator {
         }
 
         String logFileName = clazz + "_log.txt";
-        Logger logger = Logger.getLogger(clazz.getName());
+        Logger logger = Logger.getLogger(clazz.getSimpleName());
         try {
             Logger rootLogger = Logger.getLogger("");
             // Remove the default console handler
