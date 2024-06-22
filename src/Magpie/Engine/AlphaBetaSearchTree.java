@@ -23,14 +23,22 @@ public class AlphaBetaSearchTree extends ISearchTree {
     private final int[] _rootScores;
     // This needs to be indexed alot, so a linked list would be inefficient.
     private final ArrayList<DepthLevelInfo> _infoStack;
-    private long _nodesSearched;
+    private long _nodesSearched, _ttCuttoffs;
     private int _rootDepth, _rootSelDepth;
     private static final Logger _logger = Misc.LoggerConfigurator.configureLogger(AlphaBetaSearchTree.class);
     private Line _pv;
     private boolean _stopFlag;
     private long _startTime, _timePerMove;
     private long _maxNodes = -1;
-    private TranspositionTable _tt = TranspositionTable.ofSize(Misc.Utils.mb(50));
+    private TranspositionTable _tt = TranspositionTable.ofOrder(26); // order 26 ~ 64 MB
+    
+    public TranspositionTable getTT() {
+        return _tt;
+    }
+    
+    public long getNodesSearched() {
+        return _nodesSearched;
+    }
 
     public AlphaBetaSearchTree(Board board) {
         this._board = board;
@@ -38,6 +46,7 @@ public class AlphaBetaSearchTree extends ISearchTree {
         this._rootScores = new int[_rootMoves.length()];
         Arrays.fill(_rootScores, -StaticEvaluator.Infinity);
         this._nodesSearched = 0;
+        this._ttCuttoffs = 0;
         this._infoStack = new ArrayList<>();
     }
 
@@ -198,6 +207,10 @@ public class AlphaBetaSearchTree extends ISearchTree {
     }
 
     private int search(int depth, int alpha, int beta, Line parentPV, Line currline, int ply) {
+
+        if (_stopFlag)
+            return 0;
+
         // Increment node counter.
         _nodesSearched++;
 
@@ -209,27 +222,28 @@ public class AlphaBetaSearchTree extends ISearchTree {
             return 0;
 
         // Three fold repitition
-        if (_board.hasThreeFoldRepitition())
-            return StaticEvaluator.Draw;
+        // if (_board.hasThreeFoldRepitition())
+        //     return StaticEvaluator.Draw;
         
         long hash = _board.getKey();
         TranspositionTable.Entry ttEntry = _tt.get(hash);
 
         // TT cutoff
-        if (ttEntry != null && 
-            ttEntry.depth >= depth && (
-                // We have stored the exact evaluation for this position, so return it
-                (ttEntry.type == TranspositionTable.Entry.TYPE_PV) || 
-                // We have stored the upper bound of the eval for this position. If it's less than alpha then we don't need to
-                // search the moves in this position as they won't interest us; otherwise we will have to search to find the exact value
-                (ttEntry.type == TranspositionTable.Entry.TYPE_ALL && ttEntry.score <= alpha) ||
-                // We have stored the lower bound of the eval for this position. Only return if it causes a beta cut-off.
-                (ttEntry.type == TranspositionTable.Entry.TYPE_CUT && ttEntry.score >= beta)
-            )
-            ) {
-            parentPV.update(ttEntry.pv);
-            return ttEntry.score; 
-        }
+        // if (ttEntry != null && 
+        //     ttEntry.depth >= depth && (
+        //         // We have stored the exact evaluation for this position, so return it
+        //         (ttEntry.type == TranspositionTable.Entry.TYPE_PV) || 
+        //         // We have stored the upper bound of the eval for this position. If it's less than alpha then we don't need to
+        //         // search the moves in this position as they won't interest us; otherwise we will have to search to find the exact value
+        //         (ttEntry.type == TranspositionTable.Entry.TYPE_ALL && ttEntry.score <= alpha) ||
+        //         // We have stored the lower bound of the eval for this position. Only return if it causes a beta cut-off.
+        //         (ttEntry.type == TranspositionTable.Entry.TYPE_CUT && ttEntry.score >= beta)
+        //     )
+        //     ) {
+        //     parentPV.update(ttEntry.pv);
+        //     _ttCuttoffs++;
+        //     return ttEntry.score; 
+        // }
 
         // Exit condition
         if (depth <= 0)
@@ -315,6 +329,10 @@ public class AlphaBetaSearchTree extends ISearchTree {
     }
 
     private int quiescent(int alpha, int beta, int ply) {
+
+        if (_stopFlag)
+            return 0;
+
         // Increment node counter.
         _nodesSearched++;
 
@@ -325,9 +343,10 @@ public class AlphaBetaSearchTree extends ISearchTree {
         checkTime();
         checkSearchSpace();
 
-        if (_stopFlag) {
+        if (_stopFlag)
             return 0;
-        }
+        
+        
 
         // Because of the Null Move Observation we can assume that doing nothing will
         // always be worse than doing some capture.
