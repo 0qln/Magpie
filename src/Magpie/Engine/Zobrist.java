@@ -13,8 +13,16 @@ public class Zobrist {
     public static final long[] enPassant = new long[8];
     public static final long[] castling = new long[16];
     public static long stm;
+    
+    private static long _seed;
+    
+    public static long getSeed() {
+        return _seed;
+    }
 
-    public static void init(long seed) {
+    public static void initSeed(long seed) {
+        _seed = seed;
+
         Random rng = new Random(seed);
 
         for (int sq = 0; sq < 64; sq++) {
