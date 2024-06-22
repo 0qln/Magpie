@@ -26,7 +26,7 @@ public final class Main {
         new UciNewGameCommand();
         new TestCommand();
 
-        Zobrist.init(69);
+        Zobrist.initSeed(-4414558125653196065L);
     }
 
     private static boolean _quitFlag = false;
@@ -39,9 +39,6 @@ public final class Main {
     }
 
     public static void main(String[] args) throws Misc.Builder.FieldNotSetException {
-        LoggerConfigurator.loggingEnabled = DEBUG;
-        Misc.Builder.unsafe = !DEBUG;
-
         _logger = LoggerConfigurator.configureLogger(Main.class);
         _scanner = new Scanner(System.in);
         _scanner.useDelimiter("\n");
