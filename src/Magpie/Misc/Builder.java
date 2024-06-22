@@ -6,10 +6,11 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 import java.lang.reflect.Field;
 
+import Interface.Main;
+
 public abstract class Builder<T> {
 
-    // TODO: singleton mechanism, such that this can only be set on program startup
-    public static boolean unsafe = false;
+    public static boolean unsafe = !Main.DEBUG;
 
     @Retention(RetentionPolicy.RUNTIME)
     @Target(ElementType.FIELD)
