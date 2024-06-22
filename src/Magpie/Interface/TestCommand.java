@@ -16,12 +16,15 @@ import Engine.MoveFormat;
 import Engine.SearchLimit;
 import Engine.Zobrist;
 import Misc.LoggerConfigurator;
+import Misc.ProgramState;
 
 public class TestCommand extends Command {
            
-    private static final Logger logger = LoggerConfigurator.configureLogger(TestCommand.class);
+    private static final Logger _logger = LoggerConfigurator.configureLogger(TestCommand.class);
     
+    private ProgramState _testState = new ProgramState();
     private int _fails = 0;
+    private boolean _stopRequested = false;
     
     private boolean incrFails(boolean value) {
         if (!value) _fails ++;
@@ -41,9 +44,15 @@ public class TestCommand extends Command {
 
     @Override
     public void run() {
+
+        _state.runningTests.add(this);
+
         boolean all = params_getB("all");
+
         if (all || params_getB("fen-encode")) {
             // fen-decoding and LAN_UCI-decoding can be trusted.
+             
+            _logger.info("Begin test: fen-encode");
             
             new TextResponse(
                 "FEN 1 success: " +
@@ -100,7 +109,10 @@ public class TestCommand extends Command {
                 .send();
 
         }
+        
         if (all || params_getB("SAN-decode")) {
+             
+            _logger.info("Begin test: SAN-decode");
 
             // test normal move
             new TextResponse(
@@ -173,22 +185,68 @@ public class TestCommand extends Command {
                 .send();
 
         }
+        
         if (params_getB("zobrist")) {
-            // find a random seed with minimal collisions
+             
+            _logger.info("Begin test: zobrist");
+            
+            // TODO: make a better way of testing seeds.
+
+            // find a seed with minimal collisions
             var rng = new Random();
             var collisionsMin = Long.MAX_VALUE;
-            while (true) {
-                long seed = rng.nextLong();
-                Zobrist.init(seed);
-                // TODO: measure collisions
-                long collisions = 0;
+            long seed, bestSeed = 0;
+            do {
+                seed = Zobrist.getSeed();
+
+                Engine.Board board = new Engine.Board.Builder()
+                        .fen("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1")
+                        .build();
+                Engine.AlphaBetaSearchTree searchTree = new AlphaBetaSearchTree(board);
+
+                _testState.board.set(board);
+                _testState.search.set(searchTree);
+
+                SearchLimit limit = new SearchLimit();
+                // The JIT may optimize the search during runtime
+                // This is why we search a fixed amount of nodes instead of a 
+                // time limit.
+                limit.nodes = 300000;
+                searchTree.begin(limit);
+                long collisions = searchTree.getTT().getCollisions();
+                long nodes = searchTree.getNodesSearched();
+                
+                if (nodes != limit.nodes) {
+                    _logger.warning("Incomplete Zobrist measurement (" + nodes + "/" + limit.nodes + " nodes). Abandoning Zobrist test.");
+                    break;
+                }
+                
+                if (collisions == 0) {
+                    new TextResponse("Optimal seed: < " + seed  + " >  (" + collisions + " collisions)").send();
+                    break;
+                }
+
+                new TextResponse("Testing seed: < " + seed  + " >  (" + collisions + " collisions)").send();
+
                 if (collisions < collisionsMin) {
                     collisionsMin = collisions;
-                    new TextResponse("New seed: " + seed + (" (" + collisions + " collisions)")).send();
+                    bestSeed = seed;
+                    new TextResponse("New Best ^ ").send();
                 }
+
+                // Do this at the end such that the minimum is set to the currently 
+                // hardcoded value.
+                Zobrist.initSeed(rng.nextLong());
             }
+            while (collisionsMin > 0 && _stopRequested == false);
+            
+            new TextResponse("Best seed found: " + bestSeed).send();
         }
+        
         if (all || params_getB("eret")) {
+             
+            _logger.info("Begin test: eret");
+
             // Eigenmann Rapid Engine Test
             //https://www.chessprogramming.org/Eigenmann_Rapid_Engine_Test
             
@@ -196,10 +254,9 @@ public class TestCommand extends Command {
             try (Stream<String> stream = Files.lines(Paths.get("Tests/ERET.txt"))) {
                 stream.forEach(epd -> {
                     new TextResponse("EPD: " + epd).send();
-                    Misc.ProgramState program = new Misc.ProgramState();
                     Engine.Board.Builder builder = new Engine.Board.Builder();
                     Engine.Board board = builder.epd(epd).build();
-                    program.board.set(board);
+                    _testState.board.set(board);
                     EpdInfo info = builder.epdInfoResult;
                     new TextResponse("ID: " + info.id).send();
                     if (info.bm != null) new TextResponse("Best Moves: " + Misc.Utils.arrStr(info.bm)).send();
@@ -217,7 +274,7 @@ public class TestCommand extends Command {
                     for (int i = 0; i < avoidMovesCnt; i++) {
                         avoidMoves[i] = SANdecoder.decode(info.am[i]);
                     }
-                    program.search.set(search);
+                    _testState.search.set(search);
                     search.onNewIDIteration.register(su -> {
                         new InfoResponse.Builder()
                             .depth(su.depth)
@@ -244,11 +301,15 @@ public class TestCommand extends Command {
                 });
             }
             catch (IOException e) {
-                logger.severe("Error: " + e.getMessage());
+                _logger.severe("Error: " + e.getMessage());
             }
             
         }
+
         if (all || params_getB("movegen")) {
+             
+            _logger.info("Begin test: movegen");
+
             new TextResponse("Position 1 success: " +
                     incrFails(testPosition("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1", 5, 4865609L)))
                     .send();
@@ -275,6 +336,9 @@ public class TestCommand extends Command {
         }
         
         new TextResponse("\nTotal fails: " + _fails).send();
+        
+        _state.runningTests.remove(this);
+
     }
 
     private boolean testPosition(String fen, int depth, long excpected) {
@@ -284,6 +348,7 @@ public class TestCommand extends Command {
         Engine.Board b = new Engine.Board.Builder()
                 .fen(fen)
                 .build();
+        _testState.board.set(b);
         Engine.SearchLimit limit = new Engine.SearchLimit();
         limit.capturesOnly = false;
         long rootMoves = b.perft(1, limit);
@@ -371,8 +436,11 @@ public class TestCommand extends Command {
 
         return result;
     }
-    
-    // private boolean testEPD() {
-    //     
-    // }
+
+    public void stop() {
+        _stopRequested = true;
+        _testState.search.get().stop();
+        _logger.info("Stop requested.");
+    }
+
 }
