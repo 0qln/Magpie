@@ -3,11 +3,11 @@
   <dontWrapJar>false</dontWrapJar>
   <headerType>console</headerType>
   <jar>D:\Programmmieren\Projects\Magpie\bin\Magpie.jar</jar>
-  <outfile>D:\Programmmieren\Projects\Magpie\bin\Magpie.exe</outfile>
+  <outfile>D:\Programmmieren\Projects\Magpie\bin\Magpie-Release-1.0.0.0.exe</outfile>
   <errTitle></errTitle>
   <cmdLine></cmdLine>
   <chdir>.</chdir>
-  <priority>normal</priority>
+  <priority>high</priority>
   <downloadUrl></downloadUrl>
   <supportUrl></supportUrl>
   <stayAlive>false</stayAlive>
