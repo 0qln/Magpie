@@ -14,20 +14,7 @@ public class Board implements IBoard {
     private Board board = this;
 
     // Keep track of positions for three fold repitition.
-    byte[] _positions = new byte[Misc.Utils.mb(30)];
-    // When incrementing/decrementing, we should not need to check for overflows as 
-    // the search will abort if the position occured more than thrice (three fold repitition).
-    // In case that the search does not abort (ie. perft) we don't need to check 
-    // for overflows, as the occurance of the position should not be relevant for such searches.
-    private void positionsDecr(long key) {
-        _positions[(int)Math.abs(key % _positions.length)]--;
-    }
-    private byte posOccurances(long key) {
-        return _positions[(int)Math.abs(key % _positions.length)];
-    }
-    private void positionsIncr(long key) {
-        _positions[(int)Math.abs(key % _positions.length)]++;
-    }
+    private ThreeFoldPositionTable _tfpTable = ThreeFoldPositionTable.ofOrder(20);
 
     // Bitboard array to store the color of the pieces
     private long[] _cBitboards = new long[2];
@@ -226,10 +213,10 @@ public class Board implements IBoard {
         }
 
         // Remember new position
-        positionsIncr(key);
+        _tfpTable.increment(key);
 
         // Three fold repitition
-        newState.threeFoldRepitition(posOccurances(key) >= 3);
+        newState.threeFoldRepitition(_tfpTable.get(key) >= 3);
 
         // Initiate key for new board state
         newState.initKey(key);
@@ -241,7 +228,7 @@ public class Board implements IBoard {
     @Override
     public void undoMove(short move) {
         // Forget latest position
-        positionsDecr(getKey());
+        _tfpTable.decrement(getKey());
 
         // Increment game counters
         _turn = Color.NOT(_turn);
@@ -784,7 +771,7 @@ public class Board implements IBoard {
 
                 board._stateStack.push(stateBuilder.build());
                 board._ply = board._stateStack.getFirst().getPly();                
-                board.positionsIncr(board.getKey());
+                board._tfpTable.increment(board.getKey());
             } 
 
             if (_tokens != null && _tokenFormat == TokenFormat.EPD) {
@@ -846,7 +833,7 @@ public class Board implements IBoard {
 
                 board._stateStack.push(stateBuilder.build());
                 board._ply = board._stateStack.getFirst().getPly();                
-                board.positionsIncr(board.getKey());
+                board._tfpTable.increment(board.getKey());
                 
                 // Play the supplied move.
                 if (epd.sm != null) {
@@ -865,8 +852,7 @@ public class Board implements IBoard {
                         .threeFoldRepitition(false);
                 stateBuilder.initKey(Zobrist.initialKey(board, stateBuilder));
                 board._stateStack.push(stateBuilder.build());
-
-                board.positionsIncr(board.getKey());
+                board._tfpTable.increment(board.getKey());
             }
 
             return board;
