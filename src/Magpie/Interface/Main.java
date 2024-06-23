@@ -8,7 +8,8 @@ import Engine.Zobrist;
 
 public final class Main {
 
-    public static final boolean DEBUG = true;
+    public static final boolean DEBUG = false;
+    public static final boolean RELEASE = !DEBUG;
 
     static {
         // java doesnt execute the static initializers without
