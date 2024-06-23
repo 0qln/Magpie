@@ -18,6 +18,7 @@ public class UciNewGameCommand extends Command {
     @Override
     public void run() {
         _state.board.set(new Engine.Board.Builder().build());
+        _state.search.set(null);
     }
 
 }
