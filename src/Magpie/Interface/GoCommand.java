@@ -103,6 +103,11 @@ public class GoCommand extends Command {
                     .nps(su.nps)
                     .time(su.time)
                     .pv(su.pvline, board.getMoveEncoder())
+                    .hashfull((int)((double)search.getTT().getEntryCount() / (double)search.getTT().getCapacity() * 1000))
+                    .beginString()
+                    .string("TTCuttoffs", search.getTTCuttoffs())
+                    .string("TTCollisions", search.getTT().getCollisions())
+                    .string("ThreeFoldCutoffs", search.getThreeFoldCutoffs())
                     .build()
                     .send(); 
             });
