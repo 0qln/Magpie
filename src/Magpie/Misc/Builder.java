@@ -10,7 +10,7 @@ import Interface.Main;
 
 public abstract class Builder<T> {
 
-    public static boolean unsafe = !Main.DEBUG;
+    public static boolean unsafe = Main.RELEASE;
 
     @Retention(RetentionPolicy.RUNTIME)
     @Target(ElementType.FIELD)
