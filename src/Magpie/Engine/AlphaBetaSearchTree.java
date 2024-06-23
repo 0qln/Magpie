@@ -185,15 +185,17 @@ public class AlphaBetaSearchTree extends ISearchTree {
             Line line = new Line(move);
             Line cline = new Line(move);
             currline.set(cline);
-
+            
+            long timeBegin = System.nanoTime();
             _board.makeMove(move);
             _rootScores[i] = -search(depth - 1, alpha, beta, line, cline, 1);
             _board.undoMove(move);
+            long timeFinish = System.nanoTime();
 
-            // Too much traffic for UCI on lower depths
-            // TODO: make this relative on the time the last iteration took
+            // Too much traffic for UCI on lower depths, so start dispatching if there
+            // is enough everhead between root updates.
             final int moveIndex = i;
-            if (_rootDepth >= 6)
+            if (timeFinish - timeBegin > 3e8)
                 onNewRootMoveSearchDispatcher.dispatch(() -> new SearchUpdate(
                         _rootDepth,
                         move,
