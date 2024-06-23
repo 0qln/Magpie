@@ -266,6 +266,7 @@ public class AlphaBetaSearchTree extends ISearchTree {
         // Initiate node vars
         // The iterative deepening loop ensures there is one for the target depth.
         DepthLevelInfo info = _infoStack.get(ply);
+        info.ttEntry = ttEntry;
         int bestScore = -StaticEvaluator.Infinity, score = bestScore;
         byte type = TranspositionTable.Entry.TYPE_ALL;
         MoveList moves = MoveList.legal(_board, false);
@@ -427,9 +428,10 @@ public class AlphaBetaSearchTree extends ISearchTree {
             short move = moves.get(i);
 
             // Try pv moves first
-            // if (move == info.ttEntry.pv.getMove()) {
-            //     scores[i] = 10_000;
-            // }
+            if (info.ttEntry != null 
+                && move == info.ttEntry.pv.getMove()) {
+                scores[i] = 10_000;
+            }
 
             // MVV-LVA
             if (Move.isCapture(Move.getFlag(move))) {
