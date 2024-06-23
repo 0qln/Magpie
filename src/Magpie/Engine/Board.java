@@ -631,7 +631,7 @@ public class Board implements IBoard {
             }
             result += "\n";
         }
-        result += "   a b c d e f g h\n";
+        result += "   a b c d e f g h";
         return result;
     }
 
