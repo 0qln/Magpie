@@ -10,6 +10,10 @@ public class TextResponse extends Response {
     public TextResponse(String value) {
         _value = value;
     }
+    
+    public static void send(String value) {
+        new TextResponse(value).send();;
+    }
 
     @Override
     protected void executeSend() {
