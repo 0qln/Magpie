@@ -87,9 +87,28 @@ public class InfoResponse extends Response {
             _instance._result.append("cpuload ").append(cpuload).append(" ");
             return this;
         }
+        
+        public Builder beginString() {
+            _instance._result.append("string ");
+            return this;
+        }
 
         public Builder string(String str) {
             _instance._result.append("string ").append(str).append(" ");
+            return this;
+        }
+        
+        public Builder string(String name, String value) {
+            _instance._result
+                .append(name).append(" ")
+                .append(value).append(" ");
+            return this;
+        }
+        
+        public <T> Builder string(String name, T value) {
+            _instance._result
+                .append(name).append(" ")
+                .append(value).append(" ");
             return this;
         }
 
