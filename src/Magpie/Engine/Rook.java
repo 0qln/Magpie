@@ -16,6 +16,11 @@ public class Rook extends SlidingPiece {
     }
 
     public static class MoveGenerator extends SlidingPiece.MoveGenerator {
+        
+        @Override
+        protected Engine.SlidingPiece.MoveGenerator _getInstance() {
+            return this;
+        }
 
         /*
          * Generate in chunks

@@ -72,6 +72,8 @@ public final class Masks {
             0x4080000000000000L,
             0x8000000000000000L,
     };
+    
+    public static final long RelevantOccupancy = 0X7E7E7E7E7E7E00l;
 
     public static final long East = 0x7F7F7F7F7F7F7F7FL,
             EaEa = 0x3F3F3F3F3F3F3F3FL,

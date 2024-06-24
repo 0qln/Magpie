@@ -16,6 +16,11 @@ public class Queen extends SlidingPiece {
     }
 
     public static class MoveGenerator extends SlidingPiece.MoveGenerator {
+        
+        @Override 
+        protected Engine.SlidingPiece.MoveGenerator _getInstance() {
+            return this;
+        }
 
         @Override
         public long attacks(int square, int color) {

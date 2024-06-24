@@ -4,11 +4,12 @@ import java.util.*;
 import java.util.logging.Logger;
 
 import Misc.LoggerConfigurator;
+import Engine.Bishop;
 import Engine.Zobrist;
 
 public final class Main {
 
-    public static final boolean DEBUG = false;
+    public static final boolean DEBUG = true;
     public static final boolean RELEASE = !DEBUG;
 
     static {
@@ -28,6 +29,8 @@ public final class Main {
         new TestCommand();
 
         Zobrist.initSeed(-4414558125653196065L);
+        
+        Bishop.MoveGenerator.Initialize();
     }
 
     private static boolean _quitFlag = false;
