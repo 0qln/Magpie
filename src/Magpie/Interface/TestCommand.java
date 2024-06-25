@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Random;
 import java.util.logging.Logger;
@@ -203,13 +204,13 @@ public class TestCommand extends Command {
 
             if (params_getB("rook")) {
                 
-                findBestMagic("rook", rng, Rook.generator, Rook.generator);
+                findBestMagics("rook", rng, Rook.generator, Rook.generator);
 
             }
 
             if (params_getB("bishop")) {
                 
-                findBestMagic("bishop", rng, Bishop.generator, Bishop.generator);
+                findBestMagics("bishop", rng, Bishop.generator, Bishop.generator);
                                 
             }
             
@@ -374,33 +375,55 @@ public class TestCommand extends Command {
 
     }
     
+    // A magic is expensive if the maxIndex is high wrt. the bits available.
+    public record MagicInfo(long magic, int bits, int maxIndex, int square, int free, double cost) { 
+        public MagicInfo(long magic, int bits, int maxIndex, int square, int free) {
+            this(magic, bits, maxIndex, square, free, (double)maxIndex / (double)(1 << bits));
+        }
+    }
     
-    void findBestMagic(String pt, Random rng, SlidingPiece.MoveGenerator gen, SlidingPiece.IMoveLookup lookup) {
-         TextResponse.send("Searching for "+pt+" magics");
-
+    void findBestMagics(String pt, Random rng, SlidingPiece.MoveGenerator gen, SlidingPiece.IMoveLookup lookup) {
+        TextResponse.send("Searching for "+pt+" magics");
+        
+        var infos = new MagicInfo[64];
+        
         for (int square = 0; square < 64; square++) {
 
-            long magic = findMagic(
+            infos[square] =  findMagic(
                 rng,
                 gen,
                 square, 
                 lookup.getMagicBits()[square]);
             
-            lookup.getMagics()[square] = magic;
-
-            TextResponse.send("[SQ"+square+"] Found magic: < " + magic + " > with heighest required index: " + 0);
+            TextResponse.send("[SQ"+square+"] Found magic: < " + infos[square].toString() + " >");
         }
         
+        for (int square = 0; !_stopRequested && (square %= 64) < 64; square++) {
+            var newInfo = findMagic(
+                rng,
+                gen,
+                square, 
+                lookup.getMagicBits()[square]);
+            
+            if (infos[square].maxIndex > newInfo.maxIndex) 
+            {
+                infos[square] = newInfo;
+                TextResponse.send("[SQ"+square+"] Found magic: < " + infos[square].toString() + " >");
+            }
+        }
+       
         SlidingPiece.MoveGenerator.Initialize(gen, lookup);
         
         StringBuilder sb = new StringBuilder();
-        for (int square = 0; square < 64; square++) {
-            sb.append(lookup.getMagics()[square]).append("L, ");
-        }
+        sb.append("{ ");
+        for (int square = 0; square < 64; square++)
+            sb.append(infos[square].magic).append("L, ");
+        sb.append("} ");
+
         TextResponse.send(sb.toString());       
     }
 
-    long findMagic(Random rng, SlidingPiece.MoveGenerator gen, int square, int magicShift) {
+    MagicInfo findMagic(Random rng, SlidingPiece.MoveGenerator gen, int square, int magicShift) {
         int bufferSize = (1 << 6) * (1 << 6);
         long[] blockers = new long[bufferSize], attacks = new long[bufferSize], buffer = new long[bufferSize];
         long maxBlockers, magic;
@@ -415,22 +438,29 @@ public class TestCommand extends Command {
         for (int attempts = 0; attempts < 100000000; attempts++) {
 
             magic = rng.nextLong() & rng.nextLong() & rng.nextLong();
+            int maxIndex = 0;
 
             Arrays.fill(buffer, 0);
 
             var fail = false;
             for (int i = 0; !fail && i < numBlockerCompositions; i++) {
                 int key = gen.getKey(blockers[i], magic, magicShift);
+                maxIndex = Math.max(maxIndex, key);
                 if (buffer[key] == 0L)
                     buffer[key] = attacks[i];
                 else if (buffer[key] != attacks[i])
                     fail = true;
             }
             if (!fail) {
-                return magic;
+                int fre = 0;
+                // for (int i = 0; i <= maxIndex; i++) {
+                //     if (buffer[i] == 0L)
+                //         fre++;
+                // }
+                return new MagicInfo(magic, magicShift, maxIndex, square, fre);
             }
         }
-        return 0L;
+        return null;
     }
 
     private boolean testPosition(String fen, int depth, long excpected) {
@@ -531,7 +561,8 @@ public class TestCommand extends Command {
 
     public void stop() {
         _stopRequested = true;
-        _testState.search.get().stop();
+        if (!_testState.search.isNull())
+            _testState.search.get().stop();
         _logger.info("Stop requested.");
     }
 
