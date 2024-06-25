@@ -158,6 +158,12 @@ public class Rook extends SlidingPiece {
             // Return the lookup.
             return _attacks[square][key];
         }
+        
+        public long relevantOccupancy(int square) {
+            long result = Masks.RelevantFiles[file(square)] | Masks.RelevantRanks[rank(square)];
+            result &= ~target(square);
+            return result;
+        }
 
 
         @Override

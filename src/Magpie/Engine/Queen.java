@@ -94,6 +94,11 @@ public class Queen extends SlidingPiece {
                     board.getBitboard(Queen.ID_Type, color),
                     Move.CAPTURE_FLAG);
         }
+
+        @Override
+        public long relevantOccupancy(int square) {
+            return 0;
+        }
     }
 
 }

@@ -74,6 +74,28 @@ public final class Masks {
     };
     
     public static final long RelevantOccupancy = 0X7E7E7E7E7E7E00l;
+    
+    public static final long[] RelevantFiles = {
+        0x01010101010100L,
+        0x02020202020200L,
+        0x04040404040400L,
+        0x08080808080800L,
+        0x10101010101000L,
+        0x20202020202000L,
+        0x40404040404000L,
+        0x80808080808000L,
+    };
+
+    public static final long[] RelevantRanks = {
+        0x7eL,
+        0x7e00L,
+        0x7e0000L,
+        0x7e000000L,
+        0x7e00000000L,
+        0x7e0000000000L,
+        0x7e000000000000L,
+        0x7e00000000000000L,
+    };
 
     public static final long East = 0x7F7F7F7F7F7F7F7FL,
             EaEa = 0x3F3F3F3F3F3F3F3FL,

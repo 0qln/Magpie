@@ -75,16 +75,8 @@ public abstract class SlidingPiece extends PieceType {
         public int getKey(long relevantOccupancy, long magic, int bits) {
             return (int)((relevantOccupancy * magic) >>> (64 - bits));        
         }
-
-        public long relevantOccupancy(int square) {
-            long relevantOccupancy =  
-                // Pieces that aren't in the bishops diagonals aren't relevant.
-                attacks(square) 
-                // Pieces that are on the outer edges aren't relevant.
-                & Masks.RelevantOccupancy;
-
-            return relevantOccupancy;
-        }
+        
+        public abstract long relevantOccupancy(int square);
         
         public long mapBits(int index, long mask) {
             long[] m = {mask};

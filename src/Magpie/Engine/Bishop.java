@@ -209,6 +209,16 @@ public class Bishop extends SlidingPiece {
             return _attacks[square][key];
         }
 
+        public long relevantOccupancy(int square) {
+            long relevantOccupancy =  
+                // Pieces that aren't in the bishops diagonals aren't relevant.
+                attacks(square) 
+                // Pieces that are on the outer edges aren't relevant.
+                & Masks.RelevantOccupancy;
+
+            return relevantOccupancy;
+        }
+
         public long computeAttacks(int square, long occupied) {
             final long a1h8BB = Masks.Diags_A1H8[diagA1H8(square)], a8h1BB = Masks.Diags_A8H1[diagA8H1(square)];
             final long nortBB = Utils.splitBBNorth(square), soutBB = Utils.splitBBSouth(square);

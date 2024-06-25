@@ -409,19 +409,12 @@ public class TestCommand extends Command {
         maxBlockers = gen.relevantOccupancy(square);
         numBlockerCompositions = 1 << countBits(maxBlockers);
 
-        // for (int i = 0; i < numBlockerCompositions; i++) {
-        // blockers[i] = gen.mapBits(i, maxBlockers);
-        // attacks[i] = gen.computeAttacks(square, blockers[i]);
-        // }
-
         Arrays.setAll(blockers, i -> gen.mapBits(i, maxBlockers));
         Arrays.setAll(attacks, i -> gen.computeAttacks(square, blockers[i]));
 
         for (int attempts = 0; attempts < 100000000; attempts++) {
 
             magic = rng.nextLong() & rng.nextLong() & rng.nextLong();
-
-            // if (countBits((mask * magic) & 0xFF00000000000000L) < 6) continue;
 
             Arrays.fill(buffer, 0);
 
