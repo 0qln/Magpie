@@ -2,15 +2,52 @@ package Engine;
 
 import static Engine.Utils.*;
 
+import java.util.Arrays;
+
 public abstract class SlidingPiece extends PieceType {
 
-    public static abstract class MoveGenerator extends PieceType.MoveGenerator {
+    public static interface IMoveLookup {
+    
+        public int[] getMagicBits();
         
-        protected abstract MoveGenerator _getInstance();
+        public long[] getMagics();
+
+        public long[][] getAttacks();
+
+    }
+
+    public static abstract class MoveGenerator extends PieceType.MoveGenerator {
 
         public abstract long attacks(int square);
 
         public abstract long attacks(int square, long occupied);
+        
+        public abstract long computeAttacks(int square, long occupied);
+        
+
+        public static void Initialize(SlidingPiece.MoveGenerator gen, IMoveLookup lookup) {
+            int bufferSize = (1 << 6) * (1 << 6);
+            long[] buffer = new long[bufferSize];
+            long occupied, computed;
+            long maxBlockers;
+            int i, key, keyMax, numBlockerCompositions;
+            for (int square = 0; square < 64; square++) {
+
+                Arrays.fill(buffer, 0);
+                maxBlockers = gen.relevantOccupancy(square);
+                numBlockerCompositions = 1 << countBits(maxBlockers);
+
+                for (i = 0, keyMax = 0; i < numBlockerCompositions; i++) {
+                    occupied = gen.mapBits(i, maxBlockers);
+                    computed = gen.computeAttacks(square, occupied);
+                    key = gen.getKey(occupied, lookup.getMagics()[square], lookup.getMagicBits()[square]);
+                    buffer[key] = computed;
+                    keyMax = Math.max(keyMax, key);
+                }
+                
+                lookup.getAttacks()[square] = Arrays.copyOfRange(buffer, 0, keyMax + 1);
+            }
+        }
 
         /**
          * @param list
@@ -34,7 +71,10 @@ public abstract class SlidingPiece extends PieceType {
             }
             return index;
         }
-
+        
+        public int getKey(long relevantOccupancy, long magic, int bits) {
+            return (int)((relevantOccupancy * magic) >>> (64 - bits));        
+        }
 
         public long relevantOccupancy(int square) {
             long relevantOccupancy =  
@@ -42,7 +82,7 @@ public abstract class SlidingPiece extends PieceType {
                 attacks(square) 
                 // Pieces that are on the outer edges aren't relevant.
                 & Masks.RelevantOccupancy;
-                   ; 
+
             return relevantOccupancy;
         }
         
@@ -58,7 +98,7 @@ public abstract class SlidingPiece extends PieceType {
         
         // iterates the relevant occupancy
         public long nextRelevantOccupied(int square, long index) {
-            long[] rlvt = { _getInstance().relevantOccupancy(square) };
+            long[] rlvt = { relevantOccupancy(square) };
 
             // Bounds check
             int idxMax = 1 << countBits(rlvt[0]);

@@ -15,13 +15,8 @@ public class Rook extends SlidingPiece {
         return generator;
     }
 
-    public static class MoveGenerator extends SlidingPiece.MoveGenerator {
+    public static class MoveGenerator extends SlidingPiece.MoveGenerator implements IMoveLookup {
         
-        @Override
-        protected Engine.SlidingPiece.MoveGenerator _getInstance() {
-            return this;
-        }
-
         /*
          * Generate in chunks
          * https://www.chessprogramming.org/Move_Generation#Chunk_Move_Generation
@@ -110,9 +105,63 @@ public class Rook extends SlidingPiece {
             return (Masks.Files[file(square)] | Masks.Ranks[rank(square)]) ^ target(square);
         }
 
-        // TODO: Replace with magic bitboards
         @Override
         public long attacks(int square, long occupied) {
+            var lookup = lookupAttacks(square, occupied);
+            return lookup;
+        }
+        
+
+        // https://www.chessprogramming.org/Magic_Bitboards
+        
+        private static final int[] _magicBits = {
+          12, 11, 11, 11, 11, 11, 11, 12,
+          11, 10, 10, 10, 10, 10, 10, 11,
+          11, 10, 10, 10, 10, 10, 10, 11,
+          11, 10, 10, 10, 10, 10, 10, 11,
+          11, 10, 10, 10, 10, 10, 10, 11,
+          11, 10, 10, 10, 10, 10, 10, 11,
+          11, 10, 10, 10, 10, 10, 10, 11,
+          12, 11, 11, 11, 11, 11, 11, 12        
+        };
+
+        private static final long[] _magics = new long[64] ;//{ };
+
+        private static final long[][] _attacks = new long[64][];
+
+
+        @Override
+        public long[] getMagics() {
+            return _magics;
+        }
+
+        @Override
+        public int[] getMagicBits() {
+            return _magicBits;
+        }
+
+        @Override
+        public long[][] getAttacks() {
+            return _attacks;
+        }
+
+
+
+        public static void Initialize() {
+            SlidingPiece.MoveGenerator.Initialize(Rook.generator, Rook.generator);
+        }
+        
+        public long lookupAttacks(int square, long occupied) {
+            // Get the magic key.
+            int key = getKey(occupied & relevantOccupancy(square), _magics[square], _magicBits[square]);
+
+            // Return the lookup.
+            return _attacks[square][key];
+        }
+
+
+        @Override
+        public long computeAttacks(int square, long occupied) {
             final long fileBB = Masks.Files[square % 8];
             final long rankBB = Masks.Ranks[square / 8];
             final long nortBB = Utils.splitBBNorth(square);

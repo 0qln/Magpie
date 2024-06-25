@@ -5,6 +5,7 @@ import java.util.logging.Logger;
 
 import Misc.LoggerConfigurator;
 import Engine.Bishop;
+import Engine.Rook;
 import Engine.Zobrist;
 
 public final class Main {
@@ -31,6 +32,7 @@ public final class Main {
         Zobrist.initSeed(-4414558125653196065L);
         
         Bishop.MoveGenerator.Initialize();
+        Rook.MoveGenerator.Initialize();
     }
 
     private static boolean _quitFlag = false;

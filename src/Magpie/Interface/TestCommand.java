@@ -5,6 +5,7 @@ import static Engine.Utils.countBits;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Random;
 import java.util.logging.Logger;
@@ -199,88 +200,19 @@ public class TestCommand extends Command {
             _logger.info("Begin test: magics");
             
             var rng = new Random();
-            
-            if (params_getB("bishop")) {
 
-int[] BBits = {
-  6, 5, 5, 5, 5, 5, 5, 6,
-  5, 5, 5, 5, 5, 5, 5, 5,
-  5, 5, 7, 7, 7, 7, 5, 5,
-  5, 5, 7, 9, 9, 7, 5, 5,
-  5, 5, 7, 9, 9, 7, 5, 5,
-  5, 5, 7, 7, 7, 7, 5, 5,
-  5, 5, 5, 5, 5, 5, 5, 5,
-  6, 5, 5, 5, 5, 5, 5, 6
-};
-
-                for (int square = 0; square < 64; square++) {
-                    TextResponse.send("Searching square " + square);
-                    
-                    // int i;
-                    // long occ;
-                    // for (occ = 0, i = 0; (occ = gen.nextRelevantOccupied(square, i)) != -1; i++) {
-                    //     blockers[i] = occ;
-                    //     attacks[i] = gen.computeAttacks(square, occ);
-                    // }
-                    // 
-                    // TextResponse.send("Searching for magic...");                    
-                    // int key, keyMax = 0;
-                    // while (true) {
-                    //     long magic = Bishop.MoveGenerator._magics[square] = rng.nextLong() & rng.nextLong() & rng.nextLong();
-                    //     // if(countBits((mask * magic) & 0xFF00000000000000L) < 6) continue;
-                    //     keyMax = key = 0;
-                    //     boolean fail = true;
-                    //     // long[] used = new long[Bishop.MoveGenerator._attacks[square].length];
-                    //     for(i = 0; i < 4096; i++) 
-                    //         used[i] = 0L;
-                    //
-                    //     for (i = 0; !fail && gen.nextRelevantOccupied(square, i) != -1; i++) {
-                    //         key = gen.key(square, blockers[i]);
-                    //         if (used[key] == 0) used[key] = attacks[i];
-                    //         else if (used[key] != attacks[i]) fail = true;
-                    //     } 
-                    //     // System.out.println(Bishop.MoveGenerator._magics[square]);
-                    //
-                    //     if (!fail) break;
-                    // }
-                    TextResponse.send("Found magic: < " + findBishopMagic(square, BBits[square]) + " > with heighest required index: " + 0);
-                }
+            if (params_getB("rook")) {
                 
-                StringBuilder sb = new StringBuilder();
-                for (int square = 0; square < 64; square++) {
-                    sb.append(Bishop.MoveGenerator._magics[square]).append("L,").append("\n");
-                }
-                TextResponse.send(sb.toString());
+                findBestMagic("rook", rng, Rook.generator, Rook.generator);
+
+            }
+
+            if (params_getB("bishop")) {
+                
+                findBestMagic("bishop", rng, Bishop.generator, Bishop.generator);
+                                
             }
             
-            // if (params_getB("rook")) {
-            //     Rook.MoveGenerator gen = new Rook.MoveGenerator();
-            //     // Build the desired result.
-            //     HashMap<Rook.MoveGenerator.MagicKey, Long> map = new HashMap<>();
-            //     // int square = Utils.toSquareIndex("e4");
-            //     for (int square = 0; square < 64; square++) {
-            //         var key = gen.new MagicKey(square);
-            //         for (long occ, occIdx = 0; (occ = key.nextRelevantOccupied(occIdx)) != -1; occIdx++) {
-            //             map.put(
-            //                 gen.new MagicKey(square, occ), 
-            //                 gen.attacks(square, occ));
-            //         }
-            //     }
-            //     
-            //     TextResponse.send("Finished generating desired result (" + map.size() + " items).");
-            //
-            //     for (int square = 0; square < 64; square++) {
-            //         TextResponse.send("Searching square" + square);
-            //         boolean success = false;
-            //         long magic = 0;
-            //         while (!success) {
-            //             magic = rng.nextLong() & rng.nextLong() & rng.nextLong();
-            //             TextResponse.send("Testing magic: < " + magic + " >");                    
-            //             
-            //         }
-            //         TextResponse.send("Found magic: < " + magic + " >");
-            //     }
-            // }
         }
         
         if (params_getB("zobrist")) {
@@ -406,6 +338,8 @@ int[] BBits = {
         if (all || params_getB("movegen")) {
              
             _logger.info("Begin test: movegen");
+            
+            long begin = System.currentTimeMillis();
 
             new TextResponse("Position 1 success: " +
                     incrFails(testPosition("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1", 5, 4865609L)))
@@ -430,6 +364,8 @@ int[] BBits = {
             new TextResponse("Position 6 success: " +
                     incrFails(testPosition("r4rk1/1pp1qppp/p1np1n2/2b1p1B1/2B1P1b1/P1NP1N2/1PP1QPPP/R4RK1 w - - 0 10 ", 5, 164075551)))
                     .send();
+            
+            new TextResponse("Completed Movegen testsuite in " + (System.currentTimeMillis() - begin) + " ms").send();
         }
         
         new TextResponse("\nTotal fails: " + _fails).send();
@@ -437,41 +373,71 @@ int[] BBits = {
         _state.runningTests.remove(this);
 
     }
+    
+    
+    void findBestMagic(String pt, Random rng, SlidingPiece.MoveGenerator gen, SlidingPiece.IMoveLookup lookup) {
+         TextResponse.send("Searching for "+pt+" magics");
 
-    long findBishopMagic(int square, int magicShift) {
-        long[] blockers = new long[4096], attacks = new long[4096], used = new long[4096];
-        long mask, magic;
-        int i, j, k, n;
-        boolean fail;
+        for (int square = 0; square < 64; square++) {
 
-        var rng = new Random();
-        var gen = new Bishop.MoveGenerator();
+            long magic = findMagic(
+                rng,
+                gen,
+                square, 
+                lookup.getMagicBits()[square]);
+            
+            lookup.getMagics()[square] = magic;
 
-        mask = gen.relevantOccupancy(square);
-        n = countBits(mask);
-        
-        for (i = 0; i < (1 << n); i++) {
-            blockers[i] = gen.mapBits(i, mask);
-            attacks[i] = gen.computeAttacks(square, blockers[i]);
+            TextResponse.send("[SQ"+square+"] Found magic: < " + magic + " > with heighest required index: " + 0);
         }
         
-        for (k = 0; k < 100000000; k++) {
-            magic = rng.nextLong() & rng.nextLong() & rng.nextLong();
-            if (countBits((mask * magic) & 0xFF00000000000000L) < 6) continue;
-            for(i = 0; i < 4096; i++) used[i] = 0L;
-            for(i = 0, fail = false; !fail && i < (1 << n); i++) {
-                j = transform(blockers[i], magic, magicShift);
-                if(used[j] == 0L) used[j] = attacks[i];
-                else if(used[j] != attacks[i]) fail = true;
-            }
-            if(!fail) return magic;
+        SlidingPiece.MoveGenerator.Initialize(gen, lookup);
+        
+        StringBuilder sb = new StringBuilder();
+        for (int square = 0; square < 64; square++) {
+            sb.append(lookup.getMagics()[square]).append("L, ");
         }
-        System.out.println("FAIL");
-        return 0L;
+        TextResponse.send(sb.toString());       
     }
 
-    int transform(long blockers, long magic, int bits) {
-        return (int)((blockers * magic) >>> (64 - bits));
+    long findMagic(Random rng, SlidingPiece.MoveGenerator gen, int square, int magicShift) {
+        int bufferSize = (1 << 6) * (1 << 6);
+        long[] blockers = new long[bufferSize], attacks = new long[bufferSize], buffer = new long[bufferSize];
+        long maxBlockers, magic;
+        int numBlockerCompositions;
+
+        maxBlockers = gen.relevantOccupancy(square);
+        numBlockerCompositions = 1 << countBits(maxBlockers);
+
+        // for (int i = 0; i < numBlockerCompositions; i++) {
+        // blockers[i] = gen.mapBits(i, maxBlockers);
+        // attacks[i] = gen.computeAttacks(square, blockers[i]);
+        // }
+
+        Arrays.setAll(blockers, i -> gen.mapBits(i, maxBlockers));
+        Arrays.setAll(attacks, i -> gen.computeAttacks(square, blockers[i]));
+
+        for (int attempts = 0; attempts < 100000000; attempts++) {
+
+            magic = rng.nextLong() & rng.nextLong() & rng.nextLong();
+
+            // if (countBits((mask * magic) & 0xFF00000000000000L) < 6) continue;
+
+            Arrays.fill(buffer, 0);
+
+            var fail = false;
+            for (int i = 0; !fail && i < numBlockerCompositions; i++) {
+                int key = gen.getKey(blockers[i], magic, magicShift);
+                if (buffer[key] == 0L)
+                    buffer[key] = attacks[i];
+                else if (buffer[key] != attacks[i])
+                    fail = true;
+            }
+            if (!fail) {
+                return magic;
+            }
+        }
+        return 0L;
     }
 
     private boolean testPosition(String fen, int depth, long excpected) {

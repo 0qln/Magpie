@@ -2,8 +2,6 @@ package Engine;
 
 import static Engine.Utils.*;
 
-import java.util.Arrays;
-
 public class Bishop extends SlidingPiece {
 
     public static final MoveGenerator generator = new Bishop.MoveGenerator();
@@ -16,13 +14,8 @@ public class Bishop extends SlidingPiece {
         return generator;
     }
 
-    public static class MoveGenerator extends SlidingPiece.MoveGenerator {
+    public static class MoveGenerator extends SlidingPiece.MoveGenerator implements IMoveLookup {
         
-        @Override
-        protected Engine.SlidingPiece.MoveGenerator _getInstance() {
-            return this;
-        }
-
         /*
          * Generate in chunks
          * https://www.chessprogramming.org/Move_Generation#Chunk_Move_Generation
@@ -99,136 +92,121 @@ public class Bishop extends SlidingPiece {
 
         @Override
         public long attacks(int square, long occupied) {
-            // return computeAttacks(square, occupied);
-            return lookupAttacks(square, occupied);
+            var lookup = lookupAttacks(square, occupied);
+            return lookup;
         }
         
+
         // https://www.chessprogramming.org/Magic_Bitboards
-        private static final int[] BBits = {
-  6, 5, 5, 5, 5, 5, 5, 6,
-  5, 5, 5, 5, 5, 5, 5, 5,
-  5, 5, 7, 7, 7, 7, 5, 5,
-  5, 5, 7, 9, 9, 7, 5, 5,
-  5, 5, 7, 9, 9, 7, 5, 5,
-  5, 5, 7, 7, 7, 7, 5, 5,
-  5, 5, 5, 5, 5, 5, 5, 5,
-  6, 5, 5, 5, 5, 5, 5, 6
-};
-        // public static final int _magicShift = 12;
-        public static final long[][] _attacks = new long[64][];// ~0 >>> (64 - _magicShift) 
-        public static void Initialize() {
-            var gen = Bishop.generator;
-            long[] used = new long[4960];
-            for (int square = 0; square < 64; square++) {
-                // for (long occ, occIdx = 0; (occ = gen.nextRelevantOccupied(square, occIdx)) != -1; occIdx++) {
-                //     _attacks[square][(int)occIdx] = gen.computeAttacks(square, occ);
-                // }            
-                 
-                Arrays.setAll(used, i -> 0);
-
-                long mask, magic, blockers;
-                int i, j, jMax, n, magicShift;
-
-                magicShift = BBits[square];
-                magic = _magics[square];
-                mask = gen.relevantOccupancy(square);
-                n = countBits(mask);
-
-                for (i = 0, jMax = 0; i < (1 << n); i++) {
-                    blockers = gen.mapBits(i, mask);
-                    j = transform(blockers, magic, magicShift);
-                    used[j] = gen.computeAttacks(square, blockers);
-                    jMax = Math.max(jMax, j);
-                }
-                
-                _attacks[square] = Arrays.copyOfRange(used, 0, jMax + 1);
-            }
-        }
-        static int transform(long blockers, long magic, int bits) {
-            return (int)((blockers * magic) >>> (64 - bits));        
-        }
-        public static final long[] _magics = new long[] {
-72220391556256258L,
-1157425381259874816L,
-2428031046811648L,
-218460067047950369L,
-9154813527064704L,
-72705363675200L,
--9222567185618917072L,
-1553197747802112L,
-1477202704920215584L,
--9218868145167507392L,
-8796428568580L,
-19917378527756320L,
-3503800785257365568L,
-23925407426281506L,
-18190870260236416L,
-180209972989269008L,
-4982529918727421960L,
-2614409954714471680L,
-182976329737111556L,
-2308167396189340673L,
-9367839215456256L,
-76601051096043523L,
-36310358432088192L,
-324295478683111946L,
--4611650692052678900L,
-1176003555971104914L,
-17669562606624L,
-1134696016646146L,
--7493980433961320320L,
-82190848221118592L,
-180284791304356418L,
-577024816941371904L,
-72092781365168640L,
-299067836211793L,
-162131787219734816L,
-4702919099566526468L,
--4575514009951535084L,
-1585372761537511936L,
--9061152822885604096L,
-1447907289060089864L,
--9205355301580783104L,
--6890506051186064384L,
-9071247886480L,
--9213801868316114432L,
-36099170192591936L,
-130605905387241600L,
--8644658346531487696L,
-579005022226940200L,
-2304597880799232L,
-2450029666669692928L,
--7752870600115746560L,
-403183648L,
-1126040114072576L,
-288268379236598913L,
-4785315122397440L,
-288248123498201216L,
-90074298970030097L,
-2485987030815868961L,
-3463268389022204032L,
-2267811020866L,
-2382404203952801920L,
-2392560925409282L,
-144398864357556480L,
-73751134136705200L,
-        };
         
-        public int key(int square, long occupied) {
-            // temp
-            var _magicShift = 0;
-            long relevantOccupancy = occupied & relevantOccupancy(square);
-            long key = (relevantOccupancy * _magics[square]) >>> (64 - _magicShift);
-            return Math.abs((int)key);
+        private static final int[] _magicBits = {
+          6, 5, 5, 5, 5, 5, 5, 6,
+          5, 5, 5, 5, 5, 5, 5, 5,
+          5, 5, 7, 7, 7, 7, 5, 5,
+          5, 5, 7, 9, 9, 7, 5, 5,
+          5, 5, 7, 9, 9, 7, 5, 5,
+          5, 5, 7, 7, 7, 7, 5, 5,
+          5, 5, 5, 5, 5, 5, 5, 5,
+          6, 5, 5, 5, 5, 5, 5, 6
+        };
+
+
+        private static final long[] _magics = new long[] { 
+18015532390318216L,
+585470167966843568L,
+4506625582956552L,
+1130300405989504L,
+582809891639312L,
+4612968189109208096L,
+37159670638452754L,
+-7493971629276388319L,
+-8646255934549196288L,
+1441160745847914752L,
+2314854619467550720L,
+234346627165332544L,
+1171503339702059012L,
+45037113137176833L,
+-4611683746322431680L,
+9079775689312320L,
+487536927276796416L,
+2380386617161941056L,
+3607392119142613008L,
+4621256580499783680L,
+422504533328960L,
+6192453833492992L,
+2310698495529453568L,
+-9222738576417353727L,
+292804585645941256L,
+1442696837726466L,
+6989661388604440592L,
+70643689259520L,
+283674067174416L,
+220678035308287000L,
+3459050386877448448L,
+168225287456768L,
+-7781639336862934896L,
+2306423603296477446L,
+211382184710656L,
+563225905333504L,
+-8065944731447685100L,
+1154056236577194113L,
+3097616313287680L,
+-4303182535413710336L,
+1153225048199340032L,
+-4035077827949227420L,
+5373218801334669572L,
+1224979236436314122L,
+5044314179188560896L,
+-9214363729362124288L,
+38289770888102272L,
+571789267700864L,
+2574025475818120L,
+1153484875601545227L,
+9018196585873536L,
+325387001593857040L,
+90074589400530944L,
+8867044000786L,
+603493362498045097L,
+164671664515206208L,
+36592039039109152L,
+288441775918942212L,
+145241226025764870L,
+18348675835237892L,
+4613938917889213441L,
+288881564262335520L,
+1161964030172103044L,
+567382393491552L,
+};
+
+        private static final long[][] _attacks = new long[64][];
+
+
+        @Override
+        public long[] getMagics() {
+            return _magics;
         }
 
+        @Override
+        public int[] getMagicBits() {
+            return _magicBits;
+        }
+
+        @Override
+        public long[][] getAttacks() {
+            return _attacks;
+        }
+
+
+        public static void Initialize() {
+            SlidingPiece.MoveGenerator.Initialize(Bishop.generator, Bishop.generator);
+        }
+        
         public long lookupAttacks(int square, long occupied) {
             // Get the magic key.
-            // int key = key(square, occupied);
-            int key = transform(relevantOccupancy(square) & occupied, _magics[square], BBits[square]);
+            int key = getKey(occupied & relevantOccupancy(square), _magics[square], _magicBits[square]);
 
             // Return the lookup.
-            return _attacks[square][(int)key];
+            return _attacks[square][key];
         }
 
         public long computeAttacks(int square, long occupied) {
