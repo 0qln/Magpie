@@ -71,81 +71,56 @@ public class Board implements IBoard {
     // Inlining the calls to BoardState.Builder.updateKey shows a non trivial gain in performance.
     public void makeMove(short move) {
         // Get context
-        final int us = _turn, nus = Color.NOT(us);
+        final int nus, us = _turn;
         final int from = Move.getFrom(move);
         final int to = Move.getTo(move);
         final int flag = Move.getFlag(move);
         final int rNormF = from / 8 * 8;
         final int movingPiece = getPieceID(from);
-        final int capturedPiece = flag == Move.EN_PASSANT_FLAG ? Piece.create(Pawn.ID_Type, nus) : getPieceID(to);
-        final BitSet oldCastling = getCastling();
+        final int targetPiece = getPieceID(to);
+        final BoardState oldState = _stateStack.getFirst();
+        final BitSet oldCastling = oldState.getCastling();
+        final BitSet newCastling = (BitSet)oldCastling.clone();
 
         // The xor operation is it's own inverse, thus we just apply the operation on
         // every new move, regardless of the current stm, becuase it will inverse, the
         // black color if the current stm is white.
-        long key = getKey() ^ Zobrist.stm;
+        long key = oldState.getKey() ^ Zobrist.stm;
 
         // Change turn.
-        _turn ^= 1;
+        nus = _turn ^= 1;
 
         // Create new board state
-        BoardState oldState = _stateStack.getFirst();
-        BoardState.Builder newStateBuilder = new BoardState.Builder(this);
-        newStateBuilder
-                .castling(oldCastling)
+        final BoardState.Builder newStateBuilder = new BoardState.Builder(this)
                 .ply(++_ply)
                 .plys50(oldState.getPlys50() + 1);
-
-        // Handle castling rights
-        switch (movingPiece) {
-            case King.ID_Black: case King.ID_White:
-                Castling.set(newStateBuilder.getCastling(), us, false);
-                break;
-            case Rook.ID_White:
-                if (from == Squares.A1) Castling.set(newStateBuilder.getCastling(), Castling.QueenSide, Color.White, false);
-                if (from == Squares.H1) Castling.set(newStateBuilder.getCastling(), Castling.KingSide, Color.White, false);
-            case Rook.ID_Black:
-                if (from == Squares.A8) Castling.set(newStateBuilder.getCastling(), Castling.QueenSide, Color.Black, false);
-                if (from == Squares.H8) Castling.set(newStateBuilder.getCastling(), Castling.KingSide, Color.Black, false);
-                break;
-        }
-
-        // Handle castling => Also move rook, king will be moved later anyways
-        if (flag == Move.KING_CASTLE_FLAG) {
-            final int rfrom = rNormF + Files.H, rto = rNormF + Files.F;
-            // (In the hash)
-            key ^= Zobrist.pieceSQ[_pieces[rfrom]][rfrom] ^ Zobrist.pieceSQ[_pieces[rfrom]][rto];
-            // (On the board)
-            movePiece(rfrom, rto);
-        } 
-        else if (flag == Move.QUEEN_CASTLE_FLAG) {
-            final int rfrom = rNormF + Files.A, rto = rNormF + Files.D;
-            // (In the hash)
-            key ^= Zobrist.pieceSQ[_pieces[rfrom]][rfrom] ^ Zobrist.pieceSQ[_pieces[rfrom]][rto];
-            // (On the board)
-            movePiece(rfrom, rto);
-        }
-
+ 
         // Handle captures
-        // Also get's activated on a promotion with capture, which is right.
-        else if (Piece.getType(capturedPiece) != None.ID_Type) {
-            int captureSquare = to;
+        if (Move.isCapture(flag)) {
+            
+            final int capturedPiece, capturedSquare;
+
+            capturedPiece = flag == Move.EN_PASSANT_FLAG 
+                ? Piece.create(Pawn.ID_Type, nus) 
+                : targetPiece;
+            
+            capturedSquare = flag == Move.EN_PASSANT_FLAG
+                ? to + (us * 2 - 1) * 8
+                : to;
+
+            newStateBuilder
+                    // Remember captured piece
+                    .captured(capturedPiece)
+                    // If a piece get's captured, the 50 move rule counter needs to be reset
+                    .plys50(0);
 
             // Update castling if a rook has been captured
-            Castling.update(newStateBuilder.getCastling(), captureSquare, nus);
-
-            // Handle en passant captures
-            if (flag == Move.EN_PASSANT_FLAG)
-                captureSquare += (us * 2 - 1) * 8;
+            Castling.update(newCastling, capturedSquare, nus);
 
             // Remove destination piece for captures
-            removePiece(captureSquare);
+            removePiece(capturedSquare);
 
-            // If a piece get's captured, the 50 move rule counter needs to be reset
-            newStateBuilder.plys50(0);
-
-            // Update key
-            key ^= Zobrist.pieceSQ[capturedPiece][captureSquare];
+            key ^= Zobrist.pieceSQ[capturedPiece][capturedSquare];
         }
 
         // Move The piece
@@ -154,49 +129,90 @@ public class Board implements IBoard {
         key ^= Zobrist.pieceSQ[movingPiece][from];
         key ^= Zobrist.pieceSQ[movingPiece][to];
 
-        if (getEnPassantSquare() != -1)
-            key ^= Zobrist.enPassant[file(getEnPassantSquare())];
-
-        // Remember captured piece
-        newStateBuilder.captured(capturedPiece);
+        if (oldState.getEpSquare() != -1)
+            key ^= Zobrist.enPassant[file(oldState.getEpSquare())];
                      
-        // Pawns
-        if (Piece.getType(movingPiece) == Pawn.ID_Type) {
-            // Handle double pawn pushes
-            if (flag == Move.DOUBLE_PAWN_PUSH_FLAG) {
-                newStateBuilder.epSquare(to + (us * 2 - 1) * 8);
-                key ^= Zobrist.enPassant[file(to)];
-            }
+        switch (Piece.getType(movingPiece)) {
+            // Handle castling rights
+            case King.ID_Type:
+                Castling.set(newCastling, us, false);
+                // Move the rook
+                final int rFrom, rTo, rook;
+                switch (flag) {
+                    case Move.KING_CASTLE_FLAG:
+                        rFrom = rNormF + Files.H; 
+                        rTo = rNormF + Files.F;
+                        rook = _pieces[rFrom];
+                        // (On the board)
+                        movePiece(rFrom, rTo);
+                        // (In the hash)
+                        key ^= Zobrist.pieceSQ[rook][rFrom];
+                        key ^= Zobrist.pieceSQ[rook][rTo];
+                        break;
+                    case Move.QUEEN_CASTLE_FLAG:
+                        rFrom = rNormF + Files.A; 
+                        rTo = rNormF + Files.D;
+                        rook = _pieces[rFrom];
+                        // (On the board)
+                        movePiece(rFrom, rTo);
+                        // (In the hash)
+                        key ^= Zobrist.pieceSQ[rook][rFrom];
+                        key ^= Zobrist.pieceSQ[rook][rTo];
+                        break;
+                }
+                break;
+            case Rook.ID_Type:
+                switch (us) {
+                    case Color.White:
+                        if (from == Squares.A1) Castling.set(newCastling, Castling.QueenSide, Color.White, false);
+                        if (from == Squares.H1) Castling.set(newCastling, Castling.KingSide, Color.White, false);
+                        break;
+                    case Color.Black:
+                        if (from == Squares.A8) Castling.set(newCastling, Castling.QueenSide, Color.Black, false);
+                        if (from == Squares.H8) Castling.set(newCastling, Castling.KingSide, Color.Black, false);
+                        break;
+                }
+                break;
+            
+            // Pawns extras
+            case Pawn.ID_Type:
+                // Handle double pawn pushes
+                if (flag == Move.DOUBLE_PAWN_PUSH_FLAG) {
+                    newStateBuilder.epSquare(to + (us * 2 - 1) * 8);
+                    key ^= Zobrist.enPassant[file(to)];
+                }
 
-            // Handle promotions
-            if (flag >= Move.PROMOTION_KNIGHT_FLAG && flag <= Move.CAPTURE_PROMOTION_QUEEN_FLAG) {
-                int promotion = Piece.create(Move.getPromotion(move), us);
-                removePiece(to);
-                addPiece(to, promotion);
-                // Replace pawn signature with promotion siganture
-                key ^= Zobrist.pieceSQ[movingPiece][to];
-                key ^= Zobrist.pieceSQ[promotion][to];
-            }
+                // Handle promotions
+                if (flag >= Move.PROMOTION_KNIGHT_FLAG && flag <= Move.CAPTURE_PROMOTION_QUEEN_FLAG) {
+                    int promotion = Piece.create(Move.getPromotion(move), us);
+                    removePiece(to);
+                    addPiece(to, promotion);
+                    // Replace pawn signature with promotion siganture
+                    key ^= Zobrist.pieceSQ[movingPiece][to];
+                    key ^= Zobrist.pieceSQ[promotion][to];
+                }
 
-            // If a pawn get's moved, the 50 move rule counter needs to be reset
-            newStateBuilder.plys50(0);
+                // If a pawn get's moved, the 50 move rule counter needs to be reset
+                newStateBuilder.plys50(0);
+                break;
         }
 
         // In hash, update castling, if it has changed
-        if (!oldCastling.equals(newStateBuilder.getCastling())) {
-            // Remove old castling rights
+        if (!oldCastling.equals(newCastling)) {
             key ^= Zobrist.castling[Castling.Key(oldCastling)];
-            key ^= Zobrist.castling[Castling.Key(newStateBuilder.getCastling())];
+            key ^= Zobrist.castling[Castling.Key(newCastling)];
         }
 
         // Remember new position
         _tfpTable.increment(key);
 
-        // Three fold repitition
-        newStateBuilder.threeFoldRepitition(_tfpTable.get(key) >= 3);
-
-        // Initiate key for new board state
-        newStateBuilder.initKey(key);
+        newStateBuilder
+               // Three fold repitition
+                .threeFoldRepitition(_tfpTable.get(key) >= 3)
+                // Initiate key for new board state
+                .initKey(key)
+                // Set castling
+                .castling(newCastling);
 
         // Update board state
         _stateStack.push(newStateBuilder.build());
