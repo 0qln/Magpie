@@ -37,26 +37,26 @@ public class Knight extends PieceType {
         int resolves(short[] list, int index, Board board, int color, boolean capturesOnly) {
             long knights = board.getBitboard(Knight.ID_Type, color);
 
-            index = addResolves(list, index, board, color, knights & Masks.NoEaEa, CompassRose.NoEaEa, capturesOnly);
-            index = addResolves(list, index, board, color, knights & Masks.SoEaEa, CompassRose.SoEaEa, capturesOnly);
-            index = addResolves(list, index, board, color, knights & Masks.SoWeWe, CompassRose.SoWeWe, capturesOnly);
-            index = addResolves(list, index, board, color, knights & Masks.NoWeWe, CompassRose.NoWeWe, capturesOnly);
-            index = addResolves(list, index, board, color, knights & Masks.NoNoEa, CompassRose.NoNoEa, capturesOnly);
-            index = addResolves(list, index, board, color, knights & Masks.SoSoEa, CompassRose.SoSoEa, capturesOnly);
-            index = addResolves(list, index, board, color, knights & Masks.SoSoWe, CompassRose.SoSoWe, capturesOnly);
-            index = addResolves(list, index, board, color, knights & Masks.NoNoWe, CompassRose.NoNoWe, capturesOnly);
+            final int checker = lsb(board.getCheckers());
+            final int king = lsb(board.getBitboard(King.ID_Type, color));
+            final long mask = Masks.squaresBetween(king, checker);
+
+            index = addResolves(list, index, board, color, knights & Masks.NoEaEa, CompassRose.NoEaEa, capturesOnly, checker, mask);
+            index = addResolves(list, index, board, color, knights & Masks.SoEaEa, CompassRose.SoEaEa, capturesOnly, checker, mask);
+            index = addResolves(list, index, board, color, knights & Masks.SoWeWe, CompassRose.SoWeWe, capturesOnly, checker, mask);
+            index = addResolves(list, index, board, color, knights & Masks.NoWeWe, CompassRose.NoWeWe, capturesOnly, checker, mask);
+            index = addResolves(list, index, board, color, knights & Masks.NoNoEa, CompassRose.NoNoEa, capturesOnly, checker, mask);
+            index = addResolves(list, index, board, color, knights & Masks.SoSoEa, CompassRose.SoSoEa, capturesOnly, checker, mask);
+            index = addResolves(list, index, board, color, knights & Masks.SoSoWe, CompassRose.SoSoWe, capturesOnly, checker, mask);
+            index = addResolves(list, index, board, color, knights & Masks.NoNoWe, CompassRose.NoNoWe, capturesOnly, checker, mask);
 
             return index;
         }
 
-        private int addResolves(short[] list, int index, Board board, int color, long knights, int dir, boolean capturesOnly) {
+        private int addResolves(short[] list, int index, Board board, int color, long knights, int dir, boolean capturesOnly, int checker, long mask) {
             // Remove all knights whose dest square is occupied by an ally.
             final long sao = shift(board.getCBitboard(color), -dir);
             final long[] fromBB = { knights & ~sao };
-
-            final int checker = lsb(board.getCheckers());
-            final int king = lsb(board.getBitboard(King.ID_Type, color));
-            final long mask = Masks.squaresBetween(king, checker);
 
             while (fromBB[0] != 0) {
                 final int from = popLsb(fromBB);
@@ -94,7 +94,7 @@ public class Knight extends PieceType {
 
         @Override
         public final long attacks(int square, int color) {
-            return ATTACKS[square];
+            return _attacks[square];
         }
 
         @Override
@@ -102,7 +102,7 @@ public class Knight extends PieceType {
             return attacks(square, color);
         }
 
-        private static final long[] ATTACKS = {
+        private static final long[] _attacks = {
                 0x20400L,
                 0x50800L,
                 0xa1100L,
