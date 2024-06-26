@@ -253,7 +253,7 @@ public class Pawn extends PieceType {
 
         @Override
         public final long attacks(int square, int color) {
-            return ATTACKS[color][square];
+            return _attacks[color][square];
         }
 
         @Override
@@ -261,7 +261,7 @@ public class Pawn extends PieceType {
             return attacks(square, color);
         }
 
-        private static final long[][] ATTACKS = {
+        private static final long[][] _attacks= {
                 {
                         0, 0, 0, 0, 0, 0, 0, 0,
                         0x20000L,
