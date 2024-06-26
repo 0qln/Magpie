@@ -7,8 +7,11 @@ public class King extends PieceType {
 
     public static final MoveGenerator generator = new MoveGenerator();
     public static final int ID_Type = 6;
-    public static final int ID_White = Piece.create(ID_Type, Color.White);
-    public static final int ID_Black = Piece.create(ID_Type, Color.Black);
+    // public static final int ID_White = Piece.create(ID_Type, Color.White);
+    // public static final int ID_Black = Piece.create(ID_Type, Color.Black);
+    // Manually inlining the static final function bc java is a little crybaby
+    public static final int ID_White = ID_Type << 1 | Color.White; 
+    public static final int ID_Black = ID_Type << 1 | Color.Black;
 
     @Override
     public MoveGenerator getGenerator() {
