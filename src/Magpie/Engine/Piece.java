@@ -10,7 +10,7 @@ public final class Piece
         return piece & 0x1;
     }
 
-    public static int create(int type, int color) {
+    public static final int create(int type, int color) {
         return type << 1 | color;
     }
 
