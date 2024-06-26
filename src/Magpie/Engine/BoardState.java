@@ -209,7 +209,6 @@ public class BoardState {
 
                 if ((attacks & kingBB) != 0) 
                     checkers |= target(enemySquare);                    
-                
 
                 nstmAttacks |= attacks;
             }
