@@ -10,6 +10,7 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Random;
 import java.util.logging.Logger;
+import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 import org.apache.commons.lang3.ArrayUtils;
@@ -382,6 +383,11 @@ public class TestCommand extends Command {
         }
     }
     
+    int sizeOfMagics(MagicInfo[] infos) {
+        int size = Stream.of(infos).mapToInt(info -> info.maxIndex * Long.BYTES).sum();
+        return size;
+    }
+    
     void findBestMagics(String pt, Random rng, SlidingPiece.MoveGenerator gen, SlidingPiece.IMoveLookup lookup) {
         TextResponse.send("Searching for "+pt+" magics");
         
@@ -393,23 +399,31 @@ public class TestCommand extends Command {
                 rng,
                 gen,
                 square, 
-                lookup.getMagicBits()[square]);
+                lookup.getMagicBits()[square],
+                Integer.MAX_VALUE,
+                Integer.MAX_VALUE);
             
             TextResponse.send("[SQ"+square+"] Found magic: < " + infos[square].toString() + " >");
         }
+
+        TextResponse.send("Size: " + (sizeOfMagics(infos) / 1024)  + "kiB");
         
-        for (int square = 0; !_stopRequested && (square %= 64) < 64; square++) {
+        for (int square = 0; !_stopRequested; square = ++square % 64) {
             var newInfo = findMagic(
                 rng,
                 gen,
                 square, 
-                lookup.getMagicBits()[square]);
+                lookup.getMagicBits()[square],
+                infos[square].maxIndex,
+                100000);
             
-            if (infos[square].maxIndex > newInfo.maxIndex) 
-            {
-                infos[square] = newInfo;
-                TextResponse.send("[SQ"+square+"] Found magic: < " + infos[square].toString() + " >");
-            }
+            if (newInfo == null)
+                continue;
+            
+            infos[square] = newInfo;
+            TextResponse.send("[SQ"+square+"] Found magic: < " + infos[square].toString() + " >");
+            
+            TextResponse.send("Size: " + (sizeOfMagics(infos) / 1024)  + "kiB");
         }
        
         SlidingPiece.MoveGenerator.Initialize(gen, lookup);
@@ -423,7 +437,7 @@ public class TestCommand extends Command {
         TextResponse.send(sb.toString());       
     }
 
-    MagicInfo findMagic(Random rng, SlidingPiece.MoveGenerator gen, int square, int magicShift) {
+    MagicInfo findMagic(Random rng, SlidingPiece.MoveGenerator gen, int square, int magicShift, int keyMin, int attemptsMax) {
         int bufferSize = (1 << 6) * (1 << 6);
         long[] blockers = new long[bufferSize], attacks = new long[bufferSize], buffer = new long[bufferSize];
         long maxBlockers, magic;
@@ -435,29 +449,30 @@ public class TestCommand extends Command {
         Arrays.setAll(blockers, i -> gen.mapBits(i, maxBlockers));
         Arrays.setAll(attacks, i -> gen.computeAttacks(square, blockers[i]));
 
-        for (int attempts = 0; attempts < 100000000; attempts++) {
+        for (int attempts = 0; attempts < attemptsMax; attempts++) {
 
             magic = rng.nextLong() & rng.nextLong() & rng.nextLong();
-            int maxIndex = 0;
+            int keyMax = 0;
 
             Arrays.fill(buffer, 0);
 
             var fail = false;
             for (int i = 0; !fail && i < numBlockerCompositions; i++) {
                 int key = gen.getKey(blockers[i], magic, magicShift);
-                maxIndex = Math.max(maxIndex, key);
+                keyMax = Math.max(keyMax, key);
+
                 if (buffer[key] == 0L)
                     buffer[key] = attacks[i];
                 else if (buffer[key] != attacks[i])
                     fail = true;
             }
-            if (!fail) {
+            if (!fail && keyMax < keyMin) {
                 int fre = 0;
-                // for (int i = 0; i <= maxIndex; i++) {
-                //     if (buffer[i] == 0L)
-                //         fre++;
-                // }
-                return new MagicInfo(magic, magicShift, maxIndex, square, fre);
+                for (int i = 0; i <= keyMax; i++) {
+                    if (buffer[i] == 0L)
+                        fre++;
+                }
+                return new MagicInfo(magic, magicShift, keyMax, square, fre);
             }
         }
         return null;
