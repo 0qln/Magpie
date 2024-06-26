@@ -10,7 +10,7 @@ import Engine.Zobrist;
 
 public final class Main {
 
-    public static final boolean DEBUG = true;
+    public static final boolean DEBUG = false;
     public static final boolean RELEASE = !DEBUG;
 
     static {
@@ -29,7 +29,7 @@ public final class Main {
         new UciNewGameCommand();
         new TestCommand();
 
-        Zobrist.initSeed(-4414558125653196065L);
+        Zobrist.initSeed(4662395907542479981L);
         
         Bishop.MoveGenerator.Initialize();
         Rook.MoveGenerator.Initialize();
