@@ -6,11 +6,8 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Arrays;
-import java.util.Comparator;
-import java.util.HashMap;
 import java.util.Random;
 import java.util.logging.Logger;
-import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 import org.apache.commons.lang3.ArrayUtils;
@@ -26,8 +23,6 @@ import Engine.SlidingPiece;
 import Engine.Zobrist;
 import Misc.LoggerConfigurator;
 import Misc.ProgramState;
-import Misc.Utils;
-import UnitTests.MoveGeneration;
 
 public class TestCommand extends Command {
            
@@ -567,6 +562,7 @@ public class TestCommand extends Command {
         if (!result) {
             new TextResponse("\nFAIL").send();
             new TextResponse(b.toString()).send();
+            new TextResponse("Input:    " + fenOrigin).send();
             new TextResponse("Result:   " + b.fen()).send();
             new TextResponse("Expected: " + expectedFEN).send();
         }

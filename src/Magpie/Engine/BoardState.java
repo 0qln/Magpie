@@ -2,8 +2,6 @@ package Engine;
 
 import static Engine.Utils.*;
 
-import java.util.BitSet;
-
 public class BoardState {
 
     private long _checkers, _blockers;
@@ -20,7 +18,7 @@ public class BoardState {
 
     // Which side can castle where?
     // [ 00 ->  ]
-    private BitSet _castling = new BitSet(4);
+    private int _castling = 0;
 
     // captured piece, the piece that was captured when this state was reached
     private int _captured = None.ID_White;
@@ -35,7 +33,7 @@ public class BoardState {
             int _plys50,
             int _ply,
             int _epSquare,
-            BitSet _castling,
+            int _castling,
             int _captured,
             long _nstmAttacks,
             long _key,
@@ -76,12 +74,8 @@ public class BoardState {
         _epSquare = value;
     }
 
-    public BitSet getCastling() {
+    public int getCastling() {
         return _castling;
-    }
-
-    public void setCastlingRights(int kingside, int color, boolean value) {
-        _castling.set(color << 1 | kingside, value);
     }
 
     public int getCaptured() {
@@ -113,7 +107,7 @@ public class BoardState {
         @NotRequired
         private int _epSquare = -1;
         @Required
-        private BitSet _castling;
+        private int _castling;
         @NotRequired
         private int _captured = None.ID_White;
         @Required
@@ -146,23 +140,13 @@ public class BoardState {
             return this._epSquare;
         }
 
-        public Builder castling(byte[] set) {
-            _castling = BitSet.valueOf(set);
+        public Builder castling(int value) {
+            _castling = value;
             return this;
         }
 
-        public Builder castling(BitSet set) {
-            _castling = (BitSet)set.clone();
-            return this;
-        }
-
-        public BitSet getCastling() {
+        public int getCastling() {
             return _castling;
-        }
-
-        public Builder setCastlingRights(int kingside, int color, boolean value) {
-            _castling.set(color << 1 | kingside, value);
-            return this;
         }
 
         public Builder captured(int captured) {

@@ -79,16 +79,18 @@ public class Board implements IBoard {
         final int movingPiece = getPieceID(from);
         final int targetPiece = getPieceID(to);
         final BoardState oldState = _stateStack.getFirst();
-        final BitSet oldCastling = oldState.getCastling();
-        final BitSet newCastling = (BitSet)oldCastling.clone();
+        final int oldCastling = oldState.getCastling();
+
+        // These will be updated as we go along.
+        int newCastling = oldCastling;
+        long key = oldState.getKey();
 
         // The xor operation is it's own inverse, thus we just apply the operation on
         // every new move, regardless of the current stm, becuase it will inverse, the
         // black color if the current stm is white.
-        long key = oldState.getKey() ^ Zobrist.stm;
-
         // Change turn.
         nus = _turn ^= 1;
+        key ^= Zobrist.stm;
 
         // Create new board state
         final BoardState.Builder newStateBuilder = new BoardState.Builder(this)
@@ -115,7 +117,7 @@ public class Board implements IBoard {
                     .plys50(0);
 
             // Update castling if a rook has been captured
-            Castling.update(newCastling, capturedSquare, nus);
+            newCastling = Castling.update(newCastling, capturedSquare, nus);
 
             // Remove destination piece for captures
             removePiece(capturedSquare);
@@ -135,7 +137,8 @@ public class Board implements IBoard {
         switch (Piece.getType(movingPiece)) {
             // Handle castling rights
             case King.ID_Type:
-                Castling.set(newCastling, us, false);
+                newCastling = Castling.setFalse(newCastling, Castling.KingSide, us);
+                newCastling = Castling.setFalse(newCastling, Castling.QueenSide, us);
                 // Move the rook
                 final int rFrom, rTo, rook;
                 switch (flag) {
@@ -164,12 +167,12 @@ public class Board implements IBoard {
             case Rook.ID_Type:
                 switch (us) {
                     case Color.White:
-                        if (from == Squares.A1) Castling.set(newCastling, Castling.QueenSide, Color.White, false);
-                        if (from == Squares.H1) Castling.set(newCastling, Castling.KingSide, Color.White, false);
+                        if (from == Squares.A1) newCastling = Castling.setFalse(newCastling, Castling.QueenSide, Color.White);
+                        if (from == Squares.H1) newCastling = Castling.setFalse(newCastling, Castling.KingSide, Color.White);
                         break;
                     case Color.Black:
-                        if (from == Squares.A8) Castling.set(newCastling, Castling.QueenSide, Color.Black, false);
-                        if (from == Squares.H8) Castling.set(newCastling, Castling.KingSide, Color.Black, false);
+                        if (from == Squares.A8) newCastling = Castling.setFalse(newCastling, Castling.QueenSide, Color.Black);
+                        if (from == Squares.H8) newCastling = Castling.setFalse(newCastling, Castling.KingSide, Color.Black);
                         break;
                 }
                 break;
@@ -198,9 +201,9 @@ public class Board implements IBoard {
         }
 
         // In hash, update castling, if it has changed
-        if (!oldCastling.equals(newCastling)) {
-            key ^= Zobrist.castling[Castling.Key(oldCastling)];
-            key ^= Zobrist.castling[Castling.Key(newCastling)];
+        if (newCastling != oldCastling) {
+            key ^= Zobrist.castling[Castling.key(oldCastling)];
+            key ^= Zobrist.castling[Castling.key(newCastling)];
         }
 
         // Remember new position
@@ -533,11 +536,11 @@ public class Board implements IBoard {
     }
 
     public int getCastlingCardinality() {
-        return _stateStack.getFirst().getCastling().cardinality();
+        return countBits(_stateStack.getFirst().getCastling());
     }
 
-    public BitSet getCastling() {
-        return (BitSet) _stateStack.getFirst().getCastling().clone();
+    public int getCastling() {
+        return _stateStack.getFirst().getCastling();
     }
 
     @Override
@@ -615,14 +618,9 @@ public class Board implements IBoard {
         return result;
     }
 
-    @Override
-    public void setCastlingRights(int king, int white, boolean b) {
-        _stateStack.getFirst().setCastlingRights(king, white, b);
-    }
-
     public boolean canCastle(int side, int color) {
         return Castling.hasSpace(side, color, getOccupancy())
-                && Castling.get(getCastling(), side, color);
+                && Castling.getB(getCastling(), side, color);
     }
 
     @Override
@@ -895,18 +893,18 @@ public class Board implements IBoard {
         sb.append(" ");
         sb.append(getTurn() == Color.White ? "w" : "b");
         sb.append(" ");
-        BitSet castling = getCastling();
+        int castling = getCastling();
         String castlingStr = "";
-        if (Castling.get(castling, Castling.KingSide, Color.White)) {
+        if (Castling.getB(castling, Castling.KingSide, Color.White)) {
             castlingStr += "K"; 
         }
-        if (Castling.get(castling, Castling.QueenSide, Color.White)) {
+        if (Castling.getB(castling, Castling.QueenSide, Color.White)) {
             castlingStr += "Q";
         }
-        if (Castling.get(castling, Castling.KingSide, Color.Black)) {
+        if (Castling.getB(castling, Castling.KingSide, Color.Black)) {
             castlingStr += "k";
         }
-        if (Castling.get(castling, Castling.QueenSide, Color.Black)) {
+        if (Castling.getB(castling, Castling.QueenSide, Color.Black)) {
             castlingStr += "q";
         }
         if (castlingStr.equals("")) {

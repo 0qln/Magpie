@@ -13,7 +13,6 @@ public interface IBoard
     public void removePiece(int square);
     public int getTurn();
     public int getEnPassantSquare();
-    public void setCastlingRights(int king, int white, boolean b);
     public void setEnpassant(int squareIndex);
     public void setPlys50(int int1);
     public void setTurn(int black);

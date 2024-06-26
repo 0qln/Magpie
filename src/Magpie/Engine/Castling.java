@@ -39,13 +39,14 @@ public final class Castling {
         RookSquares[sideToIndex(QueenSide)][Color.Black]    = 56;
     }
 
-    public static final void update(BitSet castling, int captureSquare, int nstm) {
+    public static final int update(int castling, int captureSquare, int nstm) {
         if (captureSquare == RookSquares[sideToIndex(KingSide)][nstm]) {
-            set(castling, KingSide, nstm, false);
+            return setFalse(castling, KingSide, nstm);
         }
         if (captureSquare == RookSquares[sideToIndex(QueenSide)][nstm]) {
-            set(castling, QueenSide, nstm, false);
+            return setFalse(castling, QueenSide, nstm);
         }
+        return castling;
     }
 
     /*
@@ -57,39 +58,57 @@ public final class Castling {
      * ]
      */
 
-    public static final BitSet empty() {
-        return new BitSet(4);
+    public static final int empty() {
+        return 0;
     }
 
-    public static final BitSet create(
+    public static final int create(
             boolean kingSideWhite,
             boolean queenSideWhite,
             boolean kingSideBlack,
             boolean queenSideBlack) {
-        BitSet result = new BitSet(4);
-        set(result, KingSide, Color.White, kingSideWhite);
-        set(result, QueenSide, Color.White, queenSideWhite);
-        set(result, KingSide, Color.Black, kingSideBlack);
-        set(result, QueenSide, Color.Black, queenSideBlack);
+        return create(
+            kingSideWhite ? 1 : 0, 
+            queenSideWhite ? 1 : 0, 
+            kingSideBlack ? 1 : 0, 
+            queenSideBlack ? 1 : 0);
+    }
+
+    public static final int create(
+            int kingSideWhite,
+            int queenSideWhite,
+            int kingSideBlack,
+            int queenSideBlack) {
+        int result = 0;
+        result = setValue(result, KingSide, Color.White, kingSideWhite);
+        result = setValue(result, QueenSide, Color.White, queenSideWhite);
+        result = setValue(result, KingSide, Color.Black, kingSideBlack);
+        result = setValue(result, QueenSide, Color.Black, queenSideBlack);
         return result;
     }
 
-    public static final void set(BitSet castling, int side, int color, boolean value) {
-        castling.set(toIndex(side, color), value);
+    public static final int setFalse(int castling, int side, int color) {
+        return castling & ~(1 << toIndex(side, color));
     }
 
-    public static final void set(BitSet castling, int color, boolean value) {
-        castling.set(toIndex(QueenSide, color), value);
-        castling.set(toIndex(KingSide, color), value);
+    public static final int setTrue(int castling, int side, int color) {
+        return castling | (1 << toIndex(side, color));
+    }
+    
+    public static final int setValue(int castling, int side, int color, int maybe) {
+        return castling | (maybe << toIndex(side, color));
     }
 
-    public static final boolean get(BitSet castling, int side, int color) {
-        return castling.get(toIndex(side, color));
+    public static final int get(int castling, int side, int color) {
+        return 1 & (castling >> toIndex(side, color));
     }
 
-    public static int Key(BitSet castling) {
-        byte[] key = castling.toByteArray();
-        return key.length == 0 ? 0 : key[0];
+    public static final boolean getB(int castling, int side, int color) {
+        return get(castling, side, color) == 1;
+    }
+
+    public static int key(int castling) {
+        return castling;
     }
 
     public static final boolean hasSpace(int side, int color, long boardOccupancy) {
@@ -109,12 +128,12 @@ public final class Castling {
         return (color << 1) | sideToIndex(side);
     }
 
-    public static final String toString(BitSet castling) {
+    public static final String toString(int castling) {
         String result = "" +
-        (get(castling, KingSide, Color.White) ? "K" : "") +
-        (get(castling, QueenSide, Color.White) ? "Q" : "") +
-        (get(castling, KingSide, Color.Black) ? "k" : "") +
-        (get(castling, QueenSide, Color.Black) ? "q" : "");
+        (get(castling, KingSide, Color.White) == 1 ? "K" : "") +
+        (get(castling, QueenSide, Color.White) == 1 ? "Q" : "") +
+        (get(castling, KingSide, Color.Black) == 1 ? "k" : "") +
+        (get(castling, QueenSide, Color.Black) == 1 ? "q" : "");
         return result.equals("") ? "-" : result;
     }
 }

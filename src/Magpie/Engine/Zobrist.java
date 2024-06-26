@@ -58,7 +58,7 @@ public class Zobrist {
         if (board.getTurn() == Color.Black)
             key ^= stm;
 
-        key ^= castling[Castling.Key(state.getCastling())];
+        key ^= castling[Castling.key(state.getCastling())];
 
         return key; 
     }
@@ -69,10 +69,10 @@ public class Zobrist {
     // }
 
     private static final void testCastling() {
-        for (boolean ksw : new boolean[] {true, false})
-        for (boolean qsw : new boolean[] {true, false})
-        for (boolean ksb : new boolean[] {true, false})
-        for (boolean qsb : new boolean[] {true, false})
-            System.out.println(Castling.Key(Castling.create(ksw, qsw, ksb, qsb)));
+        for (int ksw : new int[] {0, 1})
+        for (int qsw : new int[] {0, 1})
+        for (int ksb : new int[] {0, 1})
+        for (int qsb : new int[] {0, 1})
+            System.out.println(Castling.key(Castling.create(ksw, qsw, ksb, qsb)));
     }
 }
